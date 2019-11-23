@@ -15,18 +15,18 @@ namespace game {
     class Resource {
 
         private:
-            ResourceType mType; // Type of resource
-            std::string mName; // Reference name
+            ResourceType type_; // Type of resource
+            std::string name_; // Reference name
             union {
                 struct {
-                    GLuint mResource; // OpenGL handle for resource
+                    GLuint resource_; // OpenGL handle for resource
                 };
                 struct {
-                    GLuint mArrayBuffer; // Buffers for geometry
-                    GLuint mElementArrayBuffer;
+                    GLuint array_buffer_; // Buffers for geometry
+                    GLuint element_array_buffer_;
                 };
             };
-            GLsizei mSize; // Number of primitives in geometry
+            GLsizei size_; // Number of primitives in geometry
 
         public:
             Resource(ResourceType type, std::string name, GLuint resource, GLsizei size);

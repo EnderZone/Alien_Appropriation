@@ -5,19 +5,19 @@
 namespace game {
 
 Resource::Resource(ResourceType type, std::string name, GLuint resource, GLsizei size){
-    mType = type;
-    mName = name;
-    mResource = resource;
-    mSize = size;
+    type_ = type;
+    name_ = name;
+    resource_ = resource;
+    size_ = size;
 }
 
 
 Resource::Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size){
-    mType = type;
-    mName = name;
-    mArrayBuffer = array_buffer;
-    mElementArrayBuffer = element_array_buffer;
-    mSize = size;
+    type_ = type;
+    name_ = name;
+    array_buffer_ = array_buffer;
+    element_array_buffer_ = element_array_buffer;
+    size_ = size;
 }
 
 
@@ -28,37 +28,37 @@ Resource::~Resource(){
 
 ResourceType Resource::GetType(void) const {
 
-    return mType;
+    return type_;
 }
 
 
 const std::string Resource::GetName(void) const {
 
-    return mName;
+    return name_;
 }
 
 
 GLuint Resource::GetResource(void) const {
 
-    return mResource;
+    return resource_;
 }
 
 
 GLuint Resource::GetArrayBuffer(void) const {
 
-    return mArrayBuffer;
+    return array_buffer_;
 }
 
 
 GLuint Resource::GetElementArrayBuffer(void) const {
 
-    return mElementArrayBuffer;
+    return element_array_buffer_;
 }
 
 
 GLsizei Resource::GetSize(void) const {
 
-    return mSize;
+    return size_;
 }
 
 } // namespace game

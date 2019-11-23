@@ -9,31 +9,40 @@
 
 namespace game {
 
-SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material)
-	: BaseNode(name)
-{
+SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture){
+
+    // Set name of scene node
+    name_ = name;
+
     // Set geometry
     if (geometry->GetType() == PointSet){
-        mMode = GL_POINTS;
+        mode_ = GL_POINTS;
     } else if (geometry->GetType() == Mesh){
-        mMode = GL_TRIANGLES;
+        mode_ = GL_TRIANGLES;
     } else {
         throw(std::invalid_argument(std::string("Invalid type of geometry")));
     }
 
-    mArrayBuffer = geometry->GetArrayBuffer();
-    mElementArrayBuffer = geometry->GetElementArrayBuffer();
-    mSize = geometry->GetSize();
+    array_buffer_ = geometry->GetArrayBuffer();
+    element_array_buffer_ = geometry->GetElementArrayBuffer();
+    size_ = geometry->GetSize();
 
     // Set material (shader program)
     if (material->GetType() != Material){
         throw(std::invalid_argument(std::string("Invalid type of material")));
     }
 
-    mMaterial = material->GetResource();
+    material_ = material->GetResource();
+
+    // Set texture
+    if (texture){
+        texture_ = texture->GetResource();
+    } else {
+        texture_ = 0;
+    }
 
     // Other attributes
-    mScale = glm::vec3(1.0, 1.0, 1.0);
+    scale_ = glm::vec3(1.0, 1.0, 1.0);
 }
 
 
@@ -41,135 +50,128 @@ SceneNode::~SceneNode(){
 }
 
 
+const std::string SceneNode::GetName(void) const {
+
+    return name_;
+}
+
 
 glm::vec3 SceneNode::GetPosition(void) const {
 
-    return mPosition;
+    return position_;
 }
 
 
 glm::quat SceneNode::GetOrientation(void) const {
 
-    return mOrientation;
+    return orientation_;
 }
 
 
 glm::vec3 SceneNode::GetScale(void) const {
 
-    return mScale;
+    return scale_;
 }
 
 
 void SceneNode::SetPosition(glm::vec3 position){
 
-    mPosition = position;
+    position_ = position;
 }
 
 
 void SceneNode::SetOrientation(glm::quat orientation){
 
-    mOrientation = orientation;
+    orientation_ = orientation;
 }
 
 
 void SceneNode::SetScale(glm::vec3 scale){
 
-    mScale = scale;
+    scale_ = scale;
 }
 
 
 void SceneNode::Translate(glm::vec3 trans){
 
-    mPosition += trans;
+    position_ += trans;
 }
 
 
 void SceneNode::Rotate(glm::quat rot){
 
-    mOrientation *= rot;
-    mOrientation = glm::normalize(mOrientation);
+    orientation_ *= rot;
+    orientation_ = glm::normalize(orientation_);
 }
 
 
 void SceneNode::Scale(glm::vec3 scale){
 
-    mScale *= scale;
+    scale_ *= scale;
 }
-
 
 
 GLenum SceneNode::GetMode(void) const {
 
-    return mMode;
+    return mode_;
 }
 
 
 GLuint SceneNode::GetArrayBuffer(void) const {
 
-    return mArrayBuffer;
+    return array_buffer_;
 }
 
 
 GLuint SceneNode::GetElementArrayBuffer(void) const {
 
-    return mElementArrayBuffer;
+    return element_array_buffer_;
 }
 
 
 GLsizei SceneNode::GetSize(void) const {
 
-    return mSize;
+    return size_;
 }
 
 
 GLuint SceneNode::GetMaterial(void) const {
 
-    return mMaterial;
+    return material_;
 }
 
 
-void SceneNode::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/){
+void SceneNode::Draw(Camera *camera){
 
     // Select proper material (shader program)
-    glUseProgram(mMaterial);
+    glUseProgram(material_);
 
     // Set geometry to draw
-    glBindBuffer(GL_ARRAY_BUFFER, mArrayBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mElementArrayBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, array_buffer_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_array_buffer_);
 
     // Set globals for camera
-    camera->SetupShader(mMaterial);
+    camera->SetupShader(material_);
 
     // Set world matrix and other shader input variables
-    SetupShader(mMaterial, parentTransf);
+    SetupShader(material_);
 
     // Draw geometry
-    if (mMode == GL_POINTS){
-        glDrawArrays(mMode, 0, mSize);
+    if (mode_ == GL_POINTS){
+        glDrawArrays(mode_, 0, size_);
     } else {
-        glDrawElements(mMode, mSize, GL_UNSIGNED_INT, 0);
+        glDrawElements(mode_, size_, GL_UNSIGNED_INT, 0);
     }
-
-	for (BaseNode* bn : getChildNodes())
-	{
-		bn->Draw(camera, parentTransf);
-	}
-	
 }
 
 
-void SceneNode::Update(void)
-{
-	for (BaseNode* bn : getChildNodes())
-	{
-		bn->Update();
-	}
+void SceneNode::Update(void){
 
-    // Do nothing specific for this generic type of scene node
+    // Do nothing for this generic type of scene node
 }
 
 
-void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat4(1.0)*/){
+void SceneNode::SetupShader(GLuint program){
 
     // Set attributes for shaders
     GLint vertex_att = glGetAttribLocation(program, "vertex");
@@ -188,18 +190,31 @@ void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat
     glVertexAttribPointer(tex_att, 2, GL_FLOAT, GL_FALSE, 11*sizeof(GLfloat), (void *) (9*sizeof(GLfloat)));
     glEnableVertexAttribArray(tex_att);
 
-	// Aply transformations *ISROT*
-	glm::mat4 scaling = glm::scale(glm::mat4(1.0), mScale);
-	glm::mat4 rotation = glm::mat4_cast(mOrientation);
-	glm::mat4 translation = glm::translate(parentTransf, mPosition);
-
-	parentTransf = translation * rotation;
-
-	// Scaling is done only on local object
-	glm::mat4 transf = glm::scale(parentTransf, mScale);
+    // World transformation
+    glm::mat4 scaling = glm::scale(glm::mat4(1.0), scale_);
+    glm::mat4 rotation = glm::mat4_cast(orientation_);
+    glm::mat4 translation = glm::translate(glm::mat4(1.0), position_);
+    glm::mat4 transf = translation * rotation * scaling;
 
     GLint world_mat = glGetUniformLocation(program, "world_mat");
     glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(transf));
+
+    // Normal matrix
+    glm::mat4 normal_matrix = glm::transpose(glm::inverse(transf));
+    GLint normal_mat = glGetUniformLocation(program, "normal_mat");
+    glUniformMatrix4fv(normal_mat, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+    // Texture
+    if (texture_){
+        GLint tex = glGetUniformLocation(program, "texture_map");
+        glUniform1i(tex, 0); // Assign the first texture to the map
+        glActiveTexture(GL_TEXTURE0); 
+        glBindTexture(GL_TEXTURE_2D, texture_); // First texture we bind
+        // Define texture interpolation
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
 
     // Timer
     GLint timer_var = glGetUniformLocation(program, "timer");
