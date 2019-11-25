@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 2.6)
 
 # Name of project
-set(PROJ_NAME "AlienAppropriation")
+set(PROJ_NAME AlienAppropiation)
 project(${PROJ_NAME})
 
 # Specify project files: header files and source files
 set(HDRS
-    asteroid.h camera.h game.h resource.h resource_manager.h scene_graph.h scene_node.h base_node.h projectile_node.h
+    asteroid.h camera.h game.h model_loader.h resource.h resource_manager.h scene_graph.h scene_node.h
 )
  
 set(SRCS
-   asteroid.cpp camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp base_node.cpp projectile_node.cpp material_vp.glsl material_fp.glsl 
+   asteroid.cpp camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp material_fp.glsl material_vp.glsl metal_fp.glsl metal_vp.glsl plastic_fp.glsl plastic_vp.glsl textured_material_fp.glsl textured_material_vp.glsl three-term_shiny_blue_fp.glsl three-term_shiny_blue_vp.glsl normal_map_vp.glsl normal_map_fp.glsl screen_space_vp.glsl screen_space_fp.glsl particle_vp.glsl particle_fp.glsl particle_gp.glsl 
 )
 
 # Add path name to configuration file
 configure_file(path_config.h.in path_config.h)
 
-# Add executable based on the header and source files
+# Add executable based on the source files
 add_executable(${PROJ_NAME} ${HDRS} ${SRCS})
 
 # Require OpenGL library

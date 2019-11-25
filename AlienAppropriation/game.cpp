@@ -37,9 +37,12 @@ Game::Game(void)
 
 void Game::Init(void)
 {
+	// Set up base variables and members
+	mResourceManager = new ResourceManager();
+	mCamera = new Camera("CAMERA");
+
 	// Set up the base nodes
 	mSceneGraph = new SceneGraph();
-	mCamera = new Camera("CAMERA");
 	mSceneGraph->getRootNode()->addChildNode(mCamera);
 
     // Run all initialization steps
@@ -115,27 +118,27 @@ void Game::InitEventHandlers(void){
 
 void Game::SetupResources(void){
 
+	// Load material to be applied to basic objects
+	std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
+	mResourceManager->LoadResource(Material, "ObjectMaterial", filename.c_str());
+
     // Create a simple sphere to represent the asteroids
-    mResourceManager.CreateSphere("SimpleSphereMesh", 1.0, 10, 10);
+    mResourceManager->CreateSphere("SimpleSphereMesh", 1.0, 10, 10);
 
 	// Create simple cylinder for the ray
-	mResourceManager.CreateCylinder("SimpleCylinderMesh", 100000.0f, 0.05f, 30);
+	mResourceManager->CreateCylinder("SimpleCylinderMesh", 100000.0f, 0.05f, 30);
 
 	// Create cylinders for the cannon
-	mResourceManager.CreateCylinder("CannonMesh1", 0.4f, 0.15f);
-	mResourceManager.CreateCylinder("CannonMesh2", 0.3f, 0.4f);
-	mResourceManager.CreateCylinder("CannonMesh3", 0.4f, 0.065f);
-	mResourceManager.CreateCylinder("CannonMesh4", 0.5f, 0.035f);
+	mResourceManager->CreateCylinder("CannonMesh1", 0.4f, 0.15f);
+	mResourceManager->CreateCylinder("CannonMesh2", 0.3f, 0.4f);
+	mResourceManager->CreateCylinder("CannonMesh3", 0.4f, 0.065f);
+	mResourceManager->CreateCylinder("CannonMesh4", 0.5f, 0.035f);
 
 	// Create simple torus for the player ship
-	mResourceManager.CreateTorus("SimpleTorusMesh");
+	mResourceManager->CreateTorus("SimpleTorusMesh");
 
 	// Create simple square for ground plane
-	mResourceManager.CreateSquare("SimpleSquareMesh", 50.0f);
-
-    // Load material to be applied to asteroids
-    std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
-    mResourceManager.LoadResource(Material, "ObjectMaterial", filename.c_str());
+	mResourceManager->CreateSquare("SimpleSquareMesh", 50.0f);
 }
 
 
@@ -148,10 +151,10 @@ void Game::SetupScene(void){
 	CreatePlane();
 
     // Create asteroid field
-    CreateAsteroidField();
+    //CreateAsteroidField();
 
 	// Create Cannon
-	CreateCannon();
+	//CreateCannon();
 
 	// Create Player Ship
 	CreatePlayerShip();
@@ -269,17 +272,41 @@ Game::~Game(){
     glfwTerminate();
 }
 
+SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name) {
+
+	Resource *geom = mResourceManager->GetResource(object_name);
+	if (!geom) {
+		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+	}
+
+	Resource *mat = mResourceManager->GetResource(material_name);
+	if (!mat) {
+		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+	}
+
+	Resource *tex = NULL;
+	if (texture_name != "") {
+		tex = mResourceManager->GetResource(texture_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+
+	SceneNode *scn = mSceneGraph->CreateNode(entity_name, geom, mat, tex);
+	return scn;
+}
+
 
 Asteroid *Game::CreateAsteroidInstance(std::string entity_name, std::string object_name, std::string material_name)
 {
 
     // Get resources
-    Resource *geom = mResourceManager.GetResource(object_name);
+    Resource *geom = mResourceManager->GetResource(object_name);
     if (!geom){
         throw(GameException(std::string("Could not find resource \"")+object_name+std::string("\"")));
     }
 
-    Resource *mat = mResourceManager.GetResource(material_name);
+    Resource *mat = mResourceManager->GetResource(material_name);
     if (!mat){
         throw(GameException(std::string("Could not find resource \"")+material_name+std::string("\"")));
     }
@@ -322,13 +349,13 @@ void Game::CreateCannon()
 
 	//Camera* cameraNode = (Camera*)mSceneGraph->GetNode("CAMERA");
 
-	Resource *mat = mResourceManager.GetResource("ObjectMaterial");
+	Resource *mat = mResourceManager->GetResource("ObjectMaterial");
 	if (!mat) {
 		throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 	}
 
 	// Cannon Piece 1
-	geom = mResourceManager.GetResource("CannonMesh1");
+	geom = mResourceManager->GetResource("CannonMesh1");
 	if (!geom) {
 		throw(GameException(std::string("Could not find resource \"") + "CannonMesh1" + std::string("\"")));
 	}
@@ -340,7 +367,7 @@ void Game::CreateCannon()
 	mSceneGraph->getRootNode()->addChildNode(cannon1);
 
 	// Cannon Piece 2
-	geom = mResourceManager.GetResource("CannonMesh2");
+	geom = mResourceManager->GetResource("CannonMesh2");
 	if (!geom) {
 		throw(GameException(std::string("Could not find resource \"") + "CannonMesh2" + std::string("\"")));
 	}
@@ -350,7 +377,7 @@ void Game::CreateCannon()
 	cannon1->addChildNode(cannon2);
 
 	// Cannon Piece 3
-	geom = mResourceManager.GetResource("CannonMesh3");
+	geom = mResourceManager->GetResource("CannonMesh3");
 	if (!geom) {
 		throw(GameException(std::string("Could not find resource \"") + "CannonMesh3" + std::string("\"")));
 	}
@@ -361,7 +388,7 @@ void Game::CreateCannon()
 	cannon2->addChildNode(cannon3);
 
 	// Cannon Piece 4
-	geom = mResourceManager.GetResource("CannonMesh4");
+	geom = mResourceManager->GetResource("CannonMesh4");
 	if (!geom) {
 		throw(GameException(std::string("Could not find resource \"") + "CannonMesh4" + std::string("\"")));
 	}
@@ -375,12 +402,12 @@ void Game::CreateCannon()
 void Game::CreatePlayerShip()
 {
 	// Get resources
-	Resource *geom = mResourceManager.GetResource("SimpleTorusMesh");
+	Resource *geom = mResourceManager->GetResource("SimpleTorusMesh");
 	if (!geom) {
 		throw(GameException(std::string("Could not find resource \"") + "SimpleTorusMesh" + std::string("\"")));
 	}
 
-	Resource *mat = mResourceManager.GetResource("ObjectMaterial");
+	Resource *mat = mResourceManager->GetResource("ObjectMaterial");
 	if (!mat) {
 		throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 	}
@@ -399,12 +426,12 @@ void Game::CreateLaser()
 	if (mSceneGraph->GetNode("PlayerLaser") == nullptr)
 	{
 		// Get resources
-		Resource *geom = mResourceManager.GetResource("SimpleCylinderMesh");
+		Resource *geom = mResourceManager->GetResource("SimpleCylinderMesh");
 		if (!geom) {
 			throw(GameException(std::string("Could not find resource \"") + "SimpleCylinderMesh" + std::string("\"")));
 		}
 
-		Resource *mat = mResourceManager.GetResource("ObjectMaterial");
+		Resource *mat = mResourceManager->GetResource("ObjectMaterial");
 		if (!mat) {
 			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 		}
@@ -422,18 +449,18 @@ void Game::CreateLaser()
 void Game::CreatePlane()
 {
 	// Get resources
-	Resource *geom = mResourceManager.GetResource("SimpleSquareMesh");
+	Resource *geom = mResourceManager->GetResource("SimpleSquareMesh");
 	if (!geom) {
 		throw(GameException(std::string("Could not find resource \"") + "SimpleSquareMesh" + std::string("\"")));
 	}
 
-	Resource *mat = mResourceManager.GetResource("ObjectMaterial");
+	Resource *mat = mResourceManager->GetResource("ObjectMaterial");
 	if (!mat) {
 		throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
 	}
 
 	SceneNode* planeNode = new SceneNode("Plane", geom, mat);
-	planeNode->Translate(glm::vec3(0.0f, -20.0f, 750.0f));
+	planeNode->Translate(glm::vec3(0.0f, -5.0f, 750.0f));
 	planeNode->SetOrientation(glm::normalize(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0, 0.0, 0.0))));
 
 	mSceneGraph->getRootNode()->addChildNode(planeNode);

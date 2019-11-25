@@ -13,6 +13,11 @@
 #include "resource.h"
 #include "camera.h"
 
+
+// Size of the texture that we will draw
+#define FRAME_BUFFER_WIDTH 1024
+#define FRAME_BUFFER_HEIGHT 768
+
 namespace game {
 
     // Class that manages all the objects in a scene
@@ -28,6 +33,15 @@ namespace game {
 			// Player Node
 			SceneNode* mPlayerNode;
 
+
+			// Frame buffer for drawing to texture
+			GLuint mFrameBuffer;
+			// Quad vertex array for drawing from texture
+			GLuint mQuadArrayBuffer;
+			// Render targets
+			GLuint mTexture;
+			GLuint mDepthBuffer;
+
         public:
             // Constructor and destructor
             SceneGraph(void);
@@ -38,7 +52,7 @@ namespace game {
             glm::vec3 GetBackgroundColor(void) const;
             
             // Create a scene node from the specified resources
-            SceneNode *CreateNode(std::string node_name, Resource *geometry, Resource *material);
+            SceneNode *CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL);
             // Add an already-created node
             void AddNode(SceneNode *node);
             // Find a scene node with a specific name
@@ -53,6 +67,17 @@ namespace game {
 
             // Update entire scene
             void Update(void);
+
+
+			// Drawing from/to a texture
+			// Setup the texture
+			void SetupDrawToTexture(void);
+			// Draw the scene into a texture
+			void DrawToTexture(Camera *camera);
+			// Process and draw the texture on the screen
+			void DisplayTexture(GLuint program);
+			// Save texture to a file in ppm format
+			void SaveTexture(char *filename);
 
     }; // class SceneGraph
 

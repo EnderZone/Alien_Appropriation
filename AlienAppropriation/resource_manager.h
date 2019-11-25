@@ -12,6 +12,7 @@
 // Default extensions for different shader source files
 #define VERTEX_PROGRAM_EXTENSION "_vp.glsl"
 #define FRAGMENT_PROGRAM_EXTENSION "_fp.glsl"
+#define GEOMETRY_PROGRAM_EXTENSION "_gp.glsl"
 
 namespace game {
 
@@ -39,6 +40,11 @@ namespace game {
 			void CreateCylinder(std::string object_name, float height = 1.0, float circle_radius = 0.5, int num_circle_samples = 30);
 			// Create the geometry of a plane
 			void CreateSquare(std::string object_name, float width = 1.0);
+			// Create geometry of a wall
+			void CreateWall(std::string object_name);
+			// Create particles distributed over a sphere
+			void CreateSphereParticles(std::string object_name, int num_particles = 20000);
+			void CreateTorusParticles(std::string object_name, int num_particles, float loop_radius, float circle_radius);
 
 	private:
             // List storing all resources
@@ -48,7 +54,11 @@ namespace game {
             // Load shaders programs
             void LoadMaterial(const std::string name, const char *prefix);
             // Load a text file into memory (could be source code)
-            std::string LoadTextFile(const char *filename);
+			std::string LoadTextFile(const char *filename);
+			// Load a texture from an image file: png, jpg, etc.
+			void LoadTexture(const std::string name, const char *filename);
+			// Loads a mesh in obj format
+			void LoadMesh(const std::string name, const char *filename);
 
     }; // class ResourceManager
 

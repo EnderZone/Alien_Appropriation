@@ -6,7 +6,7 @@
 
 namespace game
 {
-
+	
 	class PlayerNode : BaseNode
 	{
 		PlayerNode(std::string name);
