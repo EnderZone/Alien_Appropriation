@@ -7,9 +7,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "base_node.h"
+
 #include "scene_node.h"
 #include "resource.h"
 #include "camera.h"
+
 
 // Size of the texture that we will draw
 #define FRAME_BUFFER_WIDTH 1024
@@ -22,18 +25,22 @@ namespace game {
 
         private:
             // Background color
-            glm::vec3 background_color_;
+            glm::vec3 mBackgroundColor;
 
-            // Scene nodes to render
-            std::vector<SceneNode *> node_;
+			// Root Node
+			BaseNode* mRootNode;
 
-            // Frame buffer for drawing to texture
-            GLuint frame_buffer_;
-            // Quad vertex array for drawing from texture
-            GLuint quad_array_buffer_;
-            // Render targets
-            GLuint texture_;
-            GLuint depth_buffer_;
+			// Player Node
+			SceneNode* mPlayerNode;
+
+
+			// Frame buffer for drawing to texture
+			GLuint mFrameBuffer;
+			// Quad vertex array for drawing from texture
+			GLuint mQuadArrayBuffer;
+			// Render targets
+			GLuint mTexture;
+			GLuint mDepthBuffer;
 
         public:
             // Constructor and destructor
@@ -49,10 +56,11 @@ namespace game {
             // Add an already-created node
             void AddNode(SceneNode *node);
             // Find a scene node with a specific name
-            SceneNode *GetNode(std::string node_name) const;
-            // Get node const iterator
-            std::vector<SceneNode *>::const_iterator begin() const;
-            std::vector<SceneNode *>::const_iterator end() const;
+            BaseNode* GetNode(std::string node_name, BaseNode* currentNode = nullptr) const;
+
+			// Keep pointer to root and player for easier access
+			inline BaseNode* getRootNode() { return mRootNode; }
+			inline SceneNode* getPlayerNode() { return mPlayerNode; }
 
             // Draw the entire scene
             void Draw(Camera *camera);
@@ -60,15 +68,16 @@ namespace game {
             // Update entire scene
             void Update(void);
 
-            // Drawing from/to a texture
-            // Setup the texture
-            void SetupDrawToTexture(void);
-            // Draw the scene into a texture
-            void DrawToTexture(Camera *camera);
-            // Process and draw the texture on the screen
-            void DisplayTexture(GLuint program);
-            // Save texture to a file in ppm format
-            void SaveTexture(char *filename);
+
+			// Drawing from/to a texture
+			// Setup the texture
+			void SetupDrawToTexture(void);
+			// Draw the scene into a texture
+			void DrawToTexture(Camera *camera);
+			// Process and draw the texture on the screen
+			void DisplayTexture(GLuint program);
+			// Save texture to a file in ppm format
+			void SaveTexture(char *filename);
 
     }; // class SceneGraph
 

@@ -28,12 +28,18 @@ namespace game {
             glm::quat GetAngM(void) const;
             void SetAngM(glm::quat angm);
 
+			// radius attributes specific to asteroids
+			inline float getRadius() { return mRadius; }
+			inline void setRadius(float r) { mRadius = r; }
+
             // Update geometry configuration
             void Update(void);
             
-        private:
-            // Angular momentum of asteroid
-            glm::quat angm_;
+	private:
+		glm::quat mAngularMomentum;	// Angular momentum of asteroid
+		float mRadius;
+
+
     }; // class Asteroid
 
 } // namespace game

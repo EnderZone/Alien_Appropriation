@@ -12,19 +12,19 @@ Asteroid::~Asteroid(){
 
 glm::quat Asteroid::GetAngM(void) const {
 
-    return angm_;
+    return mAngularMomentum;
 }
 
 
 void Asteroid::SetAngM(glm::quat angm){
 
-    angm_ = angm;
+    mAngularMomentum = angm;
 }
 
 
 void Asteroid::Update(void){
 
-    Rotate(angm_);
+    Rotate(mAngularMomentum);
 }
             
 } // namespace game

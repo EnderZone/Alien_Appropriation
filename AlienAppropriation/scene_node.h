@@ -9,24 +9,23 @@
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/quaternion.hpp>
 
+#include "base_node.h"
+
 #include "resource.h"
 #include "camera.h"
 
 namespace game {
 
     // Class that manages one object in a scene 
-    class SceneNode {
+    class SceneNode : public BaseNode{
 
         public:
             // Create scene node from given resources
-            SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
+            SceneNode(const std::string name, const Resource *geometry, const Resource *material);
 
             // Destructor
             ~SceneNode();
             
-            // Get name of node
-            const std::string GetName(void) const;
-
             // Get node attributes
             glm::vec3 GetPosition(void) const;
             glm::quat GetOrientation(void) const;
@@ -44,7 +43,7 @@ namespace game {
 
             // Draw the node according to scene parameters in 'camera'
             // variable
-            virtual void Draw(Camera *camera);
+            virtual void Draw(Camera *camera, glm::mat4 parentTransf = glm::mat4(1.0));
 
             // Update the node
             virtual void Update(void);
@@ -57,19 +56,17 @@ namespace game {
             GLuint GetMaterial(void) const;
 
         private:
-            std::string name_; // Name of the scene node
-            GLuint array_buffer_; // References to geometry: vertex and array buffers
-            GLuint element_array_buffer_;
-            GLenum mode_; // Type of geometry
-            GLsizei size_; // Number of primitives in geometry
-            GLuint material_; // Reference to shader program
-            GLuint texture_; // Reference to texture resource
-            glm::vec3 position_; // Position of node
-            glm::quat orientation_; // Orientation of node
-            glm::vec3 scale_; // Scale of node
+            GLuint mArrayBuffer; // References to geometry: vertex and array buffers
+            GLuint mElementArrayBuffer;
+            GLenum mMode; // Type of geometry
+            GLsizei mSize; // Number of primitives in geometry
+            GLuint mMaterial; // Reference to shader program
+            glm::vec3 mPosition; // Position of node
+            glm::quat mOrientation; // Orientation of node
+            glm::vec3 mScale; // Scale of node
 
             // Set matrices that transform the node in a shader program
-            void SetupShader(GLuint program);
+            void SetupShader(GLuint program, glm::mat4& parentTransformation = glm::mat4(1.0));
 
     }; // class SceneNode
 

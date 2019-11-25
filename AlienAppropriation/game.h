@@ -11,6 +11,7 @@
 #include "resource_manager.h"
 #include "camera.h"
 #include "asteroid.h"
+#include "projectile_node.h"
 
 namespace game {
 
@@ -32,7 +33,7 @@ namespace game {
             // Constructor and destructor
             Game(void);
             ~Game();
-            // Call Init() before calling any other method
+			// Call Init() before calling any other method
             void Init(void); 
             // Set up resources for the game
             void SetupResources(void);
@@ -43,19 +44,19 @@ namespace game {
 
         private:
             // GLFW window
-            GLFWwindow* window_;
+            GLFWwindow* mWindow;
 
             // Scene graph containing all nodes to render
-            SceneGraph scene_;
+            SceneGraph* mSceneGraph;
 
             // Resources available to the game
-            ResourceManager resman_;
+            ResourceManager* mResourceManager;
 
             // Camera abstraction
-            Camera camera_;
+            Camera* mCamera;
 
             // Flag to turn animation on/off
-            bool animating_;
+            bool mAnimating;
 
             // Methods to initialize the game
             void InitWindow(void);
@@ -72,11 +73,16 @@ namespace game {
             // Create entire random asteroid field
             void CreateAsteroidField(int num_asteroids = 1500);
 
-            // Create an instance of an object stored in the resource manager
-            SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
+			// Create an instance of an object stored in the resource manager
+			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
 
+			// Create objects to use in game
+			void CreateCannon();
+			void CreatePlayerShip();
+			void CreateLaser();
+			void CreatePlane();
 
-    }; // class Game
+	}; // class Game
 
 } // namespace game
 

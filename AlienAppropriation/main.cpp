@@ -1,8 +1,8 @@
 /*
  *
- * A program that demonstrates a particle system
+ * A program that demonstrates camera control and a scene graph architecture
  *
- * Copyright (c) 2018 Oliver van Kaick <Oliver.vanKaick@carleton.ca>, David Mould <mould@scs.carleton.ca>
+ * Copyright (c) 2018-2019 Oliver van Kaick <Oliver.vanKaick@carleton.ca>, David Mould <mould@scs.carleton.ca>
  *
  */
 
