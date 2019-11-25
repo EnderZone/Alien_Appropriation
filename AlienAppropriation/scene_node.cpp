@@ -9,7 +9,7 @@
 
 namespace game {
 
-SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material)
+SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/) 
 	: BaseNode(name)
 {
     // Set geometry
@@ -31,6 +31,14 @@ SceneNode::SceneNode(const std::string name, const Resource *geometry, const Res
     }
 
     mMaterial = material->GetResource();
+
+	// Set texture
+	if (texture) {
+		mTexture = texture->GetResource();
+	}
+	else {
+		mTexture = 0;
+	}
 
     // Other attributes
     mScale = glm::vec3(1.0, 1.0, 1.0);
@@ -200,6 +208,19 @@ void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat
 
     GLint world_mat = glGetUniformLocation(program, "world_mat");
     glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(transf));
+
+
+	// Texture
+	if (mTexture) {
+		GLint tex = glGetUniformLocation(program, "texture_map");
+		glUniform1i(tex, 0); // Assign the first texture to the map
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, mTexture); // First texture we bind
+												// Define texture interpolation
+		glGenerateMipmap(GL_TEXTURE_2D);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
 
     // Timer
     GLint timer_var = glGetUniformLocation(program, "timer");

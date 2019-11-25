@@ -6,6 +6,7 @@ Demos/
 Libraries/
 
 
+
 # Created by https://www.gitignore.io/api/c++,visualstudio
 # Edit at https://www.gitignore.io/?templates=c++,visualstudio
 
@@ -17,7 +18,7 @@ Libraries/
 *.slo
 *.lo
 *.o
-*.obj
+#*.obj
 
 # Precompiled Headers
 *.gch

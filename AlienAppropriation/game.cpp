@@ -5,6 +5,8 @@
 #include "game.h"
 #include "bin/path_config.h"
 
+#include "entity_game_nodes.h"
+
 namespace game {
 
 // Some configuration constants
@@ -21,8 +23,8 @@ float camera_near_clip_distance_g = 0.01;
 float camera_far_clip_distance_g = 1000.0;
 float camera_fov_g = 20.0; // Field-of-view of camera
 const glm::vec3 viewport_background_color_g(0.0, 0.0, 0.0);
-glm::vec3 camera_position_g(0.0, 0.0, 800.0);
-glm::vec3 camera_look_at_g(0.0, 0.0, 0.0);
+glm::vec3 camera_position_g(0.0, 10.0, 800.0);
+glm::vec3 camera_look_at_g(0.0, 2.0, 750.0);
 glm::vec3 camera_up_g(0.0, 1.0, 0.0);
 
 // Materials 
@@ -139,6 +141,19 @@ void Game::SetupResources(void){
 
 	// Create simple square for ground plane
 	mResourceManager->CreateSquare("SimpleSquareMesh", 50.0f);
+
+
+	// Load a cube from an obj file
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("../../Assets/cube.obj");
+	mResourceManager->LoadResource(Mesh, "CubeMesh", filename.c_str());
+
+	// Load texture to be applied to the cube
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("../../Assets/texture.png");
+	mResourceManager->LoadResource(Texture, "Texture", filename.c_str());
+
+	// Load material to be applied to the cube
+	filename = std::string(MATERIAL_DIRECTORY) + std::string("/textured_material");
+	mResourceManager->LoadResource(Material, "TexturedMaterial", filename.c_str());
 }
 
 
@@ -158,6 +173,8 @@ void Game::SetupScene(void){
 
 	// Create Player Ship
 	CreatePlayerShip();
+
+	CreateEntity();
 }
 
 
@@ -460,11 +477,36 @@ void Game::CreatePlane()
 	}
 
 	SceneNode* planeNode = new SceneNode("Plane", geom, mat);
-	planeNode->Translate(glm::vec3(0.0f, -5.0f, 750.0f));
+	planeNode->Translate(glm::vec3(0.0f, -0.0f, 750.0f));
 	planeNode->SetOrientation(glm::normalize(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0, 0.0, 0.0))));
 
 	mSceneGraph->getRootNode()->addChildNode(planeNode);
 }
 
+
+void Game::CreateEntity()
+{
+	// Get resources
+	Resource *geom = mResourceManager->GetResource("CubeMesh");
+	if (!geom) {
+		throw(GameException(std::string("Could not find resource \"") + "CubeMesh" + std::string("\"")));
+	}
+
+	Resource *mat = mResourceManager->GetResource("TexturedMaterial");
+	if (!mat) {
+		throw(GameException(std::string("Could not find resource \"") + "TexturedMaterial" + std::string("\"")));
+	}
+
+	Resource *tex = mResourceManager->GetResource("Texture");
+	if (!tex) {
+		throw(GameException(std::string("Could not find resource \"") + "Texture" + std::string("\"")));
+	}
+	
+
+	CowEntityNode* cowEntityNode = new CowEntityNode("Cow", geom, mat, tex);
+	cowEntityNode->Translate(glm::vec3(0.0f, 2.0f, 750.0f));
+	mSceneGraph->getRootNode()->addChildNode(cowEntityNode);
+
+}
 
 } // namespace game

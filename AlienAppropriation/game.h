@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "asteroid.h"
 #include "projectile_node.h"
+#include "entity_node.h"
 
 namespace game {
 
@@ -81,6 +82,7 @@ namespace game {
 			void CreatePlayerShip();
 			void CreateLaser();
 			void CreatePlane();
+			void CreateEntity();
 
 	}; // class Game
 
