@@ -16,60 +16,70 @@
 
 namespace game {
 
-    // Class that manages one object in a scene 
-    class SceneNode : public BaseNode{
+	// Class that manages one object in a scene 
+	class SceneNode : public BaseNode {
 
-        public:
-            // Create scene node from given resources
-            SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
+	public:
+		// Create scene node from given resources
+		SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
 
-            // Destructor
-            ~SceneNode();
-            
-            // Get node attributes
-            glm::vec3 GetPosition(void) const;
-            glm::quat GetOrientation(void) const;
-            glm::vec3 GetScale(void) const;
+		// Destructor
+		~SceneNode();
 
-            // Set node attributes
-            void SetPosition(glm::vec3 position);
-            void SetOrientation(glm::quat orientation);
-            void SetScale(glm::vec3 scale);
-            
-            // Perform transformations on node
-            void Translate(glm::vec3 trans);
-            void Rotate(glm::quat rot);
-            void Scale(glm::vec3 scale);
+		// Get node attributes
+		glm::vec3 GetPosition(void) const;
+		glm::quat GetOrientation(void) const;
+		glm::vec3 GetScale(void) const;
 
-            // Draw the node according to scene parameters in 'camera'
-            // variable
-            virtual void Draw(Camera *camera, glm::mat4 parentTransf = glm::mat4(1.0));
+		// Set node attributes
+		void SetPosition(glm::vec3 position);
+		void SetOrientation(glm::quat orientation);
+		void SetScale(glm::vec3 scale);
 
-            // Update the node
-            virtual void Update(void);
+		// Perform transformations on node
+		void Translate(glm::vec3 trans);
+		void Rotate(glm::quat rot);
+		void Rotate(glm::vec3 direction);
+		void Scale(glm::vec3 scale);
 
-            // OpenGL variables
-            GLenum GetMode(void) const;
-            GLuint GetArrayBuffer(void) const;
-            GLuint GetElementArrayBuffer(void) const;
-            GLsizei GetSize(void) const;
-            GLuint GetMaterial(void) const;
+		// Draw the node according to scene parameters in 'camera'
+		// variable
+		virtual void Draw(Camera *camera, glm::mat4 parentTransf = glm::mat4(1.0));
 
-        private:
-            GLuint mArrayBuffer; // References to geometry: vertex and array buffers
-            GLuint mElementArrayBuffer;
-            GLenum mMode; // Type of geometry
-            GLsizei mSize; // Number of primitives in geometry
-			GLuint mMaterial; // Reference to shader program
-			GLuint mTexture; // Reference to texture resource
-            glm::vec3 mPosition; // Position of node
-            glm::quat mOrientation; // Orientation of node
-            glm::vec3 mScale; // Scale of node
+		// Update the node
+		virtual void Update(void);
 
-            // Set matrices that transform the node in a shader program
-            void SetupShader(GLuint program, glm::mat4& parentTransformation = glm::mat4(1.0));
+		// OpenGL variables
+		GLenum GetMode(void) const;
+		GLuint GetArrayBuffer(void) const;
+		GLuint GetElementArrayBuffer(void) const;
+		GLsizei GetSize(void) const;
+		GLuint GetMaterial(void) const;
 
-    }; // class SceneNode
+	protected:
+
+		glm::vec3 mPosition; // Position of node
+		glm::quat mOrientation; // Orientation of node
+		glm::vec3 mScale; // Scale of node
+
+	private:
+		GLuint mArrayBuffer; // References to geometry: vertex and array buffers
+		GLuint mElementArrayBuffer;
+		GLenum mMode; // Type of geometry
+		GLsizei mSize; // Number of primitives in geometry
+		GLuint mMaterial; // Reference to shader program
+		GLuint mTexture; // Reference to texture resource
+
+		// Set matrices that transform the node in a shader program
+		void SetupShader(GLuint program, glm::mat4& parentTransformation = glm::mat4(1.0));
+
+		// Quaternion helper fn
+		// Finds a quat such that q*start = dest
+		// Source code from https://github.com/opengl-tutorials/ogl/blob/master/common/quaternion_utils.cpp
+		glm::quat QuatBetweenVectors(glm::vec3 start, glm::vec3 dest);
+
+
+	}; // class SceneNode
 
 } // namespace game
 
