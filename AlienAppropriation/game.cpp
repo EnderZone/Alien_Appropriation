@@ -52,6 +52,9 @@ void Game::Init(void)
     InitView();
     InitEventHandlers();
 
+	srand(time(0));
+	rand();
+
     // Set variables
     mAnimating = true;
 }

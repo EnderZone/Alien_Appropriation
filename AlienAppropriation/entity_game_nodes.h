@@ -16,6 +16,23 @@ namespace game {
 		// Destructor
 		~CowEntityNode();
 
+		void Update();
+
+	private:
+
+		enum Behaviour
+		{
+			walk,
+			stand,
+			run	
+		};
+
+		Behaviour mBehaviour;
+
+		// Timers for behaviors purposes
+		float mLastTimer;
+		float mNextTimer;
+
 	}; // class CowEntityNode
 
 } // namespace game
