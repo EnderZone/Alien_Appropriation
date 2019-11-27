@@ -1,7 +1,6 @@
 
 
 #include "projectile_node.h"
-#include "asteroid.h"
 
 
 #include <typeinfo>
@@ -45,7 +44,7 @@ void ProjectileNode::Update()
 		mParentNode->removeChildNode("PlayerLaser");
 	}
 
-	// Check to see if this laser intersects any asteroids
+	/*// Check to see if this laser intersects any asteroids
 	BaseNode* currentNode = this;
 	while (currentNode->getName() != "ROOT")
 		currentNode = currentNode->getParentNode();
@@ -87,7 +86,7 @@ void ProjectileNode::Update()
 			}
 		}
 	}
-	return;
+	return;*/
 }
 
 }
