@@ -4,6 +4,20 @@
 
 #include "entity_node.h"
 
+
+
+// In game entities
+// Cow
+// Bull
+// Farmer with shotgun
+// Military person with rifle
+// Military person with missile launcher
+// Jeep with mounted gun
+// Tank with mounted cannon
+// Stationary cannon (laser)
+// Stationary cannon (missile)
+// Stationary cannon (homing missile)
+
 namespace game {
 
 	// Cow :)
