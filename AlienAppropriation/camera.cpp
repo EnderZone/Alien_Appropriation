@@ -104,6 +104,7 @@ void Camera::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
 void Camera::Update()
 {
 	mPosition += mVelocity * GetForward();
+	mVelocity *= 0.95;
 
 	for (BaseNode* bn : getChildNodes())
 	{
