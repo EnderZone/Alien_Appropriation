@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "game.h"
-#include "bin/path_config.h"
+#include "../../Vs_solution/bin/path_config.h"
 
 namespace game {
 
@@ -120,6 +120,9 @@ void Game::SetupResources(void){
 	// Create a plane
 	mResourceManager->CreateGrid("GridMesh");
 
+	// Create a square
+	mResourceManager->CreateCylinder("PlayerMesh");
+
 	// Load a generic material
 	std::string filename = std::string(shader_directory) + std::string("/material");
 	mResourceManager->LoadResource(Material, "BasicMaterial", filename.c_str());
@@ -132,6 +135,9 @@ void Game::SetupScene(void){
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
 	SceneNode* ground = CreateInstance("Ground", "GridMesh", "BasicMaterial");
 	ground->Translate(glm::vec3(-50, -10, -50));
+
+	SceneNode* player = CreatePlayerInstance("PlayerTemp", "PlayerMesh", "BasicMaterial");
+	player->Translate(glm::vec3(0,0,-20));
 }
 
 
@@ -254,5 +260,28 @@ SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name
 	return scn;
 }
 
+SceneNode *Game::CreatePlayerInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name) {
+
+	Resource *geom = mResourceManager->GetResource(object_name);
+	if (!geom) {
+		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+	}
+
+	Resource *mat = mResourceManager->GetResource(material_name);
+	if (!mat) {
+		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+	}
+
+	Resource *tex = NULL;
+	if (texture_name != "") {
+		tex = mResourceManager->GetResource(texture_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+
+	SceneNode* scn = mSceneGraph->CreatePlayerNode(entity_name, geom, mat, tex, mCamera);
+	return scn;
+}
 
 } // namespace game

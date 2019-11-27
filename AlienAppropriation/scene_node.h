@@ -55,7 +55,7 @@ namespace game {
             GLsizei GetSize(void) const;
             GLuint GetMaterial(void) const;
 
-        private:
+        protected:
             GLuint mArrayBuffer; // References to geometry: vertex and array buffers
             GLuint mElementArrayBuffer;
             GLenum mMode; // Type of geometry
@@ -66,7 +66,7 @@ namespace game {
             glm::vec3 mScale; // Scale of node
 
             // Set matrices that transform the node in a shader program
-            void SetupShader(GLuint program, glm::mat4& parentTransformation = glm::mat4(1.0));
+            virtual void SetupShader(GLuint program, glm::mat4& parentTransformation = glm::mat4(1.0));
 
     }; // class SceneNode
 

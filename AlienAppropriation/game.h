@@ -11,6 +11,7 @@
 #include "resource_manager.h"
 #include "camera.h"
 #include "projectile_node.h"
+#include "player_node.h"
 
 namespace game {
 
@@ -68,6 +69,7 @@ namespace game {
 
 			// Create an instance of an object stored in the resource manager
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
+			SceneNode *CreatePlayerInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
 
 	}; // class Game
 
