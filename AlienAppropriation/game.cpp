@@ -13,7 +13,7 @@ namespace game {
 // They are written here as global variables, but ideally they should be loaded from a configuration file
 
 // Main window settings
-const std::string window_title_g = "Demo";
+const std::string window_title_g = "Alien Appropriation - WIP";
 const unsigned int window_width_g = 800;
 const unsigned int window_height_g = 600;
 const bool window_full_screen_g = false;
@@ -23,12 +23,13 @@ float camera_near_clip_distance_g = 0.01;
 float camera_far_clip_distance_g = 1000.0;
 float camera_fov_g = 20.0; // Field-of-view of camera
 const glm::vec3 viewport_background_color_g(0.0, 0.0, 0.0);
-glm::vec3 camera_position_g(0.0, 10.0, 800.0);
-glm::vec3 camera_look_at_g(0.0, 2.0, 750.0);
+glm::vec3 camera_position_g(0.0, 0.0, 0.0);
+glm::vec3 camera_look_at_g(0.0, 0.0, -1.0);
 glm::vec3 camera_up_g(0.0, 1.0, 0.0);
 
-// Materials 
-const std::string material_directory_g = MATERIAL_DIRECTORY;
+// Materials
+const std::string shader_directory = SHADER_DIRECTORY;
+const std::string asset_directory = ASSET_DIRECTORY;
 
 
 Game::Game(void)
@@ -59,7 +60,7 @@ void Game::Init(void)
     mAnimating = true;
 }
 
-       
+
 void Game::InitWindow(void){
 
     // Initialize the window management library (GLFW)
@@ -123,40 +124,12 @@ void Game::InitEventHandlers(void){
 
 void Game::SetupResources(void){
 
-	// Load material to be applied to basic objects
-	std::string filename = std::string(MATERIAL_DIRECTORY) + std::string("/material");
-	mResourceManager->LoadResource(Material, "ObjectMaterial", filename.c_str());
+	// Create a plane
+	mResourceManager->CreateGrid("GridMesh");
 
-    // Create a simple sphere to represent the asteroids
-    mResourceManager->CreateSphere("SimpleSphereMesh", 1.0, 10, 10);
-
-	// Create simple cylinder for the ray
-	mResourceManager->CreateCylinder("SimpleCylinderMesh", 100000.0f, 0.05f, 30);
-
-	// Create cylinders for the cannon
-	mResourceManager->CreateCylinder("CannonMesh1", 0.4f, 0.15f);
-	mResourceManager->CreateCylinder("CannonMesh2", 0.3f, 0.4f);
-	mResourceManager->CreateCylinder("CannonMesh3", 0.4f, 0.065f);
-	mResourceManager->CreateCylinder("CannonMesh4", 0.5f, 0.035f);
-
-	// Create simple torus for the player ship
-	mResourceManager->CreateTorus("SimpleTorusMesh");
-
-	// Create simple square for ground plane
-	mResourceManager->CreateSquare("SimpleSquareMesh", 50.0f);
-
-
-	// Load a cube from an obj file
-	filename = std::string(MATERIAL_DIRECTORY) + std::string("../../Assets/cube.obj");
-	mResourceManager->LoadResource(Mesh, "CubeMesh", filename.c_str());
-
-	// Load texture to be applied to the cube
-	filename = std::string(MATERIAL_DIRECTORY) + std::string("../../Assets/texture.png");
-	mResourceManager->LoadResource(Texture, "Texture", filename.c_str());
-
-	// Load material to be applied to the cube
-	filename = std::string(MATERIAL_DIRECTORY) + std::string("/textured_material");
-	mResourceManager->LoadResource(Material, "TexturedMaterial", filename.c_str());
+	// Load a generic material
+	std::string filename = std::string(shader_directory) + std::string("/material");
+	mResourceManager->LoadResource(Material, "BasicMaterial", filename.c_str());
 }
 
 
@@ -164,20 +137,8 @@ void Game::SetupScene(void){
 
     // Set background color for the scene
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
-
-	// Create the ground plane
-	CreatePlane();
-
-    // Create asteroid field
-    //CreateAsteroidField();
-
-	// Create Cannon
-	//CreateCannon();
-
-	// Create Player Ship
-	CreatePlayerShip();
-
-	CreateEntity();
+	SceneNode* ground = CreateInstance("Ground", "GridMesh", "BasicMaterial");
+	ground->Translate(glm::vec3(-50, -10, -50));
 }
 
 
@@ -186,13 +147,11 @@ void Game::MainLoop(void){
     // Loop while the user did not close the window
     while (!glfwWindowShouldClose(mWindow)){
         // Animate the scene
-        if (mAnimating){
-            static double last_time = 0;
-            double current_time = glfwGetTime();
-            if ((current_time - last_time) > 0.05){
-                mSceneGraph->Update();
-                last_time = current_time;
-            }
+        static double last_time = 0;
+        double current_time = glfwGetTime();
+        if ((current_time - last_time) > 0.05){
+            mSceneGraph->Update();
+            last_time = current_time;
         }
 
         // Draw the scene
@@ -260,20 +219,6 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 		game->mCamera->setVelocity(0.0f);
 	}
 
-	// Swap Camera Perspective if 'r' is pressed
-	if (key == GLFW_KEY_R && action == GLFW_PRESS) 
-	{
-		game->mCamera->SwitchCameraPerspective();
-	}
-
-	// Fire laser if space bar is pressed
-	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) 
-	{
-		//todo fire laser
-		game->CreateLaser();
-	}
-
-
 }
 
 
@@ -288,7 +233,7 @@ void Game::ResizeCallback(GLFWwindow* window, int width, int height){
 
 
 Game::~Game(){
-    
+
     glfwTerminate();
 }
 
@@ -316,200 +261,5 @@ SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name
 	return scn;
 }
 
-
-Asteroid *Game::CreateAsteroidInstance(std::string entity_name, std::string object_name, std::string material_name)
-{
-
-    // Get resources
-    Resource *geom = mResourceManager->GetResource(object_name);
-    if (!geom){
-        throw(GameException(std::string("Could not find resource \"")+object_name+std::string("\"")));
-    }
-
-    Resource *mat = mResourceManager->GetResource(material_name);
-    if (!mat){
-        throw(GameException(std::string("Could not find resource \"")+material_name+std::string("\"")));
-    }
-
-    // Create asteroid instance
-    Asteroid *ast = new Asteroid(entity_name, geom, mat);
-    mSceneGraph->AddNode(ast);
-    return ast;
-}
-
-
-void Game::CreateAsteroidField(int num_asteroids){
-
-    // Create a number of asteroid instances
-    for (int i = 0; i < num_asteroids; i++){
-        // Create instance name
-        std::stringstream ss;
-        ss << i;
-        std::string index = ss.str();
-        std::string name = "AsteroidInstance" + index;
-
-        // Create asteroid instance
-        Asteroid *ast = CreateAsteroidInstance(name, "SimpleSphereMesh", "ObjectMaterial");
-
-        // Set attributes of asteroid: random position, orientation, and
-        // angular momentum
-        ast->SetPosition(glm::vec3(-300.0 + 600.0*((float) rand() / RAND_MAX), -300.0 + 600.0*((float) rand() / RAND_MAX), 600.0*((float) rand() / RAND_MAX)));
-		//ast->SetPosition(glm::vec3(0, 0, 775));
-        ast->SetOrientation(glm::normalize(glm::angleAxis(glm::pi<float>()*((float) rand() / RAND_MAX), glm::vec3(((float) rand() / RAND_MAX), ((float) rand() / RAND_MAX), ((float) rand() / RAND_MAX)))));
-        ast->SetAngM(glm::normalize(glm::angleAxis(0.05f*glm::pi<float>()*((float) rand() / RAND_MAX), glm::vec3(((float) rand() / RAND_MAX), ((float) rand() / RAND_MAX), ((float) rand() / RAND_MAX)))));
-
-		ast->setRadius(1.0f);
-    }
-}
-
-void Game::CreateCannon()
-{
-	// Get resources
-	Resource *geom;
-
-	//Camera* cameraNode = (Camera*)mSceneGraph->GetNode("CAMERA");
-
-	Resource *mat = mResourceManager->GetResource("ObjectMaterial");
-	if (!mat) {
-		throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
-	}
-
-	// Cannon Piece 1
-	geom = mResourceManager->GetResource("CannonMesh1");
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + "CannonMesh1" + std::string("\"")));
-	}
-
-	Asteroid* cannon1 = new Asteroid("Cannon1", geom, mat);
-	cannon1->SetPosition(glm::vec3(0, -19.5f, 750));
-	cannon1->Translate(glm::vec3(0, 0, 0));
-	cannon1->SetAngM(glm::normalize(glm::angleAxis(glm::radians(3.0f), glm::vec3(0.0, 1.0, 0.0))));
-	mSceneGraph->getRootNode()->addChildNode(cannon1);
-
-	// Cannon Piece 2
-	geom = mResourceManager->GetResource("CannonMesh2");
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + "CannonMesh2" + std::string("\"")));
-	}
-
-	Asteroid* cannon2 = new Asteroid("Cannon2", geom, mat);
-	cannon2->Translate(glm::vec3(0, 0.3, 0));
-	cannon1->addChildNode(cannon2);
-
-	// Cannon Piece 3
-	geom = mResourceManager->GetResource("CannonMesh3");
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + "CannonMesh3" + std::string("\"")));
-	}
-
-	Asteroid* cannon3 = new Asteroid("Cannon3", geom, mat);
-	cannon3->Translate(glm::vec3(-0.4, 0, 0));
-	cannon3->SetOrientation(glm::normalize(glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0))));
-	cannon2->addChildNode(cannon3);
-
-	// Cannon Piece 4
-	geom = mResourceManager->GetResource("CannonMesh4");
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + "CannonMesh4" + std::string("\"")));
-	}
-
-	Asteroid* cannon4 = new Asteroid("Cannon4", geom, mat);
-	cannon4->Translate(glm::vec3(0, 0.3, 0));
-	cannon3->addChildNode(cannon4);
-}
-
-
-void Game::CreatePlayerShip()
-{
-	// Get resources
-	Resource *geom = mResourceManager->GetResource("SimpleTorusMesh");
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + "SimpleTorusMesh" + std::string("\"")));
-	}
-
-	Resource *mat = mResourceManager->GetResource("ObjectMaterial");
-	if (!mat) {
-		throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
-	}
-
-	Camera* cameraNode = (Camera*)mSceneGraph->GetNode("CAMERA");
-
-	SceneNode* playerShip = new SceneNode("PlayerShip", geom, mat);
-	playerShip->Translate(glm::vec3(0, -0.2f, 0));
-
-	cameraNode->addChildNode(playerShip);
-}
-
-
-void Game::CreateLaser()
-{
-	if (mSceneGraph->GetNode("PlayerLaser") == nullptr)
-	{
-		// Get resources
-		Resource *geom = mResourceManager->GetResource("SimpleCylinderMesh");
-		if (!geom) {
-			throw(GameException(std::string("Could not find resource \"") + "SimpleCylinderMesh" + std::string("\"")));
-		}
-
-		Resource *mat = mResourceManager->GetResource("ObjectMaterial");
-		if (!mat) {
-			throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
-		}
-
-		SceneNode* playerShipNode = (SceneNode*)mSceneGraph->GetNode("PlayerShip");
-
-		ProjectileNode* laser = new ProjectileNode("PlayerLaser", geom, mat, 1.0f);
-		laser->Translate(glm::vec3(0, 0, -50000.0f));
-		laser->SetOrientation(glm::normalize(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0, 0.0, 0.0))));
-		playerShipNode->addChildNode(laser);
-	}
-}
-
-
-void Game::CreatePlane()
-{
-	// Get resources
-	Resource *geom = mResourceManager->GetResource("SimpleSquareMesh");
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + "SimpleSquareMesh" + std::string("\"")));
-	}
-
-	Resource *mat = mResourceManager->GetResource("ObjectMaterial");
-	if (!mat) {
-		throw(GameException(std::string("Could not find resource \"") + "ObjectMaterial" + std::string("\"")));
-	}
-
-	SceneNode* planeNode = new SceneNode("Plane", geom, mat);
-	planeNode->Translate(glm::vec3(0.0f, -0.0f, 750.0f));
-	planeNode->SetOrientation(glm::normalize(glm::angleAxis(glm::radians(90.0f), glm::vec3(1.0, 0.0, 0.0))));
-
-	mSceneGraph->getRootNode()->addChildNode(planeNode);
-}
-
-
-void Game::CreateEntity()
-{
-	// Get resources
-	Resource *geom = mResourceManager->GetResource("CubeMesh");
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + "CubeMesh" + std::string("\"")));
-	}
-
-	Resource *mat = mResourceManager->GetResource("TexturedMaterial");
-	if (!mat) {
-		throw(GameException(std::string("Could not find resource \"") + "TexturedMaterial" + std::string("\"")));
-	}
-
-	Resource *tex = mResourceManager->GetResource("Texture");
-	if (!tex) {
-		throw(GameException(std::string("Could not find resource \"") + "Texture" + std::string("\"")));
-	}
-	
-
-	CowEntityNode* cowEntityNode = new CowEntityNode("Cow", geom, mat, tex);
-	cowEntityNode->Translate(glm::vec3(0.0f, 2.0f, 750.0f));
-	mSceneGraph->getRootNode()->addChildNode(cowEntityNode);
-
-}
 
 } // namespace game

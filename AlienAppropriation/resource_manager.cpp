@@ -874,36 +874,103 @@ void ResourceManager::CreateSquare(std::string object_name, float width /*= 1.0*
 	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
 }
 
+void ResourceManager::CreateGrid(std::string object_name, float heightVariance, int width, int height, float tileSize)
+{
+	// Create a plane built from a grid of many triangles
 
-void ResourceManager::CreateWall(std::string object_name) {
+	// Number of vertices and faces to be created
+	const GLuint vertex_num = width * height;
+	const GLuint face_num = (width - 1) * (height - 1) * 2;
 
-	// Definition of the wall
-	// The wall is simply a quad formed with two triangles
-	GLfloat vertex[] = {
-		// Position, normal, color, texture coordinates
-		// Here, color stores the tangent of the vertex
-		-1.0, -1.0, 0.0,  0.0, 0.0,  1.0,  1.0, 0.0, 0.0,  0.0, 0.0,
-		-1.0,  1.0, 0.0,  0.0, 0.0,  1.0,  1.0, 0.0, 0.0,  0.0, 1.0,
-		1.0,  1.0, 0.0,  0.0, 0.0,  1.0,  1.0, 0.0, 0.0,  1.0, 1.0,
-		1.0, -1.0, 0.0,  0.0, 0.0,  1.0,  1.0, 0.0, 0.0,  1.0, 0.0 };
-	GLuint face[] = { 0, 2, 1,
-		0, 3, 2 };
+	// Number of attributes for vertices and faces
+	const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
+	const int face_att = 3; // Vertex indices (3)
 
-	// Create OpenGL buffers and copy data
-	GLuint vbo, ebo;
+	GLfloat *vertex = NULL;
+	GLuint *face = NULL;
 
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, 4 * 11 * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+	// Allocate memory for buffers
+	try {
+		vertex = new GLfloat[vertex_num * vertex_att];
+		face = new GLuint[face_num * face_att];
+	}
+	catch (std::exception &e) {
+		throw e;
+	}
 
-	glGenBuffers(1, &ebo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * 3 * sizeof(GLuint), face, GL_STATIC_DRAW);
+	// Create vertices 
+	glm::vec3 vertex_position;
+	glm::vec3 vertex_normal;
+	glm::vec3 vertex_color;
+	glm::vec2 vertex_coord;
 
-	// Create resource
-	AddResource(Mesh, object_name, vbo, ebo, 2 * 3);
+	for (int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+
+			// Define position, normal and color of vertex
+			vertex_normal = glm::vec3(0, 1, 0);
+			vertex_position = glm::vec3(x * tileSize, heightVariance * (rand() % 2 - 1), y * tileSize);
+			vertex_color = glm::vec3(
+				(float)x / (float)width,
+				0,
+				(float)y / (float)height);
+
+			vertex_coord = glm::vec2(x, y);
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[(x * height + y)*vertex_att + k] = vertex_position[k];
+				vertex[(x * height + y)*vertex_att + k + 3] = vertex_normal[k];
+				vertex[(x * height + y)*vertex_att + k + 6] = vertex_color[k];
+			}
+			vertex[(x * height + y)*vertex_att + 9] = vertex_coord[0];
+			vertex[(x * height + y)*vertex_att + 10] = vertex_coord[1];
+		}
+	}
+
+		// Create triangles
+		for (int x = 0; x < width - 1; x++) {
+			for (int y = 0; y < height - 1; y++) {
+				//Each grid square is composed of two triangles
+				glm::vec3 t1(
+					(x * width) + y,
+					(x * width) + y + 1,
+					((x + 1) * width) + y
+				);
+				glm::vec3 t2(
+					(x * width) + y + 1,
+					((x + 1) * width) + y + 1,
+					((x + 1) * width) + y
+				);
+				// Add the two triangles to the data buffer
+				for (int k = 0; k < 3; k++) {
+					face[(x * (2 * (height - 1)) + 2 * y)*face_att + k] = (GLuint)t1[k];
+					face[(x * (2 * (height - 1)) + 2 * y + 1)*face_att + k] = (GLuint)t2[k];
+
+				}
+
+			}
+		}
+
+
+		// Create model 
+		// Create OpenGL buffer for vertices
+		GLuint vbo, ebo;
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+
+		// Create OpenGL buffer for faces
+		glGenBuffers(1, &ebo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
+
+		// Free data buffers
+		delete[] vertex;
+		delete[] face;
+
+		// Create resource
+		AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
 }
-
 
 void ResourceManager::CreateSphereParticles(std::string object_name, int num_particles) {
 
