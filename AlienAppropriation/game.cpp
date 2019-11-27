@@ -20,7 +20,7 @@ const bool window_full_screen_g = false;
 float camera_near_clip_distance_g = 0.01;
 float camera_far_clip_distance_g = 1000.0;
 float camera_fov_g = 20.0; // Field-of-view of camera
-const glm::vec3 viewport_background_color_g(0.0, 0.0, 0.0);
+const glm::vec3 viewport_background_color_g(0.2, 0.2, 0.7);
 glm::vec3 camera_position_g(0.0, 0.0, 0.0);
 glm::vec3 camera_look_at_g(0.0, 0.0, -1.0);
 glm::vec3 camera_up_g(0.0, 1.0, 0.0);
@@ -123,6 +123,26 @@ void Game::SetupResources(void){
 	// Load a generic material
 	std::string filename = std::string(shader_directory) + std::string("/material");
 	mResourceManager->LoadResource(Material, "BasicMaterial", filename.c_str());
+
+	filename = std::string(shader_directory) + std::string("/textured_material");
+	mResourceManager->LoadResource(Material, "TexturedMaterial", filename.c_str());
+
+	filename = std::string(shader_directory) + std::string("/lit_texture");
+	mResourceManager->LoadResource(Material, "LitTexture", filename.c_str());
+
+
+	std::string meshes[] = { "barn", "tree" };
+	for (std::string name : meshes) {
+		filename = std::string(asset_directory) + std::string("/" + name + ".obj");
+		mResourceManager->LoadResource(Mesh, name + "Mesh", filename.c_str());
+	}
+
+	std::string textures[] = { "barn", "tree", "ground", "hay" };
+	for (std::string name : textures) {
+		// Load texture to be applied to the cube
+		filename = std::string(asset_directory) + std::string("/" + name + ".png");
+		mResourceManager->LoadResource(Texture, name + "Texture", filename.c_str());
+	}
 }
 
 
@@ -132,6 +152,18 @@ void Game::SetupScene(void){
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
 	SceneNode* ground = CreateInstance("Ground", "GridMesh", "BasicMaterial");
 	ground->Translate(glm::vec3(-50, -10, -50));
+	ground->Scale(glm::vec3(5, 0, 5));
+
+	
+
+
+	const auto Points = PoissonGenerator::generatePoissonPoints(100, PRNG,30,false);
+	for (int i = 0; i < Points.size(); i++) {
+		SceneNode* tree = CreateInstance("Tree", "treeMesh", "TexturedMaterial", "treeTexture");
+		ground->addChildNode(tree);
+		mSceneGraph->getRootNode()->removeChildNode("Tree");
+		tree->Translate(glm::vec3(Points.at(i).x, 0, Points.at(i).y) * 100.0f);
+	}
 }
 
 

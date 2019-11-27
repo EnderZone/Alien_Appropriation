@@ -12,6 +12,10 @@
 #include "camera.h"
 #include "projectile_node.h"
 
+#define POISSON_PROGRESS_INDICATOR 1
+#include "PoissonGenerator.h"
+
+
 namespace game {
 
     // Exception type for the game
@@ -68,6 +72,8 @@ namespace game {
 
 			// Create an instance of an object stored in the resource manager
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
+
+			PoissonGenerator::DefaultPRNG PRNG;
 
 	}; // class Game
 
