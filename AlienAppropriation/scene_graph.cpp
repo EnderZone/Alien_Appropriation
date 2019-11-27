@@ -8,6 +8,8 @@
 
 #include "scene_graph.h"
 
+#include "scene_node.h"
+
 namespace game {
 
 SceneGraph::SceneGraph(void){
@@ -33,18 +35,8 @@ glm::vec3 SceneGraph::GetBackgroundColor(void) const {
 
     return mBackgroundColor;
 }
- 
 
-SceneNode *SceneGraph::CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture)
-{
-    // Create scene node with the specified resources
-    SceneNode *scn = new SceneNode(node_name, geometry, material);
 
-    // Add node to the scene
-	mRootNode->addChildNode(scn);
-
-    return scn;
-}
 
 
 void SceneGraph::AddNode(SceneNode *node)

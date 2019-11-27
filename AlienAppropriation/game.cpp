@@ -23,8 +23,8 @@ float camera_near_clip_distance_g = 0.01;
 float camera_far_clip_distance_g = 1000.0;
 float camera_fov_g = 20.0; // Field-of-view of camera
 const glm::vec3 viewport_background_color_g(0.0, 0.0, 0.0);
-glm::vec3 camera_position_g(0.0, 0.0, 0.0);
-glm::vec3 camera_look_at_g(0.0, 0.0, -1.0);
+glm::vec3 camera_position_g(0.0, 20.0, 30.0);
+glm::vec3 camera_look_at_g(0.0, 0.0, 0.0);
 glm::vec3 camera_up_g(0.0, 1.0, 0.0);
 
 // Materials
@@ -55,9 +55,6 @@ void Game::Init(void)
 
 	srand(time(0));
 	rand();
-
-    // Set variables
-    mAnimating = true;
 }
 
 
@@ -127,9 +124,20 @@ void Game::SetupResources(void){
 	// Create a plane
 	mResourceManager->CreateGrid("GridMesh");
 
-	// Load a generic material
+	// Load generic materials
 	std::string filename = std::string(shader_directory) + std::string("/material");
 	mResourceManager->LoadResource(Material, "BasicMaterial", filename.c_str());
+
+	filename = std::string(shader_directory) + std::string("/textured_material");
+	mResourceManager->LoadResource(Material, "TexturedMaterial", filename.c_str());
+
+	// Load a test cube from an obj file
+	filename = std::string(asset_directory) + std::string("/cube.obj");
+	mResourceManager->LoadResource(Mesh, "CubeMesh", filename.c_str());
+
+	// Load texture to be applied to the cube
+	filename = std::string(asset_directory) + std::string("/texture.png");
+	mResourceManager->LoadResource(Texture, "Texture", filename.c_str());
 }
 
 
@@ -137,8 +145,15 @@ void Game::SetupScene(void){
 
     // Set background color for the scene
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
-	SceneNode* ground = CreateInstance("Ground", "GridMesh", "BasicMaterial");
-	ground->Translate(glm::vec3(-50, -10, -50));
+
+	// Create ground for everything
+	SceneNode* ground = CreateInstance<SceneNode>("Ground", "GridMesh", "BasicMaterial");
+	ground->Translate(glm::vec3(-50.0, 0.0, -50.0));
+
+	// Create Cow
+	//CowEntityNode* cow1 = reinterpret_cast<CowEntityNode*>(CreateInstance("Cow1", "CubeMesh", "TexturedMaterial", "Texture"));
+	CowEntityNode* cow1 = CreateInstance<CowEntityNode>("Cow1", "CubeMesh", "TexturedMaterial", "Texture");
+	cow1->Translate(glm::vec3(0.0, 2.0, 0.0));
 }
 
 
@@ -237,7 +252,8 @@ Game::~Game(){
     glfwTerminate();
 }
 
-SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name) {
+template<class T>
+T* Game::CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name) {
 
 	Resource *geom = mResourceManager->GetResource(object_name);
 	if (!geom) {
@@ -257,7 +273,7 @@ SceneNode *Game::CreateInstance(std::string entity_name, std::string object_name
 		}
 	}
 
-	SceneNode *scn = mSceneGraph->CreateNode(entity_name, geom, mat, tex);
+	T *scn = mSceneGraph->CreateNode<T>(entity_name, geom, mat, tex);
 	return scn;
 }
 

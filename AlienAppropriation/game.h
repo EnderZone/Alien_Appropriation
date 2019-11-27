@@ -68,7 +68,7 @@ namespace game {
             static void ResizeCallback(GLFWwindow* window, int width, int height);
 
 			// Create an instance of an object stored in the resource manager
-			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
+			template<class T> T *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
 
 	}; // class Game
 

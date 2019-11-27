@@ -25,7 +25,8 @@ namespace game
 		inline void setParentNode(BaseNode* n) { mParentNode = n; }
 		inline BaseNode* getParentNode() { return mParentNode; }
 
-		inline void addChildNode(BaseNode* n) { mChildNodes.push_back(n); n->setParentNode(this); }
+		template<class T> void addChildNode(T* n) { mChildNodes.push_back(n); n->setParentNode(this); }
+
 		inline std::vector<BaseNode*> getChildNodes() { return mChildNodes; }
 		void removeChildNode(std::string name);
 
