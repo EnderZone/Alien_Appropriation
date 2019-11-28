@@ -13,7 +13,8 @@ namespace game {
 Camera::Camera(std::string name)
 	: BaseNode(name)
 	, mCameraPerspective(1)
-	, mVelocity(0.0f)
+	, mVelocityZ(0.0f)
+	, mVelocityX(0.0f)
 {
 }
 
@@ -103,8 +104,11 @@ void Camera::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
 
 void Camera::Update()
 {
-	mPosition += mVelocity * GetForward();
-	mVelocity *= 0.95;
+	mPosition += mVelocityZ * GetForward();
+	mVelocityZ *= 0.95;
+
+	mPosition += mVelocityX * GetSide();
+	mVelocityX *= 0.95;
 
 	for (BaseNode* bn : getChildNodes())
 	{

@@ -196,12 +196,10 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
         game->mCamera->Roll(rotFactor);
     }
     if (key == GLFW_KEY_W){
-		if (game->mCamera->getVelocity() <= transFactor)
-			game->mCamera->setVelocity(game->mCamera->getVelocity() + velocityFactor);
+		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() + velocityFactor);
     }
     if (key == GLFW_KEY_S){
-		if (game->mCamera->getVelocity() >= -transFactor)
-			game->mCamera->setVelocity(game->mCamera->getVelocity() - velocityFactor);
+		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() - velocityFactor);
     }
     if (key == GLFW_KEY_J){
         game->mCamera->Translate(-game->mCamera->GetSide()*transFactor);
@@ -228,7 +226,8 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 		playerNode->rotateBackward();
 	}
 	if (key == GLFW_KEY_F) {
-		game->mCamera->setVelocity(0.0f);
+		game->mCamera->setVelocityForward(0.0f);
+		game->mCamera->setVelocitySide(0.0f);
 	}
 
 }
