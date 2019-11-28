@@ -171,6 +171,8 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     void* ptr = glfwGetWindowUserPointer(window);
     Game *game = (Game *) ptr;
 
+	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PlayerTemp");
+
     // View control
     float rotFactor(glm::pi<float>() / 180);
     float transFactor = 3.0;
@@ -213,7 +215,18 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     if (key == GLFW_KEY_K){
         game->mCamera->Translate(-game->mCamera->GetUp()*transFactor);
     }
-
+	if (key == GLFW_KEY_X) {
+		playerNode->rotateLeft();
+	}
+	if (key == GLFW_KEY_C) {
+		playerNode->rotateRight();
+	}
+	if (key == GLFW_KEY_Y) {
+		playerNode->rotateForward();
+	}
+	if (key == GLFW_KEY_U) {
+		playerNode->rotateBackward();
+	}
 	if (key == GLFW_KEY_F) {
 		game->mCamera->setVelocity(0.0f);
 	}

@@ -13,15 +13,17 @@ namespace game
 	public:
 		PlayerNode(const std::string name, const Resource *geometry, const Resource *material, BaseNode* camera);
 		~PlayerNode();
-		
-		void addRotationX();
-		void addRotationY();
+
+		void rotateLeft();
+		void rotateRight();
+		void rotateForward();
+		void rotateBackward();
 
 		void Draw(Camera* camera, glm::mat4 parentTransf = glm::mat4(1.0));
 	
 	private:
-		float x_angle;
-		float y_angle;
+		float x_tilt_percentage;
+		float y_tilt_percentage;
 
 		void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));
 	};

@@ -9,14 +9,31 @@ namespace game {
 		this->setParentNode(camera->getParentNode());
 		camera->setParentNode(this);
 		this->addChildNode(camera);
+
+		x_tilt_percentage = 0;
+		y_tilt_percentage = 0;
 	}
 
 	PlayerNode::~PlayerNode() {}
 
-	void PlayerNode::addRotationX() {
+	void PlayerNode::rotateLeft() {
+		x_tilt_percentage += glm::pi<float>() / 20.0f;
+		x_tilt_percentage = glm::min(glm::pi<float>() / 2.0f, x_tilt_percentage);
 	}
 
-	void PlayerNode::addRotationY() {
+	void PlayerNode::rotateRight() {
+		x_tilt_percentage -= glm::pi<float>() / 20.0f;
+		x_tilt_percentage = glm::max(-glm::pi<float>() / 2.0f, x_tilt_percentage);
+	}
+
+	void PlayerNode::rotateForward() {
+		y_tilt_percentage += glm::pi<float>() / 20.0f;
+		y_tilt_percentage = glm::min(glm::pi<float>() / 2.0f, y_tilt_percentage);
+	}
+
+	void PlayerNode::rotateBackward() {
+		y_tilt_percentage -= glm::pi<float>() / 20.0f;
+		y_tilt_percentage = glm::max(-glm::pi<float>() / 2.0f, y_tilt_percentage);
 	}
 
 	void PlayerNode::Draw(Camera* camera, glm::mat4 parentTransf) {
@@ -66,9 +83,20 @@ namespace game {
 		glVertexAttribPointer(tex_att, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(GLfloat), (void *)(9 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(tex_att);
 
+		// Adding the tilts when moving
+		float angle_x = (glm::pi<float>() / 8) * glm::sin(x_tilt_percentage);
+		float angle_y = (glm::pi<float>() / 8) * glm::sin(y_tilt_percentage);
+		
+
+		glm::quat current_rotation = mOrientation;
+		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_x, glm::vec3(0.0, 0.0, 1.0)));
+		current_rotation = glm::normalize(current_rotation);
+		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_y, glm::vec3(1.0, 0.0, 0.0)));
+		current_rotation = glm::normalize(current_rotation);
+
 		// Aply transformations *ISROT*
 		glm::mat4 scaling = glm::scale(glm::mat4(1.0), mScale);
-		glm::mat4 rotation = glm::mat4_cast(mOrientation);
+		glm::mat4 rotation = glm::mat4_cast(current_rotation);
 		glm::mat4 translation = glm::translate(parentTransf, mPosition);
 		
 		translation = glm::translate(translation, ((Camera*)mChildNodes[0])->GetPosition());
