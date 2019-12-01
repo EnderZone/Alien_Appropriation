@@ -8,7 +8,7 @@
 
 namespace game
 {	
-	class PlayerNode : SceneNode
+	class PlayerNode : public SceneNode
 	{
 	public:
 		PlayerNode(const std::string name, const Resource *geometry, const Resource *material, BaseNode* camera);

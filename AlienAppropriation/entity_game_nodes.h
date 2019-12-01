@@ -122,19 +122,11 @@ namespace game {
 
 	private:
 
-		enum Behaviour
-		{
-			walk,
-			stand,
-			run,
-			thrash
-		};
-
-		Behaviour mBehaviour;
-
 		// Timers for behaviors purposes
 		float mLastTimer;
 		float mNextTimer;
+
+		int mProjectiles;
 
 	}; // class CannonMissileEntityNode
 

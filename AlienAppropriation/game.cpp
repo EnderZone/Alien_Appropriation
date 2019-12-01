@@ -44,7 +44,7 @@ void Game::Init(void)
 	mCamera = new Camera("CAMERA");
 
 	// Set up the base nodes
-	mSceneGraph = new SceneGraph();
+	mSceneGraph = new SceneGraph(mResourceManager);
 	mSceneGraph->getRootNode()->addChildNode(mCamera);
 
     // Run all initialization steps

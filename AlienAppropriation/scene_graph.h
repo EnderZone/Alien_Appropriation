@@ -10,9 +10,10 @@
 #include "base_node.h"
 
 #include "scene_node.h"
-#include "resource.h"
+//#include "resource.h"
 #include "camera.h"
 #include "player_node.h"
+#include "resource_manager.h"
 
 
 // Size of the texture that we will draw
@@ -34,6 +35,9 @@ namespace game {
 			// Player Node
 			BaseNode* mPlayerNode;
 
+			// Resource Manager (so scene graph can create new nodes on its own)
+			ResourceManager* mResourceManager;
+
 
 			// Frame buffer for drawing to texture
 			GLuint mFrameBuffer;
@@ -45,7 +49,7 @@ namespace game {
 
         public:
             // Constructor and destructor
-            SceneGraph(void);
+            SceneGraph(ResourceManager* resourceManager);
             ~SceneGraph();
 
             // Background color
@@ -65,6 +69,18 @@ namespace game {
 				return scn;
 			}
 
+			template<class T>
+			T* CreateProjectileNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec)
+			{
+				// Create scene node with the specified resources
+				T* scn = new T(node_name, geometry, material, lifespan, initialPos, initialVelocityVec, texture);
+
+				// Add node to the scene
+				mRootNode->addChildNode(scn);
+
+				return scn;
+			}
+
             // Add an already-created node
 			SceneNode* CreatePlayerNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL, BaseNode* camera = NULL);
 			// Add an already-created node
@@ -75,6 +91,7 @@ namespace game {
 			// Keep pointer to root and player for easier access
 			inline BaseNode* getRootNode() { return mRootNode; }
 			inline BaseNode* getPlayerNode() { return mPlayerNode; }
+			inline ResourceManager* getResourceManager() { return mResourceManager; }
 
             // Draw the entire scene
             void Draw(Camera *camera);
@@ -92,6 +109,33 @@ namespace game {
 			void DisplayTexture(GLuint program);
 			// Save texture to a file in ppm format
 			void SaveTexture(char *filename);
+
+
+
+			template<class T> T *CreateProjectileInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec)
+			{
+				Resource *geom = mResourceManager->GetResource(object_name);
+				if (!geom) {
+					throw(("Could not find resource \"") + object_name + "\"");
+				}
+
+				Resource *mat = mResourceManager->GetResource(material_name);
+				if (!mat) {
+					throw("Could not find resource \"" + material_name + "\"");
+				}
+
+				Resource *tex = NULL;
+				if (texture_name != "") {
+					tex = mResourceManager->GetResource(texture_name);
+					if (!tex) {
+						throw("Could not find resource \"" + material_name + "\"");
+					}
+			}
+
+				T *scn = CreateProjectileNode<T>(entity_name, geom, mat, tex, lifespan, initialPos, initialVelocityVec);
+				//T *scn = CreateNode<T>(entity_name, geom, mat, tex);
+				return scn;
+			}
 
     }; // class SceneGraph
 

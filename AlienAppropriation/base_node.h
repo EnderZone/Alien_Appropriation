@@ -6,10 +6,15 @@
 #include <string.h>
 #include <vector>
 
+//#include "scene_graph.h"
+
+//#include "game.h"
+
 namespace game
 {
 
 	class Camera;
+	class SceneGraph;
 
 	class BaseNode {
 
@@ -30,11 +35,20 @@ namespace game
 		inline std::vector<BaseNode*> getChildNodes() { return mChildNodes; }
 		void removeChildNode(std::string name);
 
+		inline void setSceneGraph(SceneGraph* s) { mSceneGraph = s; }
+		inline SceneGraph* getSceneGraph() { return mSceneGraph; }
+
 	protected:
 		std::string mName;
 
 		BaseNode* mParentNode;
 		std::vector<BaseNode*> mChildNodes;
+		
+	private:
+		// Only the root node has a pointer to the scene graph
+		SceneGraph* mSceneGraph;
+
+		//Game* mGame;
 	};
 
 

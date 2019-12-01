@@ -12,11 +12,14 @@
 
 namespace game {
 
-SceneGraph::SceneGraph(void){
+SceneGraph::SceneGraph(ResourceManager* resourceManager)
+	: mResourceManager(resourceManager)
+{
 
     mBackgroundColor = glm::vec3(0.0, 0.0, 0.0);
 
 	mRootNode = new BaseNode("ROOT");
+	mRootNode->setSceneGraph(this);
 	
 }
 

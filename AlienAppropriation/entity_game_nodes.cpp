@@ -1,6 +1,9 @@
 #include "entity_game_nodes.h"
 
 #include "player_node.h"
+#include "projectile_node.h"
+
+#include "scene_graph.h"
 
 namespace game
 {
@@ -232,12 +235,24 @@ void FarmerEntityNode::Update()
 
 
 
-	glm::vec3 playerPos = playerNode->GetPosition();
+	// Comment this out to switch back to player pos
+	Camera* cameraNode;
+	for (BaseNode* m : playerNode->getChildNodes())
+	{
+		if (m->getName() == "CAMERA")
+		{
+			cameraNode = reinterpret_cast<Camera*>(m);
+			break;
+		}
+	}
+	glm::vec3 playerPos = cameraNode->GetPosition();
+	//glm::vec3 playerPos = playerNode->GetPosition();
+
 	glm::vec3 dirPlayer = playerPos - mPosition;
 	dirPlayer.y = 0.0f;
 
 	// If player is within range x, rotate to face player and walk towards until player is within range v
-	if (glm::distance(mPosition, playerPos) < 50.0)
+	if (glm::distance(mPosition, playerPos) < 200.0)
 	{
 		Rotate(dirPlayer);
 
@@ -248,6 +263,8 @@ void FarmerEntityNode::Update()
 		else
 			mVelocity = glm::vec3(0.0f);
 	}
+	else
+		mVelocity = glm::vec3(0.0f);
 
 	// If player is within range y, and its been atleast z seconds since last shot, fire shotgun at player
 	// Shotgun will auto hit and cant be dodged
@@ -271,6 +288,7 @@ CannonMissileEntityNode::CannonMissileEntityNode(const std::string name, const R
 	: EntityNode(name, geometry, material, texture)
 	, mLastTimer(0.0f)
 	, mNextTimer(0.0f) 
+	, mProjectiles(0)
 {
 
 }
@@ -311,12 +329,42 @@ void CannonMissileEntityNode::Update()
 		throw("Player Node could not be found from " + getName());
 
 
+	// Comment this out to switch back to player pos
+	Camera* cameraNode;
+	for (BaseNode* m : playerNode->getChildNodes())
+	{
+		if (m->getName() == "CAMERA")
+		{
+			cameraNode = reinterpret_cast<Camera*>(m);
+			break;
+		}
+	}
+	glm::vec3 playerPos = cameraNode->GetPosition();
+	//glm::vec3 playerPos = playerNode->GetPosition();
 
-	glm::vec3 playerPos = playerNode->GetPosition();
 	glm::vec3 dirPlayer = playerPos - mPosition;
 	dirPlayer.y = 0.0f;
 
 	Rotate(dirPlayer);
+
+
+
+	float currentTime = glfwGetTime();
+
+	if (currentTime >= mNextTimer)
+	{
+		glm::vec3 initVelVec = 1.0f * glm::normalize(dirPlayer);
+		SceneGraph* sceneGraph = rootNode->getSceneGraph();
+		HeatMissileNode* missile = sceneGraph->CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "CubeMesh", "TexturedMaterial", "Texture", 10, mPosition, initVelVec);
+		mProjectiles += 1;
+		missile->Scale(glm::vec3(0.5, 0.5, 2.5));
+		
+
+
+		mNextTimer = currentTime + 10;
+
+		//MissileNode* missile = new MissileNode("missile1", "CubeMesh", "TexturedMaterial", 100, mPosition, initVelVec, "Texture");
+	}
 
 }
 
