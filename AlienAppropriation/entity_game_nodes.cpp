@@ -203,6 +203,7 @@ FarmerEntityNode::~FarmerEntityNode()
 
 void FarmerEntityNode::Update()
 {
+	return;
 	BaseNode* rootNode = this;
 	
 	while (rootNode->getName() != "ROOT")
