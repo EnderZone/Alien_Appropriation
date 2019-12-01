@@ -6,11 +6,18 @@ project(${PROJ_NAME})
 
 # Specify project files: header files and source files
 set(HDRS
-    camera.h game.h model_loader.h resource.h resource_manager.h scene_graph.h scene_node.h base_node.h player_node.h projectile_node.h map_generator.h PoissonGenerator.h
+    camera.h game.h model_loader.h resource.h resource_manager.h scene_graph.h
+    scene_node.h base_node.h player_node.h projectile_node.h map_generator.h PoissonGenerator.h
 )
  
 set(SRCS
-   camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp base_node.cpp player_node.cpp projectile_node.cpp map_generator.cpp shaders/material_fp.glsl shaders/material_vp.glsl shaders/metal_fp.glsl shaders/metal_vp.glsl shaders/plastic_fp.glsl shaders/plastic_vp.glsl shaders/textured_material_fp.glsl shaders/textured_material_vp.glsl shaders/three-term_shiny_blue_fp.glsl shaders/three-term_shiny_blue_vp.glsl shaders/normal_map_vp.glsl shaders/normal_map_fp.glsl shaders/screen_space_vp.glsl shaders/screen_space_fp.glsl shaders/particle_vp.glsl shaders/particle_fp.glsl shaders/particle_gp.glsl 
+    camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp
+    base_node.cpp player_node.cpp projectile_node.cpp map_generator.cpp shaders/default_fp.glsl
+    shaders/default_vp.glsl shaders/metal_fp.glsl shaders/metal_vp.glsl shaders/plastic_fp.glsl
+    shaders/plastic_vp.glsl shaders/textured_fp.glsl shaders/textured_vp.glsl
+    shaders/three-term_shiny_blue_fp.glsl shaders/three-term_shiny_blue_vp.glsl shaders/normal_map_vp.glsl
+    shaders/normal_map_fp.glsl shaders/screen_space_vp.glsl shaders/screen_space_fp.glsl shaders/particle_vp.glsl
+    shaders/particle_fp.glsl shaders/particle_gp.glsl shaders/litTexture_fp.glsl shaders/litTexture_vp.glsl shaders/skybox_fp.glsl shaders/skybox_vp.glsl
 )
 
 # Add path name to configuration file

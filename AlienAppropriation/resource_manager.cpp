@@ -51,7 +51,10 @@ void ResourceManager::LoadResource(ResourceType type, const std::string name, co
 	}
 	else if (type == Mesh) {
 		LoadMesh(name, filename);
-    } else {
+	}
+	else if (type == CubeMap) {
+		LoadCubeMap(name, filename);
+	} else {
         throw(std::invalid_argument(std::string("Invalid type of resource")));
     }
 }
@@ -668,152 +671,128 @@ void ResourceManager::LoadMesh(const std::string name, const char *filename) {
 
 }
 
-void ResourceManager::CreateCylinder(std::string object_name, float height /*= 1.0*/, float circle_radius /*= 0.5*/, int num_circle_samples /*= 30*/)
-{
-	// This is a cylinder, 
-	// created by making 2 parallel circles a distance of 'height' apart, 
-	// then connecting them through a series of faces
+void ResourceManager::CreateCylinder(std::string object_name, float radius, int resolution) {
+
+	// Create a cylinder
+	// The cylinder is built from two circles
+	// Vertices are sampled along the circles, and both circles have a vertex at their center (the poles)
 
 	// Number of vertices and faces to be created
-	const GLuint vertex_num = 2 * num_circle_samples;
-	const GLuint face_num = (num_circle_samples) * 2 + num_circle_samples * 2;
+	const GLuint vertex_num = resolution * 2 + 2;
+	const GLuint face_num = resolution * 4;
 
 	// Number of attributes for vertices and faces
-	const int vertex_att = 11; 
-	const int face_att = 3; 
+	const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
+	const int face_att = 3; // Vertex indices (3)
 
-	// Data buffers for the object
-	GLfloat *vertex = nullptr;
-	GLuint *face = nullptr;
+	// Data buffers for the torus
+	GLfloat *vertex = NULL;
+	GLuint *face = NULL;
 
 	// Allocate memory for buffers
 	try {
-		vertex = new GLfloat[vertex_num * vertex_att];  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
-		face = new GLuint[face_num * face_att]; // Vertex indices (3)
+		vertex = new GLfloat[vertex_num * vertex_att];
+		face = new GLuint[face_num * face_att];
 	}
 	catch (std::exception &e) {
 		throw e;
 	}
 
 	// Create vertices 
-	float theta; // Angle for circles
-	glm::vec3 circle_center = glm::vec3(0, 0, 0);
-
+	float theta; //Angle around the cylinder
 	glm::vec3 vertex_position;
 	glm::vec3 vertex_normal;
 	glm::vec3 vertex_color;
 	glm::vec2 vertex_coord;
 
-	// first circle
-	for (int i = 0; i < num_circle_samples; i++) {
+	for (int i = 0; i < resolution; i++) {
+		for (int y = 0; y < 2; y++) { //top and bottom rims of the cylinder
 
-		theta = 2.0f * glm::pi<GLfloat>()*i / num_circle_samples; // loop sample (angle theta)
+			theta = 2.0*glm::pi<GLfloat>()*i / resolution; // angle for circle sampling
 
+			// Define position, normal and color of vertex
+			vertex_normal = glm::vec3(cos(theta), 0, sin(theta));
+			vertex_position = vertex_normal * radius;
+			vertex_position.y = 0.5f * (y * 2 - 1);
+			vertex_color = glm::vec3(1.0 - ((float)i / (float)resolution),
+				(float)i / (float)resolution,
+				(float)i / (float)resolution);
+			vertex_coord = glm::vec2(
+				theta / (2.0*glm::pi<GLfloat>())
+				, 0.25f + y / 2.0f
+			);
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[(i + resolution * y)*vertex_att + k] = vertex_position[k];
+				vertex[(i + resolution * y)*vertex_att + k + 3] = vertex_normal[k];
+				vertex[(i + resolution * y)*vertex_att + k + 6] = vertex_color[k];
+			}
+			vertex[(i + resolution * y)*vertex_att + 9] = vertex_coord[0];
+			vertex[(i + resolution * y)*vertex_att + 10] = vertex_coord[1];
+		}
+	}
+
+	//Add the poles
+	for (int y = 0; y < 2; y++) {
 		// Define position, normal and color of vertex
-		vertex_normal = glm::vec3(0.0, 1.0, 0.0);
-		vertex_position = circle_center + glm::vec3(sin(theta) *circle_radius, height / 2.0, cos(theta) *circle_radius);
-		vertex_color = glm::vec3(1.0 - ((float)i / (float)num_circle_samples),
-			(float)i / (float)num_circle_samples,
-			(float)i / (float)num_circle_samples);
-		vertex_coord = glm::vec2(1.0 - ((float)i / (float)num_circle_samples), (float)i / (float)num_circle_samples);
-
+		vertex_normal = glm::vec3(0.0f, (y * 2 - 1), 0.0f);
+		vertex_position = glm::vec3(0.0f, (y - 0.5f), 0.0f);
+		vertex_color = glm::vec3(0.0f, 1.0f - y, y + 0.0f);
+		vertex_coord = glm::vec2(0.0f, (float)y);
 		// Add vectors to the data buffer
 		for (int k = 0; k < 3; k++) {
-			vertex[i*vertex_att + k] = vertex_position[k];
-			vertex[i*vertex_att + k + 3] = vertex_normal[k];
-			vertex[i*vertex_att + k + 6] = vertex_color[k];
-
+			vertex[(resolution * 2 + y)*vertex_att + k] = vertex_position[k];
+			vertex[(resolution * 2 + y)*vertex_att + k + 3] = vertex_normal[k];
+			vertex[(resolution * 2 + y)*vertex_att + k + 6] = vertex_color[k];
 		}
-		vertex[i*vertex_att + 9] = vertex_coord[0];
-		vertex[i*vertex_att + 10] = vertex_coord[1];
+		vertex[(resolution * 2 + y)*vertex_att + 9] = vertex_coord[0];
+		vertex[(resolution * 2 + y)*vertex_att + 10] = vertex_coord[1];
 	}
 
-	// Create triangles for first circle
-	for (int i = 1; i < num_circle_samples; i++) {
-
-		//triangle from first vertex to current vertex and the next one
-		glm::vec3 t(0, i, (i + 1) % num_circle_samples);
-
-		// Add triangle to the data buffer
-		for (int k = 0; k < 3; k++)
-		{
-			face[(i)*face_att + k] = (GLuint)t[k];
-		}
-	}
-
-	// second circle
-	for (int i = 0; i < num_circle_samples; i++) {
-
-		theta = 2.0f * glm::pi<GLfloat>()*i / num_circle_samples; // loop sample (angle theta)
-
-		// Define position, normal and color of vertex
-		vertex_normal = glm::vec3(0.0, -1.0, 0.0);
-		vertex_position = circle_center + glm::vec3(sin(theta) *circle_radius, -height / 2.0, cos(theta) *circle_radius);
-		vertex_color = glm::vec3(1.0 - ((float)i / (float)num_circle_samples),
-			(float)i / (float)num_circle_samples,
-			(float)i / (float)num_circle_samples);
-		vertex_coord = glm::vec2(1.0 - ((float)i / (float)num_circle_samples), (float)i / (float)num_circle_samples);
-
-		// Add vectors to the data buffer
-		for (int k = 0; k < 3; k++) {
-			vertex[num_circle_samples * vertex_att + i * vertex_att + k] = vertex_position[k];
-			vertex[num_circle_samples * vertex_att + i * vertex_att + k + 3] = vertex_normal[k];
-			vertex[num_circle_samples * vertex_att + i * vertex_att + k + 6] = vertex_color[k];
-		}
-		vertex[i*vertex_att + 9] = vertex_coord[0];
-		vertex[i*vertex_att + 10] = vertex_coord[1];
-	}
-
-	// Create triangles for second circle
-	for (int i = 1; i < num_circle_samples; i++) {
-
-		//triangle from first vertex to current vertex and next one
-		glm::vec3 t(num_circle_samples, ((i + 1) % num_circle_samples) + num_circle_samples, i + num_circle_samples);
-
-		// Add triangle to the data buffer
-		for (int k = 0; k < 3; k++)
-		{
-			face[(i + num_circle_samples)*face_att + k] = (GLuint)t[k];
-		}
-	}
-
-
-	// Create triangles the connect the first and second circles, aka the sides of the cylinder
-	for (int i = 0; i < num_circle_samples; i++)
-	{
-		// Visit every vertex and create 2 triangles
-		// first triangle connects 2 vertices from first circle to 1 from second circle
-		// second triangle connects 1 vertex from first circle to 2 from second circle
-
+	// Create triangles
+	for (int i = 0; i < resolution; i++) {
+		//Four triangles per vertex along the rim
+		//Two triangles per side face
 		glm::vec3 t1(
 			i,
-			i + num_circle_samples,
-			(i + 1) % num_circle_samples
+			i + resolution,
+			(i + 1) % resolution + resolution
 		);
-
 		glm::vec3 t2(
-			((i + 1) % num_circle_samples) + num_circle_samples,
-			(i + 1) % num_circle_samples,
-			i + num_circle_samples
+			i,
+			(i + 1) % resolution + resolution,
+			(i + 1) % resolution
 		);
-
-		// Add two triangles to the data buffer
+		//One triangle per endcap
+		glm::vec3 t3(
+			i,
+			(i + 1) % resolution,
+			resolution * 2
+		);
+		glm::vec3 t4(
+			i + resolution,
+			resolution * 2 + 1,
+			(i + 1) % resolution + resolution
+		);
+		// Add the four triangles to the data buffer
 		for (int k = 0; k < 3; k++) {
-			face[(i + 2 * num_circle_samples)*face_att + k] = (GLuint)t1[k];
-			face[(i + 3 * num_circle_samples)*face_att + k] = (GLuint)t2[k];
+			face[(i)*face_att + k] = (GLuint)t1[k];
+			face[(i + resolution)*face_att + k] = (GLuint)t2[k];
+			face[(i + resolution * 2) * face_att + k] = (GLuint)t3[k];
+			face[(i + resolution * 3) * face_att + k] = (GLuint)t4[k];
+
 		}
+
 	}
 
-	// Create OpenGL buffers and copy data
-   //GLuint vao;
-   //glGenVertexArrays(1, &vao);
-   //glBindVertexArray(vao);
-
+	// Create model 
+	// Create OpenGL buffer for vertices
 	GLuint vbo, ebo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
 
+	// Create OpenGL buffer for faces
 	glGenBuffers(1, &ebo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
@@ -825,7 +804,6 @@ void ResourceManager::CreateCylinder(std::string object_name, float height /*= 1
 	// Create resource
 	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
 }
-
 void ResourceManager::CreateSquare(std::string object_name, float width /*= 1.0*/)
 {
 	// Create a sphere using a well-known parameterization
@@ -898,6 +876,18 @@ void ResourceManager::CreateGrid(std::string object_name, float heightVariance, 
 		throw e;
 	}
 
+	std::vector<std::vector<float>> heightMap;
+
+	for (int x = 0; x < width; x++) {
+		std::vector<float> column;
+		for (int y = 0; y < height; y++) {
+			column.push_back(heightVariance * (rand() % 2 - 1));
+		}
+		heightMap.push_back(column);
+
+	}
+
+
 	// Create vertices 
 	glm::vec3 vertex_position;
 	glm::vec3 vertex_normal;
@@ -909,11 +899,14 @@ void ResourceManager::CreateGrid(std::string object_name, float heightVariance, 
 
 			// Define position, normal and color of vertex
 			vertex_normal = glm::vec3(0, 1, 0);
-			vertex_position = glm::vec3(x * tileSize, heightVariance * (rand() % 2 - 1), y * tileSize);
+			vertex_position = glm::vec3(x * tileSize, heightMap.at(x).at(y), y * tileSize);
+
 			vertex_color = glm::vec3(
 				(float)x / (float)width,
 				0,
 				(float)y / (float)height);
+
+
 
 			vertex_coord = glm::vec2(x, y);
 			// Add vectors to the data buffer
@@ -926,6 +919,10 @@ void ResourceManager::CreateGrid(std::string object_name, float heightVariance, 
 			vertex[(x * height + y)*vertex_att + 10] = vertex_coord[1];
 		}
 	}
+
+
+
+
 
 		// Create triangles
 		for (int x = 0; x < width - 1; x++) {
@@ -1240,6 +1237,115 @@ template <typename T> T str_to_num(const std::string &str) {
 		throw(std::ios_base::failure(std::string("Invalid number: ") + str));
 	}
 	return result;
+}
+
+
+// Create the geometry for a cube centered at (0, 0, 0) with sides of length 1
+void ResourceManager::CreateCube(std::string object_name) {
+
+	// This construction uses shared vertices, following the same data
+	// format as the other functions 
+	// However, vertices are repeated since their normals at each face
+	// are different
+	// Each face of the cube is defined by four vertices (with the same normal) and two triangles
+
+	// Vertices used to build the cube
+	// 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), texture coordinates (2)
+	GLfloat vertex[] = {
+		// First cube face 
+		-0.5, -0.5,  0.5,    0.0,  0.0,  1.0,    1.0, 0.0, 0.0,    0.0, 0.0,
+		 0.5, -0.5,  0.5,    0.0,  0.0,  1.0,    0.0, 1.0, 0.0,    1.0, 0.0,
+		 0.5,  0.5,  0.5,    0.0,  0.0,  1.0,    0.0, 0.0, 1.0,    1.0, 1.0,
+		-0.5,  0.5,  0.5,    0.0,  0.0,  1.0,    1.0, 0.0, 1.0,    0.0, 1.0,
+		// Second cube face
+		 0.5, -0.5, -0.5,    1.0,  0.0,  0.0,    1.0, 0.0, 0.0,    0.0, 0.0,
+		 0.5,  0.5, -0.5,    1.0,  0.0,  0.0,    0.0, 1.0, 0.0,    1.0, 0.0,
+		 0.5,  0.5,  0.5,    1.0,  0.0,  0.0,    0.0, 0.0, 1.0,    1.0, 1.0,
+		 0.5, -0.5,  0.5,    1.0,  0.0,  0.0,    1.0, 0.0, 1.0,    0.0, 1.0,
+		 // Third cube face
+		  0.5, -0.5, -0.5,    0.0,  0.0, -1.0,    1.0, 0.0, 0.0,    0.0, 0.0,
+		 -0.5, -0.5, -0.5,    0.0,  0.0, -1.0,    0.0, 1.0, 0.0,    1.0, 0.0,
+		 -0.5,  0.5, -0.5,    0.0,  0.0, -1.0,    0.0, 0.0, 1.0,    1.0, 1.0,
+		  0.5,  0.5, -0.5,    0.0,  0.0, -1.0,    1.0, 0.0, 1.0,    0.0, 1.0,
+		  // Fourth cube face
+		  -0.5,  0.5, -0.5,   -1.0,  0.0,  0.0,    1.0, 0.0, 0.0,    0.0, 0.0,
+		  -0.5, -0.5, -0.5,   -1.0,  0.0,  0.0,    0.0, 1.0, 0.0,    1.0, 0.0,
+		  -0.5, -0.5,  0.5,   -1.0,  0.0,  0.0,    0.0, 0.0, 1.0,    1.0, 1.0,
+		  -0.5,  0.5,  0.5,   -1.0,  0.0,  0.0,    1.0, 0.0, 1.0,    0.0, 1.0,
+		  // Fifth cube face
+		  -0.5,  0.5, -0.5,    0.0,  1.0,  0.0,    1.0, 0.0, 0.0,    0.0, 0.0,
+		  -0.5,  0.5,  0.5,    0.0,  1.0,  0.0,    0.0, 1.0, 0.0,    0.0, 1.0,
+		   0.5,  0.5,  0.5,    0.0,  1.0,  0.0,    0.0, 0.0, 1.0,    1.0, 1.0,
+		   0.5,  0.5, -0.5,    0.0,  1.0,  0.0,    1.0, 0.0, 1.0,    1.0, 0.0,
+		   // Sixth cube face
+			0.5, -0.5, -0.5,    0.0, -1.0,  0.0,    1.0, 0.0, 0.0,    0.0, 0.0,
+		   -0.5, -0.5, -0.5,    0.0, -1.0,  0.0,    0.0, 1.0, 0.0,    1.0, 0.0,
+		   -0.5, -0.5,  0.5,    0.0, -1.0,  0.0,    0.0, 0.0, 1.0,    1.0, 1.0,
+			0.5, -0.5,  0.5,    0.0, -1.0,  0.0,    1.0, 0.0, 1.0,    0.0, 1.0,
+	};
+
+	// Triangles
+	GLuint face[] = {
+		// First cube face, with two triangles
+		0, 1, 2,
+		0, 2, 3,
+		// Second face
+		4, 5, 6,
+		4, 6, 7,
+		// Third face
+		8, 9, 10,
+		8, 10, 11,
+		// Fourth face
+		12, 13, 14,
+		12, 14, 15,
+		// Fifth face
+		16, 17, 18,
+		16, 18, 19,
+		// Sixth face
+		20, 21, 22,
+		20, 22, 23,
+	};
+
+	// Create OpenGL buffers and copy data
+	GLuint vbo, ebo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex), vertex, GL_STATIC_DRAW);
+
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(face), face, GL_STATIC_DRAW);
+
+	// Create resource
+	AddResource(Mesh, object_name, vbo, ebo, sizeof(face) / sizeof(GLfloat));
+}
+
+
+
+void ResourceManager::LoadCubeMap(const std::string name, const char *filename) {
+
+	// Get base and extension of filename
+	std::string fn(filename);
+	int pos = fn.find(".");
+	std::string base = fn.substr(0, pos);
+	std::string ext = fn.substr(pos + 1);
+
+	// Create filenames of each individual cube face
+	std::string fn_xp = base + "_ft." + ext;
+	std::string fn_xn = base + "_bk." + ext;
+	std::string fn_yp = base + "_up." + ext;
+	std::string fn_yn = base + "_dn." + ext;
+	std::string fn_zp = base + "_rt." + ext;
+	std::string fn_zn = base + "_lf." + ext;
+
+	// Load cube map from file
+	GLuint texture = SOIL_load_OGL_cubemap(fn_xp.c_str(), fn_xn.c_str(), fn_yp.c_str(), fn_yn.c_str(), fn_zp.c_str(), fn_zn.c_str(), SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+	if (!texture) {
+		throw(std::ios_base::failure(std::string("Error loading cube map ") + std::string(base) + std::string("<spec>.") + std::string(ext) + std::string(": ") + std::string(SOIL_last_result())));
+	}
+
+	// Create resource
+	AddResource(CubeMap, name, texture, 0);
 }
 
 

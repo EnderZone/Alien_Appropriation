@@ -21,7 +21,7 @@ namespace game {
 
         public:
             // Create scene node from given resources
-            SceneNode(const std::string name, const Resource *geometry, const Resource *material);
+            SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
 
             // Destructor
             ~SceneNode();
@@ -61,7 +61,8 @@ namespace game {
             GLenum mMode; // Type of geometry
             GLsizei mSize; // Number of primitives in geometry
             GLuint mMaterial; // Reference to shader program
-            glm::vec3 mPosition; // Position of node
+			GLuint mTexture; // Reference to texture resource
+			glm::vec3 mPosition; // Position of node
             glm::quat mOrientation; // Orientation of node
             glm::vec3 mScale; // Scale of node
 

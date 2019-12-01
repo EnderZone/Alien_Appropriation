@@ -35,13 +35,18 @@ glm::vec3 SceneGraph::GetBackgroundColor(void) const {
 }
  
 
-SceneNode *SceneGraph::CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture)
+SceneNode *SceneGraph::CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture, SceneNode* parent)
 {
     // Create scene node with the specified resources
-    SceneNode *scn = new SceneNode(node_name, geometry, material);
+    SceneNode *scn = new SceneNode(node_name, geometry, material, texture);
 
     // Add node to the scene
-	mRootNode->addChildNode(scn);
+	if (parent == nullptr) {
+		mRootNode->addChildNode(scn);
+	}
+	else {
+		parent->addChildNode(scn);
+	}
 
     return scn;
 }
@@ -83,6 +88,8 @@ void SceneGraph::Draw(Camera *camera)
                  mBackgroundColor[1],
                  mBackgroundColor[2], 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
 
 	mRootNode->Draw(camera);
 }

@@ -11,9 +11,8 @@
 #include "resource_manager.h"
 #include "camera.h"
 #include "projectile_node.h"
+#include "map_generator.h"
 
-#define POISSON_PROGRESS_INDICATOR 1
-#include "PoissonGenerator.h"
 
 
 namespace game {
@@ -55,8 +54,13 @@ namespace game {
             // Resources available to the game
             ResourceManager* mResourceManager;
 
+			MapGenerator* mMapGenerator;
+
             // Camera abstraction
             Camera* mCamera;
+
+			SceneNode *skybox_;
+
 
             // Flag to turn animation on/off
             bool mAnimating;
@@ -73,7 +77,6 @@ namespace game {
 			// Create an instance of an object stored in the resource manager
 			SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
 
-			PoissonGenerator::DefaultPRNG PRNG;
 
 	}; // class Game
 

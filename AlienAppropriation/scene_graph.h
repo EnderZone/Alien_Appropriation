@@ -52,7 +52,7 @@ namespace game {
             glm::vec3 GetBackgroundColor(void) const;
             
             // Create a scene node from the specified resources
-            SceneNode *CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL);
+            SceneNode *CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL, SceneNode* parent=nullptr);
             // Add an already-created node
             void AddNode(SceneNode *node);
             // Find a scene node with a specific name

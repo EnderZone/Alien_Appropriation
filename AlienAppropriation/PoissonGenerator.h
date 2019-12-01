@@ -42,6 +42,7 @@
 #include <random>
 #include <stdint.h>
 #include <time.h>
+#include <iostream>
 
 namespace PoissonGenerator
 {
