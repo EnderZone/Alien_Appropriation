@@ -81,6 +81,7 @@ namespace game {
 
 	}; // class SceneNode
 
+
 } // namespace game
 
 #endif // SCENE_NODE_H_

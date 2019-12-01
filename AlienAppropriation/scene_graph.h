@@ -12,6 +12,7 @@
 #include "scene_node.h"
 #include "resource.h"
 #include "camera.h"
+#include "player_node.h"
 
 
 // Size of the texture that we will draw
@@ -31,7 +32,7 @@ namespace game {
 			BaseNode* mRootNode;
 
 			// Player Node
-			SceneNode* mPlayerNode;
+			BaseNode* mPlayerNode;
 
 
 			// Frame buffer for drawing to texture
@@ -65,13 +66,15 @@ namespace game {
 			}
 
             // Add an already-created node
+			SceneNode* CreatePlayerNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL, BaseNode* camera = NULL);
+			// Add an already-created node
             void AddNode(SceneNode *node);
             // Find a scene node with a specific name
             BaseNode* GetNode(std::string node_name, BaseNode* currentNode = nullptr) const;
-
+			
 			// Keep pointer to root and player for easier access
 			inline BaseNode* getRootNode() { return mRootNode; }
-			inline SceneNode* getPlayerNode() { return mPlayerNode; }
+			inline BaseNode* getPlayerNode() { return mPlayerNode; }
 
             // Draw the entire scene
             void Draw(Camera *camera);

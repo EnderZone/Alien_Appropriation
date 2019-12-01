@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "game.h"
-#include "bin/path_config.h"
+#include "../../Vs_solution/bin/path_config.h"
 
 #include "entity_game_nodes.h"
 
@@ -125,6 +125,10 @@ void Game::SetupResources(void){
 	mResourceManager->CreateGrid("GridMesh");
 
 	// Load generic materials
+	// Create a square
+	mResourceManager->CreateCylinder("PlayerMesh");
+
+	// Load a generic material
 	std::string filename = std::string(shader_directory) + std::string("/material");
 	mResourceManager->LoadResource(Material, "BasicMaterial", filename.c_str());
 
@@ -162,6 +166,9 @@ void Game::SetupScene(void){
 	FarmerEntityNode* farmer1 = CreateInstance<FarmerEntityNode>("Farmer1", "CubeMesh", "TexturedMaterial", "Texture");
 	farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
 	farmer1->Translate(glm::vec3(0.0, 1.5, 0.0));
+
+	SceneNode* player = CreatePlayerInstance("PlayerTemp", "PlayerMesh", "BasicMaterial");
+	player->Translate(glm::vec3(0,0,-20));
 }
 
 
@@ -195,6 +202,8 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     void* ptr = glfwGetWindowUserPointer(window);
     Game *game = (Game *) ptr;
 
+	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PlayerTemp");
+
     // View control
     float rotFactor(glm::pi<float>() / 180);
     float transFactor = 3.0;
@@ -218,12 +227,10 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
         game->mCamera->Roll(rotFactor);
     }
     if (key == GLFW_KEY_W){
-		if (game->mCamera->getVelocity() <= transFactor)
-			game->mCamera->setVelocity(game->mCamera->getVelocity() + velocityFactor);
+		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() + velocityFactor);
     }
     if (key == GLFW_KEY_S){
-		if (game->mCamera->getVelocity() >= -transFactor)
-			game->mCamera->setVelocity(game->mCamera->getVelocity() - velocityFactor);
+		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() - velocityFactor);
     }
     if (key == GLFW_KEY_J){
         game->mCamera->Translate(-game->mCamera->GetSide()*transFactor);
@@ -237,9 +244,21 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     if (key == GLFW_KEY_K){
         game->mCamera->Translate(-game->mCamera->GetUp()*transFactor);
     }
-
+	if (key == GLFW_KEY_X) {
+		playerNode->rotateLeft();
+	}
+	if (key == GLFW_KEY_C) {
+		playerNode->rotateRight();
+	}
+	if (key == GLFW_KEY_Y) {
+		playerNode->rotateForward();
+	}
+	if (key == GLFW_KEY_U) {
+		playerNode->rotateBackward();
+	}
 	if (key == GLFW_KEY_F) {
-		game->mCamera->setVelocity(0.0f);
+		game->mCamera->setVelocityForward(0.0f);
+		game->mCamera->setVelocitySide(0.0f);
 	}
 
 }
@@ -260,5 +279,28 @@ Game::~Game(){
     glfwTerminate();
 }
 
+SceneNode *Game::CreatePlayerInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name) {
+
+	Resource *geom = mResourceManager->GetResource(object_name);
+	if (!geom) {
+		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+	}
+
+	Resource *mat = mResourceManager->GetResource(material_name);
+	if (!mat) {
+		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+	}
+
+	Resource *tex = NULL;
+	if (texture_name != "") {
+		tex = mResourceManager->GetResource(texture_name);
+		if (!tex) {
+			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+		}
+	}
+
+	SceneNode* scn = mSceneGraph->CreatePlayerNode(entity_name, geom, mat, tex, mCamera);
+	return scn;
+}
 
 } // namespace game

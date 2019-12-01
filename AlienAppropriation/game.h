@@ -12,6 +12,7 @@
 #include "camera.h"
 #include "projectile_node.h"
 #include "entity_node.h"
+#include "player_node.h"
 
 namespace game {
 
@@ -68,6 +69,7 @@ namespace game {
             static void ResizeCallback(GLFWwindow* window, int width, int height);
 
 			// Create an instance of an object stored in the resource manager
+
 			template<class T> T *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""))
 			{
 
@@ -92,6 +94,8 @@ namespace game {
 				T *scn = mSceneGraph->CreateNode<T>(entity_name, geom, mat, tex);
 				return scn;
 			}
+			SceneNode *CreatePlayerInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
+
 
 	}; // class Game
 
