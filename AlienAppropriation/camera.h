@@ -53,6 +53,8 @@ namespace game {
 			inline void setVelocitySide(float v) { mVelocityX = v; }
 			inline float getVelocitySide() { return mVelocityX; }
 
+			inline void setVelocityUp(float v) { mVelocityY = v; }
+			inline float getVelocityUp() { return mVelocityY; }
 
             // Perform relative transformations of camera
             void Pitch(float angle);
@@ -77,8 +79,9 @@ namespace game {
             glm::mat4 mViewMatrix; // View matrix
             glm::mat4 mProjectionMatrix; // Projection matrix
 
-			float mVelocityZ; //Velocity (only travels forward)
-			float mVelocityX; //Velocity (only travels forward)
+			float mVelocityZ; //Velocity (only travels Forward)
+			float mVelocityX; //Velocity (only travels Sideways)
+			float mVelocityY; //Velocity (only travels Upwards)
 
 
             // Create view matrix from current camera parameters

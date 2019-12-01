@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "game.h"
-#include "../../Vs_solution/bin/path_config.h"
+#include "bin/path_config.h"
 
 namespace game {
 
@@ -183,10 +183,10 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     if (key == GLFW_KEY_DOWN){
         game->mCamera->Pitch(-rotFactor);
     }
-    if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT){
+    if (key == GLFW_KEY_LEFT){
         game->mCamera->Yaw(rotFactor);
     }
-    if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT){
+    if (key == GLFW_KEY_RIGHT){
         game->mCamera->Yaw(-rotFactor);
     }
     if (key == GLFW_KEY_Q){
@@ -201,6 +201,18 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     if (key == GLFW_KEY_S){
 		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() - velocityFactor);
     }
+	if (key == GLFW_KEY_A) {
+		game->mCamera->setVelocitySide(game->mCamera->getVelocitySide() - velocityFactor / 2);
+	}
+	if (key == GLFW_KEY_D) {
+		game->mCamera->setVelocitySide(game->mCamera->getVelocitySide() + velocityFactor / 2);
+	}
+	if (key == GLFW_KEY_LEFT_SHIFT) {
+		game->mCamera->setVelocityUp(game->mCamera->getVelocityUp() + velocityFactor / 5);
+	}
+	if (key == GLFW_KEY_LEFT_CONTROL) {
+		game->mCamera->setVelocityUp(game->mCamera->getVelocityUp() - velocityFactor / 5);
+	}
     if (key == GLFW_KEY_J){
         game->mCamera->Translate(-game->mCamera->GetSide()*transFactor);
     }

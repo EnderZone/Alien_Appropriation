@@ -19,9 +19,10 @@ namespace game
 		void rotateForward();
 		void rotateBackward();
 
-		void Draw(Camera* camera, glm::mat4 parentTransf = glm::mat4(1.0));
-		void Update(void) {};
+		void rotateByCamera();
 
+		void Draw(Camera* camera, glm::mat4 parentTransf = glm::mat4(1.0));
+		void Update(void);
 
 	private:
 		float x_tilt_percentage;

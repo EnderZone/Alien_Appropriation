@@ -15,6 +15,7 @@ Camera::Camera(std::string name)
 	, mCameraPerspective(1)
 	, mVelocityZ(0.0f)
 	, mVelocityX(0.0f)
+	, mVelocityY(0.0f)
 {
 }
 
@@ -109,6 +110,9 @@ void Camera::Update()
 
 	mPosition += mVelocityX * GetSide();
 	mVelocityX *= 0.95;
+
+	mPosition += mVelocityY * GetUp();
+	mVelocityY *= 0.95;
 
 	for (BaseNode* bn : getChildNodes())
 	{
