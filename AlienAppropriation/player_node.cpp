@@ -36,6 +36,19 @@ namespace game {
 		y_tilt_percentage = glm::max(-glm::pi<float>() / 2.0f, y_tilt_percentage);
 	}
 
+	void PlayerNode::rotateByCamera() {
+		float velocity_limit = glm::pi<float>() / 2.0f;
+
+		x_tilt_percentage = -((Camera*)this->getChildNodes()[0])->getVelocitySide() * velocity_limit;
+		y_tilt_percentage = -((Camera*)this->getChildNodes()[0])->getVelocityForward() * velocity_limit;
+	
+		x_tilt_percentage = glm::max(-1.0f, x_tilt_percentage);
+		x_tilt_percentage = glm::min( 1.0f, x_tilt_percentage);
+		
+		y_tilt_percentage = glm::max(-1.0f, y_tilt_percentage);
+		y_tilt_percentage = glm::min( 1.0f, y_tilt_percentage);
+	}
+
 	void PlayerNode::Draw(Camera* camera, glm::mat4 parentTransf) {
 		// Select proper material (shader program)
 		glUseProgram(mMaterial);
@@ -62,6 +75,11 @@ namespace game {
 		{
 			bn->Draw(camera, parentTransf);
 		}
+	}
+
+	void PlayerNode::Update() {
+		SceneNode::Update();
+		rotateByCamera();
 	}
 
 	void PlayerNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat4(1.0)*/) {
