@@ -133,65 +133,65 @@ void BullEntityNode::Update()
 	// Will thrash if picked up and will run for longer when dropped
 
 	//Timer Stuff
-	float currentTime = glfwGetTime();
-	if (currentTime >= mNextTimer)
+float currentTime = glfwGetTime();
+if (currentTime >= mNextTimer)
+{
+	if (mNextTimer != 0.0f)
 	{
-		if (mNextTimer != 0.0f)
-		{
-			if (mBehaviour == stand)
-				mBehaviour = walk;
-			else if (mBehaviour == walk)
-				mBehaviour = stand;
-			else if (mBehaviour == run)
-				mBehaviour = stand;
-		}
-
-		mLastTimer = currentTime;
-
-		float minPeriod = 3.0f;
-		float maxPeriod = 6.0f;
-
-		mNextTimer = currentTime + minPeriod + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / maxPeriod - minPeriod);
+		if (mBehaviour == stand)
+			mBehaviour = walk;
+		else if (mBehaviour == walk)
+			mBehaviour = stand;
+		else if (mBehaviour == run)
+			mBehaviour = stand;
 	}
 
-	// Behaviour Stuff
-	if (mBehaviour == stand)
-	{
-		mVelocity = glm::vec3(0.0f);
-	}
-	else if (mBehaviour == walk)
-	{
-		glm::vec3 dirVec = glm::vec3(
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
-			0.0f,
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
-		);
+	mLastTimer = currentTime;
 
-		mVelocity += 0.02f * glm::normalize(dirVec);
-		mVelocity = 0.2f * glm::normalize(mVelocity);
-		Rotate(mVelocity);
-	}
-	else if (mBehaviour == run)
-	{
-		glm::vec3 dirVec = glm::vec3(
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
-			0.0f,
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
-		);
+	float minPeriod = 3.0f;
+	float maxPeriod = 6.0f;
 
-		mVelocity += 0.3f * glm::normalize(dirVec);
-		mVelocity = 0.6f * glm::normalize(mVelocity);
-		Rotate(mVelocity);
-	}
+	mNextTimer = currentTime + minPeriod + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / maxPeriod - minPeriod);
+}
 
-	//Thrashing will occur when picked up?
-	//When dropped, need to manually set mNextTimer to a greater number than cow
+// Behaviour Stuff
+if (mBehaviour == stand)
+{
+	mVelocity = glm::vec3(0.0f);
+}
+else if (mBehaviour == walk)
+{
+	glm::vec3 dirVec = glm::vec3(
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
+		0.0f,
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
+	);
+
+	mVelocity += 0.02f * glm::normalize(dirVec);
+	mVelocity = 0.2f * glm::normalize(mVelocity);
+	Rotate(mVelocity);
+}
+else if (mBehaviour == run)
+{
+	glm::vec3 dirVec = glm::vec3(
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
+		0.0f,
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
+	);
+
+	mVelocity += 0.3f * glm::normalize(dirVec);
+	mVelocity = 0.6f * glm::normalize(mVelocity);
+	Rotate(mVelocity);
+}
+
+//Thrashing will occur when picked up?
+//When dropped, need to manually set mNextTimer to a greater number than cow
 }
 
 FarmerEntityNode::FarmerEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
 	: EntityNode(name, geometry, material, texture)
 	, mLastTimer(0.0f)
-	, mNextTimer(0.0f) 
+	, mNextTimer(0.0f)
 {
 
 }
@@ -203,9 +203,12 @@ FarmerEntityNode::~FarmerEntityNode()
 
 void FarmerEntityNode::Update()
 {
-	return;
+	EntityNode::Update();
+
+
+	// Get the player node
 	BaseNode* rootNode = this;
-	
+
 	while (rootNode->getName() != "ROOT")
 	{
 		rootNode = rootNode->getParentNode();
@@ -214,24 +217,54 @@ void FarmerEntityNode::Update()
 	if (!rootNode)
 		throw("Root Node could not be found from " + getName());
 
-	PlayerNode* playerNode;
-	
+	SceneNode* playerNode;
+
 	for (BaseNode* m : rootNode->getChildNodes())
 	{
 		if (m->getName() == "PLAYER")
 		{
-			playerNode = dynamic_cast<PlayerNode*>(m);
+			playerNode = reinterpret_cast<SceneNode*>(m);
 			break;
 		}
 	}
 
-	if (!playerNode) 
+	if (!playerNode)
 		throw("Player Node could not be found from " + getName());
 
 
 
-	//glm::vec3 playerPos = playerNode
-	
+	glm::vec3 playerPos = playerNode->GetPosition();
+	glm::vec3 dirPlayer = playerPos - mPosition;
+
+	// If player is within range x, rotate to face player and walk towards until player is within range v
+	if (glm::distance(mPosition, playerPos) < 50.0)
+	{
+		Rotate(dirPlayer);
+
+		if (glm::distance(mPosition, playerPos) > 10.0)
+		{
+			mVelocity = 0.2f * glm::normalize(dirPlayer);
+			mVelocity.y = 0.0f;
+		}
+		else
+			mVelocity = glm::vec3(0.0f);
+	}
+
+	// If player is within range y, and its been atleast z seconds since last shot, fire shotgun at player
+	// Shotgun will auto hit and cant be dodged
+	if (glm::distance(mPosition, playerPos) < 20.0)
+	{
+		float currentTime = glfwGetTime();
+		if (currentTime >= mNextTimer)
+		{
+			// Fire at player call
+
+			// In the meantime, player entity will rise 1 unit.
+			//mPosition.y += 1.0;
+
+			mNextTimer = currentTime + 5.0f;
+		}
+	}
 
 }
 

@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "game.h"
-#include "../../Vs_solution/bin/path_config.h"
+#include "bin/path_config.h"
 
 #include "entity_game_nodes.h"
 
@@ -167,7 +167,7 @@ void Game::SetupScene(void){
 	farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
 	farmer1->Translate(glm::vec3(0.0, 1.5, 0.0));
 
-	SceneNode* player = CreatePlayerInstance("PlayerTemp", "PlayerMesh", "BasicMaterial");
+	SceneNode* player = CreatePlayerInstance("PLAYER", "PlayerMesh", "BasicMaterial");
 	player->Translate(glm::vec3(0,0,-20));
 }
 

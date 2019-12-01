@@ -62,7 +62,6 @@ namespace game {
 		glm::quat mOrientation; // Orientation of node
 		glm::vec3 mScale; // Scale of node
 
-	private:
 		GLuint mArrayBuffer; // References to geometry: vertex and array buffers
 		GLuint mElementArrayBuffer;
 		GLenum mMode; // Type of geometry
