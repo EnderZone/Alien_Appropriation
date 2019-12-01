@@ -167,6 +167,11 @@ void Game::SetupScene(void){
 	farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
 	farmer1->Translate(glm::vec3(0.0, 1.5, 0.0));
 
+	// Create test cannon
+	CannonMissileEntityNode* cannon1 = CreateInstance<CannonMissileEntityNode>("Cannon1", "CubeMesh", "TexturedMaterial", "Texture");
+	cannon1->Scale(glm::vec3(2.0, 2.0, 2.0));
+	cannon1->Translate(glm::vec3(0.0, 2.0, -20.0));
+
 	SceneNode* player = CreatePlayerInstance("PLAYER", "PlayerMesh", "BasicMaterial");
 	player->Translate(glm::vec3(0,0,-20));
 }
@@ -302,5 +307,6 @@ SceneNode *Game::CreatePlayerInstance(std::string entity_name, std::string objec
 	SceneNode* scn = mSceneGraph->CreatePlayerNode(entity_name, geom, mat, tex, mCamera);
 	return scn;
 }
+
 
 } // namespace game

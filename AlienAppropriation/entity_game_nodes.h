@@ -101,6 +101,27 @@ namespace game {
 
 	private:
 
+		// Timers for behaviors purposes
+		float mNextTimer;
+
+	}; // class FarmerEntityNode
+
+
+	// Cannon
+	// Doesnt move, rotates towards player and fires missiles
+	class CannonMissileEntityNode : public EntityNode {
+
+	public:
+		// Create scene node from given resources
+		CannonMissileEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
+
+		// Destructor
+		~CannonMissileEntityNode();
+
+		void Update();
+
+	private:
+
 		enum Behaviour
 		{
 			walk,
@@ -115,7 +136,9 @@ namespace game {
 		float mLastTimer;
 		float mNextTimer;
 
-	}; // class FarmerEntityNode
+	}; // class CannonMissileEntityNode
+
+
 
 } // namespace game
 

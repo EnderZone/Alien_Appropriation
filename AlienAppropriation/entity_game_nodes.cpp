@@ -190,7 +190,6 @@ else if (mBehaviour == run)
 
 FarmerEntityNode::FarmerEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
 	: EntityNode(name, geometry, material, texture)
-	, mLastTimer(0.0f)
 	, mNextTimer(0.0f)
 {
 
@@ -265,6 +264,57 @@ void FarmerEntityNode::Update()
 			mNextTimer = currentTime + 5.0f;
 		}
 	}
+
+}
+
+CannonMissileEntityNode::CannonMissileEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
+	: EntityNode(name, geometry, material, texture)
+	, mLastTimer(0.0f)
+	, mNextTimer(0.0f) 
+{
+
+}
+
+CannonMissileEntityNode::~CannonMissileEntityNode()
+{
+
+}
+
+void CannonMissileEntityNode::Update()
+{
+	EntityNode::Update();
+
+
+	// Get the player node
+	BaseNode* rootNode = this;
+
+	while (rootNode->getName() != "ROOT")
+	{
+		rootNode = rootNode->getParentNode();
+	}
+
+	if (!rootNode)
+		throw("Root Node could not be found from " + getName());
+
+	SceneNode* playerNode;
+
+	for (BaseNode* m : rootNode->getChildNodes())
+	{
+		if (m->getName() == "PLAYER")
+		{
+			playerNode = reinterpret_cast<SceneNode*>(m);
+			break;
+		}
+	}
+
+	if (!playerNode)
+		throw("Player Node could not be found from " + getName());
+
+
+
+	glm::vec3 playerPos = playerNode->GetPosition();
+	glm::vec3 dirPlayer = playerPos - mPosition;
+
 
 }
 
