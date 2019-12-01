@@ -82,7 +82,40 @@ namespace game {
 		float mLastTimer;
 		float mNextTimer;
 
-	}; // class CowEntityNode
+	}; // class BullEntityNode
+
+
+	// Farmer
+	// Farmer man, has a shotgun and will shoot you if you get too close
+	// Probably only has one behavior and thats walk/hop towards player and shoot if within range
+	class FarmerEntityNode : public EntityNode {
+
+	public:
+		// Create scene node from given resources
+		FarmerEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
+
+		// Destructor
+		~FarmerEntityNode();
+
+		void Update();
+
+	private:
+
+		enum Behaviour
+		{
+			walk,
+			stand,
+			run,
+			thrash
+		};
+
+		Behaviour mBehaviour;
+
+		// Timers for behaviors purposes
+		float mLastTimer;
+		float mNextTimer;
+
+	}; // class FarmerEntityNode
 
 } // namespace game
 

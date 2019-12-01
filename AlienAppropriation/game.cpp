@@ -152,11 +152,16 @@ void Game::SetupScene(void){
 
 	// Create test Cow
 	CowEntityNode* cow1 = CreateInstance<CowEntityNode>("Cow1", "CubeMesh", "TexturedMaterial", "Texture");
-	cow1->Translate(glm::vec3(-3.0, 2.0, 0.0));
+	cow1->Translate(glm::vec3(-3.0, 1.0, 0.0));
 
 	// Create test bull
 	BullEntityNode* bull1 = CreateInstance<BullEntityNode>("Bull1", "CubeMesh", "TexturedMaterial", "Texture");
-	bull1->Translate(glm::vec3(3.0, 2.0, 0.0));
+	bull1->Translate(glm::vec3(3.0, 1.0, 0.0));
+
+	// Create test Farmer
+	FarmerEntityNode* farmer1 = CreateInstance<FarmerEntityNode>("Farmer1", "CubeMesh", "TexturedMaterial", "Texture");
+	farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
+	farmer1->Translate(glm::vec3(0.0, 1.5, 0.0));
 }
 
 
@@ -253,31 +258,6 @@ void Game::ResizeCallback(GLFWwindow* window, int width, int height){
 Game::~Game(){
 
     glfwTerminate();
-}
-
-template<class T>
-T* Game::CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name) {
-
-	Resource *geom = mResourceManager->GetResource(object_name);
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
-	}
-
-	Resource *mat = mResourceManager->GetResource(material_name);
-	if (!mat) {
-		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
-	}
-
-	Resource *tex = NULL;
-	if (texture_name != "") {
-		tex = mResourceManager->GetResource(texture_name);
-		if (!tex) {
-			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
-		}
-	}
-
-	T *scn = mSceneGraph->CreateNode<T>(entity_name, geom, mat, tex);
-	return scn;
 }
 
 

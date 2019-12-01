@@ -68,7 +68,30 @@ namespace game {
             static void ResizeCallback(GLFWwindow* window, int width, int height);
 
 			// Create an instance of an object stored in the resource manager
-			template<class T> T *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
+			template<class T> T *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""))
+			{
+
+				Resource *geom = mResourceManager->GetResource(object_name);
+				if (!geom) {
+					throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+				}
+
+				Resource *mat = mResourceManager->GetResource(material_name);
+				if (!mat) {
+					throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+				}
+
+				Resource *tex = NULL;
+				if (texture_name != "") {
+					tex = mResourceManager->GetResource(texture_name);
+					if (!tex) {
+						throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+					}
+				}
+
+				T *scn = mSceneGraph->CreateNode<T>(entity_name, geom, mat, tex);
+				return scn;
+			}
 
 	}; // class Game
 

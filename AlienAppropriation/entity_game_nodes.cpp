@@ -1,5 +1,7 @@
 #include "entity_game_nodes.h"
 
+#include "player_node.h"
+
 namespace game
 {
 
@@ -184,6 +186,52 @@ void BullEntityNode::Update()
 
 	//Thrashing will occur when picked up?
 	//When dropped, need to manually set mNextTimer to a greater number than cow
+}
+
+FarmerEntityNode::FarmerEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
+	: EntityNode(name, geometry, material, texture)
+	, mLastTimer(0.0f)
+	, mNextTimer(0.0f) 
+{
+
+}
+
+FarmerEntityNode::~FarmerEntityNode()
+{
+
+}
+
+void FarmerEntityNode::Update()
+{
+	BaseNode* rootNode = this;
+	
+	while (rootNode->getName() != "ROOT")
+	{
+		rootNode = rootNode->getParentNode();
+	}
+
+	if (!rootNode)
+		throw("Root Node could not be found from " + getName());
+
+	PlayerNode* playerNode;
+	
+	for (BaseNode* m : rootNode->getChildNodes())
+	{
+		if (m->getName() == "PLAYER")
+		{
+			playerNode = dynamic_cast<PlayerNode*>(m);
+			break;
+		}
+	}
+
+	if (!playerNode) 
+		throw("Player Node could not be found from " + getName());
+
+
+
+	//glm::vec3 playerPos = playerNode
+	
+
 }
 
 }
