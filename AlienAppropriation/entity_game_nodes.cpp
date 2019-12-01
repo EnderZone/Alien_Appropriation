@@ -234,6 +234,7 @@ void FarmerEntityNode::Update()
 
 	glm::vec3 playerPos = playerNode->GetPosition();
 	glm::vec3 dirPlayer = playerPos - mPosition;
+	dirPlayer.y = 0.0f;
 
 	// If player is within range x, rotate to face player and walk towards until player is within range v
 	if (glm::distance(mPosition, playerPos) < 50.0)
@@ -243,7 +244,6 @@ void FarmerEntityNode::Update()
 		if (glm::distance(mPosition, playerPos) > 10.0)
 		{
 			mVelocity = 0.2f * glm::normalize(dirPlayer);
-			mVelocity.y = 0.0f;
 		}
 		else
 			mVelocity = glm::vec3(0.0f);
@@ -314,7 +314,9 @@ void CannonMissileEntityNode::Update()
 
 	glm::vec3 playerPos = playerNode->GetPosition();
 	glm::vec3 dirPlayer = playerPos - mPosition;
+	dirPlayer.y = 0.0f;
 
+	Rotate(dirPlayer);
 
 }
 

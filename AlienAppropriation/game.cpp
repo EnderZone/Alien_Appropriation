@@ -169,7 +169,7 @@ void Game::SetupScene(void){
 	// Create test cannon
 	CannonMissileEntityNode* cannon1 = CreateInstance<CannonMissileEntityNode>("Cannon1", "CubeMesh", "TexturedMaterial", "Texture");
 	cannon1->Scale(glm::vec3(2.0, 2.0, 2.0));
-	cannon1->Translate(glm::vec3(0.0, 2.0, -20.0));
+	cannon1->Translate(glm::vec3(0.0, 2.0, -15.0));
 
 	SceneNode* player = CreatePlayerInstance("PLAYER", "PlayerMesh", "BasicMaterial");
 	player->Translate(glm::vec3(0,0,-20));
