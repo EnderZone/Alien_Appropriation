@@ -13,6 +13,7 @@
 #include "projectile_node.h"
 #include "entity_node.h"
 #include "player_node.h"
+#include "map_generator.h"
 
 namespace game {
 
@@ -53,8 +54,13 @@ namespace game {
             // Resources available to the game
             ResourceManager* mResourceManager;
 
+			MapGenerator* mMapGenerator;
+
             // Camera abstraction
             Camera* mCamera;
+
+			SceneNode *skybox_;
+
 
             // Flag to turn animation on/off
             bool mAnimating;
@@ -95,6 +101,7 @@ namespace game {
 				return scn;
 			}
 			SceneNode *CreatePlayerInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""));
+
 
 
 	}; // class Game

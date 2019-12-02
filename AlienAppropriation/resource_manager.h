@@ -7,6 +7,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/gtx/rotate_vector.hpp>
+
 #include "resource.h"
 
 // Default extensions for different shader source files
@@ -37,14 +39,15 @@ namespace game {
             // Create the geometry for a sphere
             void CreateSphere(std::string object_name, float radius = 0.6, int num_samples_theta = 90, int num_samples_phi = 45);
 			// Create the geometry for a cylinder
-			void CreateCylinder(std::string object_name, float height = 1.0, float circle_radius = 0.5, int num_circle_samples = 30);
+			void CreateCylinder(std::string object_name, float radius = 0.6, int resolution = 30);
 			// Create the geometry of a plane using two triangles
 			void CreateSquare(std::string object_name, float width = 1.0);
 			// Create the geometry of a plane using a grid
-			void CreateGrid(std::string object_name, float heightVariance= 0, int width = 10, int height = 10, float tileSize = 10.0);
+			void CreateGrid(std::string object_name, float heightVariance= 0, int width = 11, int height = 11, float tileSize = 10.0);
 			// Create particles distributed over a sphere
 			void CreateSphereParticles(std::string object_name, int num_particles = 20000);
 			void CreateTorusParticles(std::string object_name, int num_particles, float loop_radius, float circle_radius);
+			void CreateCube(std::string object_name);
 
 	private:
             // List storing all resources
@@ -59,6 +62,7 @@ namespace game {
 			void LoadTexture(const std::string name, const char *filename);
 			// Loads a mesh in obj format
 			void LoadMesh(const std::string name, const char *filename);
+			void LoadCubeMap(const std::string name, const char *filename);
 
     }; // class ResourceManager
 

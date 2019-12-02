@@ -15,7 +15,6 @@
 #include "camera.h"
 
 namespace game {
-
 	// Class that manages one object in a scene 
 	class SceneNode : public BaseNode {
 
@@ -79,8 +78,6 @@ namespace game {
 
 
 	}; // class SceneNode
-
-
 } // namespace game
 
 #endif // SCENE_NODE_H_

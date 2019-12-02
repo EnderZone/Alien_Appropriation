@@ -21,9 +21,9 @@ const bool window_full_screen_g = false;
 float camera_near_clip_distance_g = 0.01;
 float camera_far_clip_distance_g = 1000.0;
 float camera_fov_g = 20.0; // Field-of-view of camera
-const glm::vec3 viewport_background_color_g(0.0, 0.0, 0.0);
-glm::vec3 camera_position_g(0.0, 40.0, 120.0);
-glm::vec3 camera_look_at_g(0.0, 0.0, 0.0);
+const glm::vec3 viewport_background_color_g(0.2, 0.2, 0.7);
+glm::vec3 camera_position_g(100.0, 15.0, 100.0);
+glm::vec3 camera_look_at_g(100.0, 15.0, 50.0);
 glm::vec3 camera_up_g(0.0, 1.0, 0.0);
 
 // Materials
@@ -42,10 +42,10 @@ void Game::Init(void)
 	// Set up base variables and members
 	mResourceManager = new ResourceManager();
 	mCamera = new Camera("CAMERA");
-
 	// Set up the base nodes
 	mSceneGraph = new SceneGraph(mResourceManager);
 	mSceneGraph->getRootNode()->addChildNode(mCamera);
+	mMapGenerator = new MapGenerator(mSceneGraph, mResourceManager);
 
     // Run all initialization steps
     InitWindow();
@@ -94,6 +94,9 @@ void Game::InitView(void){
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
+
+
+
     // Set viewport
     int width, height;
     glfwGetFramebufferSize(mWindow, &width, &height);
@@ -122,25 +125,45 @@ void Game::SetupResources(void){
 
 	// Create a plane
 	mResourceManager->CreateGrid("GridMesh");
-
-	// Load generic materials
-	// Create a square
+	// Create a cube for the skybox
+	mResourceManager->CreateCube("cubeMesh");
+	mResourceManager->CreateCylinder("hayMesh");
 	mResourceManager->CreateCylinder("PlayerMesh");
 
-	// Load a generic material
-	std::string filename = std::string(shader_directory) + std::string("/material");
-	mResourceManager->LoadResource(Material, "BasicMaterial", filename.c_str());
+	std::string filename;
+	std::string materials[] = { "default", "textured", "litTexture", "skybox" };
+	for (std::string name : materials) {
+		filename = std::string(shader_directory) + std::string("/" + name);
+		mResourceManager->LoadResource(Material, name + "Material", filename.c_str());
+	}
 
-	filename = std::string(shader_directory) + std::string("/textured_material");
-	mResourceManager->LoadResource(Material, "TexturedMaterial", filename.c_str());
+	filename = std::string(shader_directory) + std::string("/three-term_shiny_blue");
+	mResourceManager->LoadResource(Material, "testMaterial", filename.c_str());
 
-	// Load a test cube from an obj file
-	filename = std::string(asset_directory) + std::string("/cube.obj");
-	mResourceManager->LoadResource(Mesh, "CubeMesh", filename.c_str());
 
-	// Load texture to be applied to the cube
-	filename = std::string(asset_directory) + std::string("/texture.png");
-	mResourceManager->LoadResource(Texture, "Texture", filename.c_str());
+	std::string meshes[] = { "barn", "tree", "cow", "cannon", "farmer", "ufo" };
+	for (std::string name : meshes) {
+		filename = std::string(asset_directory) + std::string("/" + name + ".obj");
+		mResourceManager->LoadResource(Mesh, name + "Mesh", filename.c_str());
+	}
+
+	std::string textures[] = { "ground", "hay", "tree", "barn", "cow", "bull", "cannon", "placeholder", "farmer", "ufo" };
+	for (std::string name : textures) {
+		// Load texture to be applied to the cube
+		filename = std::string(asset_directory) + std::string("/" + name + ".png");
+		mResourceManager->LoadResource(Texture, name + "Texture", filename.c_str());
+	}
+
+	//std::string skyboxes[] = { "Day1", "Dusk", "Night1", "Night2" };
+	//for (std::string name : skyboxes) {
+	//	// Load texture to be applied to the cube
+	//	filename = std::string(asset_directory) + std::string("/skyboxes/" + name + "/" +name +".png");
+	//	mResourceManager->LoadResource(CubeMap, name + "CubeMap", filename.c_str());
+	//}
+	
+	filename = std::string(asset_directory) + std::string("/skyboxes/day1/day1.tga");
+	mResourceManager->LoadResource(CubeMap, "Day1CubeMap", filename.c_str());
+
 }
 
 
@@ -149,30 +172,32 @@ void Game::SetupScene(void){
     // Set background color for the scene
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
 
-	// Create ground for everything
-	SceneNode* ground = CreateInstance<SceneNode>("Ground", "GridMesh", "BasicMaterial");
-	ground->Translate(glm::vec3(-50.0, 0.0, -50.0));
-
 	// Create test Cow
-	CowEntityNode* cow1 = CreateInstance<CowEntityNode>("Cow1", "CubeMesh", "TexturedMaterial", "Texture");
-	cow1->Translate(glm::vec3(-3.0, 1.0, 0.0));
+	CowEntityNode* cow1 = CreateInstance<CowEntityNode>("Cow1", "cowMesh", "texturedMaterial", "cowTexture");
+	cow1->Translate(glm::vec3(50.0, 0.0, 50.0));
 
 	// Create test bull
-	BullEntityNode* bull1 = CreateInstance<BullEntityNode>("Bull1", "CubeMesh", "TexturedMaterial", "Texture");
-	bull1->Translate(glm::vec3(3.0, 1.0, 0.0));
+	BullEntityNode* bull1 = CreateInstance<BullEntityNode>("Bull1", "cowMesh", "texturedMaterial", "bullTexture");
+	bull1->Translate(glm::vec3(55.0, 0.0, 55.0));
 
 	// Create test Farmer
-	FarmerEntityNode* farmer1 = CreateInstance<FarmerEntityNode>("Farmer1", "CubeMesh", "TexturedMaterial", "Texture");
+	FarmerEntityNode* farmer1 = CreateInstance<FarmerEntityNode>("Farmer1", "farmerMesh", "texturedMaterial", "farmerTexture");
 	farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
-	farmer1->Translate(glm::vec3(0.0, 1.5, 0.0));
+	farmer1->Translate(glm::vec3(60.0, 0.0, 60.0));
 
 	// Create test cannon
-	CannonMissileEntityNode* cannon1 = CreateInstance<CannonMissileEntityNode>("Cannon1", "CubeMesh", "TexturedMaterial", "Texture");
+	CannonMissileEntityNode* cannon1 = CreateInstance<CannonMissileEntityNode>("Cannon1", "cannonMesh", "litTextureMaterial", "cannonTexture");
 	cannon1->Scale(glm::vec3(2.0, 2.0, 2.0));
-	cannon1->Translate(glm::vec3(0.0, 2.0, -15.0));
+	cannon1->Translate(glm::vec3(40.0, 0.0, 40.0));
 
-	SceneNode* player = CreatePlayerInstance("PLAYER", "PlayerMesh", "BasicMaterial");
+	SceneNode* player = CreatePlayerInstance("PLAYER", "ufoMesh", "litTextureMaterial", "ufoTexture");
 	player->Translate(glm::vec3(0,0,-20));
+	mMapGenerator->GenerateMap();
+
+	// Create skybox
+	skybox_ = CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
+	skybox_->Scale(glm::vec3(1000.0, 1000.0, 1000.0));
+
 }
 
 
@@ -186,6 +211,7 @@ void Game::MainLoop(void){
         if ((current_time - last_time) > 0.05){
             mSceneGraph->Update();
             last_time = current_time;
+			skybox_->SetPosition(mCamera->GetPosition());
         }
 
         // Draw the scene

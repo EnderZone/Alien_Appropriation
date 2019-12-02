@@ -58,13 +58,18 @@ namespace game {
             
             // Create a scene node from the specified resources
 			template<class T>
-			T* CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture)
+			T* CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture=NULL, SceneNode* parent = nullptr)
 			{
 				// Create scene node with the specified resources
 				T* scn = new T(node_name, geometry, material, texture);
 
 				// Add node to the scene
-				mRootNode->addChildNode(scn);
+				if (parent == nullptr) {
+					mRootNode->addChildNode(scn);
+				}
+				else {
+					parent->addChildNode(scn);
+				}
 
 				return scn;
 			}
