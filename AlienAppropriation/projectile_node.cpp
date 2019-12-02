@@ -147,6 +147,7 @@ void HeatMissileNode::Update()
 		}
 	}
 	glm::vec3 playerPos = cameraNode->GetPosition();
+	playerPos.z -= 20.0f;
 	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;

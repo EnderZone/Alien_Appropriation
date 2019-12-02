@@ -173,22 +173,48 @@ void Game::SetupScene(void){
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
 
 	// Create test Cow
-	CowEntityNode* cow1 = CreateInstance<CowEntityNode>("Cow1", "cowMesh", "texturedMaterial", "cowTexture");
-	cow1->Translate(glm::vec3(50.0, 0.0, 50.0));
+	//CowEntityNode* cow1 = CreateInstance<CowEntityNode>("Cow1", "cowMesh", "texturedMaterial", "cowTexture");
+	//cow1->Translate(glm::vec3(50.0, 0.0, 50.0));
+
+	for (int i = 0; i < 40; i++)
+	{
+		CowEntityNode* cow = CreateInstance<CowEntityNode>("Cow" + std::to_string(i), "cowMesh", "texturedMaterial", "cowTexture");
+		cow->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+	}
 
 	// Create test bull
-	BullEntityNode* bull1 = CreateInstance<BullEntityNode>("Bull1", "cowMesh", "texturedMaterial", "bullTexture");
-	bull1->Translate(glm::vec3(55.0, 0.0, 55.0));
+	//BullEntityNode* bull1 = CreateInstance<BullEntityNode>("Bull1", "cowMesh", "texturedMaterial", "bullTexture");
+	//bull1->Translate(glm::vec3(55.0, 0.0, 55.0));
+
+	for (int i = 0; i < 20; i++)
+	{
+		BullEntityNode* bull = CreateInstance<BullEntityNode>("Bull" + std::to_string(i), "cowMesh", "texturedMaterial", "bullTexture");
+		bull->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+	}
 
 	// Create test Farmer
-	FarmerEntityNode* farmer1 = CreateInstance<FarmerEntityNode>("Farmer1", "farmerMesh", "texturedMaterial", "farmerTexture");
-	farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
-	farmer1->Translate(glm::vec3(60.0, 0.0, 60.0));
+	//FarmerEntityNode* farmer1 = CreateInstance<FarmerEntityNode>("Farmer1", "farmerMesh", "texturedMaterial", "farmerTexture");
+	//farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
+	//farmer1->Translate(glm::vec3(60.0, 0.0, 60.0));
+
+	for (int i = 0; i < 20; i++)
+	{
+		FarmerEntityNode* farmer = CreateInstance<FarmerEntityNode>("Farmer" + std::to_string(i), "farmerMesh", "texturedMaterial", "farmerTexture");
+		farmer->Scale(glm::vec3(0.75, 1.5, 0.75));
+		farmer->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+	}
 
 	// Create test cannon
-	CannonMissileEntityNode* cannon1 = CreateInstance<CannonMissileEntityNode>("Cannon1", "cannonMesh", "litTextureMaterial", "cannonTexture");
-	cannon1->Scale(glm::vec3(2.0, 2.0, 2.0));
-	cannon1->Translate(glm::vec3(40.0, 0.0, 40.0));
+	//CannonMissileEntityNode* cannon1 = CreateInstance<CannonMissileEntityNode>("Cannon1", "cannonMesh", "litTextureMaterial", "cannonTexture");
+	//cannon1->Scale(glm::vec3(2.0, 2.0, 2.0));
+	//cannon1->Translate(glm::vec3(40.0, 0.0, 40.0));
+
+	for (int i = 0; i < 5; i++)
+	{
+		CannonMissileEntityNode* cannon = CreateInstance<CannonMissileEntityNode>("Cannon" + std::to_string(i), "cannonMesh", "litTextureMaterial", "cannonTexture");
+		cannon->Scale(glm::vec3(2.0, 2.0, 2.0));
+		cannon->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+	}
 
 	SceneNode* player = CreatePlayerInstance("PLAYER", "ufoMesh", "litTextureMaterial", "ufoTexture");
 	player->Translate(glm::vec3(0,0,-20));
@@ -235,7 +261,7 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PlayerTemp");
 
     // View control
-    float rotFactor(glm::pi<float>() / 180);
+    float rotFactor(glm::pi<float>() * 50.0f / 180);
     float transFactor = 3.0;
 	float velocityFactor = 0.2f;
     if (key == GLFW_KEY_UP){

@@ -246,6 +246,7 @@ void FarmerEntityNode::Update()
 		}
 	}
 	glm::vec3 playerPos = cameraNode->GetPosition();
+	playerPos.z -= 20.0f;
 	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
@@ -287,7 +288,7 @@ void FarmerEntityNode::Update()
 CannonMissileEntityNode::CannonMissileEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
 	: EntityNode(name, geometry, material, texture)
 	, mLastTimer(0.0f)
-	, mNextTimer(0.0f) 
+	, mNextTimer(15.0f) 
 	, mProjectiles(0)
 {
 
@@ -340,6 +341,7 @@ void CannonMissileEntityNode::Update()
 		}
 	}
 	glm::vec3 playerPos = cameraNode->GetPosition();
+	playerPos.z -= 20.0f;
 	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
@@ -353,15 +355,19 @@ void CannonMissileEntityNode::Update()
 
 	if (currentTime >= mNextTimer)
 	{
-		glm::vec3 initVelVec = 1.0f * glm::normalize(dirPlayer);
-		SceneGraph* sceneGraph = rootNode->getSceneGraph();
-		HeatMissileNode* missile = sceneGraph->CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "cubeMesh", "texturedMaterial", "cannonTexture", 10, mPosition, initVelVec);
-		mProjectiles += 1;
-		missile->Scale(glm::vec3(0.2, 0.2, 1.5));
+		if (glm::distance(mPosition, playerPos) < 50.0)
+		{
+			glm::vec3 initVelVec = 1.0f * glm::normalize(dirPlayer);
+			SceneGraph* sceneGraph = rootNode->getSceneGraph();
+			HeatMissileNode* missile = sceneGraph->CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "cubeMesh", "texturedMaterial", "placeholderTexture", 10, mPosition, initVelVec);
+			mProjectiles += 1;
+			missile->Scale(glm::vec3(0.2, 0.2, 1.5));
+
+
+
+			mNextTimer = currentTime + 10;
+		}
 		
-
-
-		mNextTimer = currentTime + 10;
 
 		//MissileNode* missile = new MissileNode("missile1", "CubeMesh", "TexturedMaterial", 100, mPosition, initVelVec, "Texture");
 	}
