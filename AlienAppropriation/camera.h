@@ -60,6 +60,12 @@ namespace game {
 			inline void setVelocityUp(float v) { mVelocityY = v; }
 			inline float getVelocityUp() { return mVelocityY; }
 
+			inline glm::vec3 getCurrentVelocity() {
+				glm::vec3 current = mVelocityX * glm::cross(playerForward, glm::vec3(0.0f, -1.0f, 0.0f));
+				current += -mVelocityZ * playerForward;
+				return current;
+			};
+
             // Perform relative transformations of camera
             void Pitch(float angle);
             void Yaw(float angle);

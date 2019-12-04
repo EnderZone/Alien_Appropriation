@@ -45,9 +45,11 @@ namespace game {
 
 	void PlayerNode::rotateByCamera() {
 		float velocity_limit = glm::pi<float>() / 4.0f;
+		
+		glm::vec3 current_velocity = ((Camera*)this->getParentNode())->getCurrentVelocity();
 
-		x_tilt_percentage = -((Camera*)this->getParentNode())->getVelocitySide() * velocity_limit;
-		y_tilt_percentage = -((Camera*)this->getParentNode())->getVelocityForward() * velocity_limit;
+		x_tilt_percentage = -current_velocity.x * velocity_limit;
+		y_tilt_percentage = current_velocity.z * velocity_limit;
 	
 		x_tilt_percentage = glm::max(-1.0f, x_tilt_percentage);
 		x_tilt_percentage = glm::min( 1.0f, x_tilt_percentage);

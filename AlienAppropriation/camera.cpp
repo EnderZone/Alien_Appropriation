@@ -161,10 +161,7 @@ void Camera::Yaw(float angle){
 	mOrientation = glm::normalize(mOrientation);
 	
 	glm::quat movement_rot = glm::angleAxis(angle, glm::vec3(0.0f, -1.0f, 0.0f));
-	glm::quat movement_inv = glm::quat(movement_rot.w, -movement_rot.x, -movement_rot.y, -movement_rot.z);
-
-	playerForward = glm::normalize(playerForward);
-	playerForward = movement_rot * playerForward * movement_inv;
+	playerForward = playerForward * glm::mat3_cast(movement_rot);
 	playerForward = glm::normalize(playerForward);
 }
 
