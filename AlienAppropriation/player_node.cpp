@@ -3,18 +3,25 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace game {
-	PlayerNode::PlayerNode(const std::string name, const Resource *geometry, const Resource *material, BaseNode* camera) : SceneNode(name, geometry, material) {
-		// Set This as the parentNode of the camera while taking its own parent as his
-		this->setParentNode(camera->getParentNode());
-		camera->setParentNode(this);
-		this->addChildNode(camera);
+#include <iostream>
 
-		x_tilt_percentage = 0;
-		y_tilt_percentage = 0;
+namespace game {
+	PlayerNode::PlayerNode(const std::string name, const Resource *geometry, const Resource *material, BaseNode* camera) : SceneNode(name, geometry, material),
+		forward_factor(40.0f),
+		x_tilt_percentage(0.0f),
+		y_tilt_percentage(0.0f)
+	{
+		// Set This as the parentNode of the camera while taking its own parent as his
+		camera->addChildNode(this);
+		this->setParentNode(camera);
 	}
 
 	PlayerNode::~PlayerNode() {}
+
+	glm::vec3 PlayerNode::GetPosition(void) const
+	{
+		return mPosition;
+	}
 
 	void PlayerNode::rotateLeft() {
 		x_tilt_percentage += glm::pi<float>() / 20.0f;
@@ -37,16 +44,18 @@ namespace game {
 	}
 
 	void PlayerNode::rotateByCamera() {
-		float velocity_limit = glm::pi<float>() / 2.0f;
+		float velocity_limit = glm::pi<float>() / 4.0f;
 
-		x_tilt_percentage = -((Camera*)this->getChildNodes()[0])->getVelocitySide() * velocity_limit;
-		y_tilt_percentage = -((Camera*)this->getChildNodes()[0])->getVelocityForward() * velocity_limit;
+		x_tilt_percentage = -((Camera*)this->getParentNode())->getVelocitySide() * velocity_limit;
+		y_tilt_percentage = -((Camera*)this->getParentNode())->getVelocityForward() * velocity_limit;
 	
 		x_tilt_percentage = glm::max(-1.0f, x_tilt_percentage);
 		x_tilt_percentage = glm::min( 1.0f, x_tilt_percentage);
 		
 		y_tilt_percentage = glm::max(-1.0f, y_tilt_percentage);
 		y_tilt_percentage = glm::min( 1.0f, y_tilt_percentage);
+		
+		// std::cout << "PERCENTAGES ::: " << x_tilt_percentage << " " << y_tilt_percentage << std::endl;
 	}
 
 	void PlayerNode::Draw(Camera* camera, glm::mat4 parentTransf) {
@@ -80,6 +89,15 @@ namespace game {
 	void PlayerNode::Update() {
 		SceneNode::Update();
 		rotateByCamera();
+		setPlayerPosition();
+	}
+
+	void PlayerNode::setPlayerPosition() {
+		mPosition = -forward_factor * glm::vec3(0.0f, 0.0f, 1.0f);
+	}
+
+	float PlayerNode::getDistanceFromCamera() {
+		return forward_factor;
 	}
 
 	void PlayerNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat4(1.0)*/) {
@@ -102,9 +120,11 @@ namespace game {
 		glEnableVertexAttribArray(tex_att);
 
 		// Adding the tilts when moving
-		float angle_x = (glm::pi<float>() / 8) * glm::sin(x_tilt_percentage);
-		float angle_y = (glm::pi<float>() / 8) * glm::sin(y_tilt_percentage);
-		
+		float angle_x = (glm::pi<float>() / 16) * glm::sin(x_tilt_percentage);
+		float angle_y = (glm::pi<float>() / 16) * glm::sin(y_tilt_percentage);
+
+		// std::cout << "PERCENTAGES ::: " << x_tilt_percentage << " " << y_tilt_percentage << std::endl;
+		// std::cout << "ANGLES ::: " << angle_x << " " << angle_y << std::endl;
 
 		glm::quat current_rotation = mOrientation;
 		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_x, glm::vec3(0.0, 0.0, 1.0)));
@@ -112,14 +132,12 @@ namespace game {
 		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_y, glm::vec3(1.0, 0.0, 0.0)));
 		current_rotation = glm::normalize(current_rotation);
 
+
 		// Aply transformations *ISROT*
 		glm::mat4 scaling = glm::scale(glm::mat4(1.0), mScale);
 		glm::mat4 rotation = glm::mat4_cast(current_rotation);
-		glm::mat4 translation = glm::translate(parentTransf, mPosition);
-		
-		translation = glm::translate(translation, ((Camera*)mChildNodes[0])->GetPosition());
-
-		parentTransf = translation * rotation;
+		glm::mat4 translation = glm::translate(glm::mat4(1.0), mPosition);
+		parentTransf *= translation * rotation;
 
 		// Scaling is done only on local object
 		glm::mat4 transf = glm::scale(parentTransf, mScale);

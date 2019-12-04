@@ -217,7 +217,7 @@ void Game::SetupScene(void){
 	}
 
 	SceneNode* player = CreatePlayerInstance("PLAYER", "ufoMesh", "litTextureMaterial", "ufoTexture");
-	player->Translate(glm::vec3(0,0,-20));
+	((PlayerNode*)player)->setPlayerPosition();
 	mMapGenerator->GenerateMap();
 
 	// Create skybox

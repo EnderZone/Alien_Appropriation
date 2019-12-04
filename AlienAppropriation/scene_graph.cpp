@@ -46,9 +46,9 @@ SceneNode *SceneGraph::CreatePlayerNode(std::string node_name, Resource *geometr
 	// Create scene node with the specified resources
 	PlayerNode* pn = new PlayerNode(node_name, geometry, material, camera);
 
-	// Add node to the scene
-	mRootNode->addChildNode((SceneNode*)pn);
-
+	// Add node to the scene (Dont do this as it is a child of the camera already)
+	// mRootNode->addChildNode((SceneNode*)pn);
+	
 	return (SceneNode*)pn;
 }
 

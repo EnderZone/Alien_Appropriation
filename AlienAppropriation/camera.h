@@ -12,7 +12,11 @@
 
 #include "base_node.h"
 
+
 namespace game {
+	
+	class SceneNode;
+	class PlayerNode;
 
     // Abstraction of a camera
     class Camera : public BaseNode{
@@ -70,6 +74,7 @@ namespace game {
             void SetProjection(GLfloat fov, GLfloat near, GLfloat far, GLfloat w, GLfloat h);
             // Set all camera-related variables in shader program
             void SetupShader(GLuint program);
+			SceneNode* findPlayerNode();
 
         private:
             glm::vec3 mPosition; // Position of camera
@@ -83,10 +88,12 @@ namespace game {
 			float mVelocityX; //Velocity (only travels Sideways)
 			float mVelocityY; //Velocity (only travels Upwards)
 
+			glm::vec3 playerForward;
+
 
             // Create view matrix from current camera parameters
             void SetupViewMatrix(void);
-
+			
 			int mCameraPerspective;
 
     }; // class Camera
