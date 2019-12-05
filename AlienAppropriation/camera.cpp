@@ -94,7 +94,7 @@ void Camera::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
 	glm::mat4 rotation = glm::mat4_cast(mOrientation);
 	glm::mat4 translation = glm::translate(parentTransf, mPosition);
 
-	parentTransf = translation * rotation;
+	parentTransf = translation;
 	
 
 	for (BaseNode* bn : getChildNodes())
@@ -105,14 +105,16 @@ void Camera::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
 
 void Camera::Update()
 {
-	mPosition += mVelocityZ * GetForward();
-	mVelocityZ *= 0.95;
-
-	mPosition += mVelocityX * GetSide();
+	mPosition += mVelocityX * glm::cross(playerForward, glm::vec3(0.0f, -1.0f, 0.0f));
 	mVelocityX *= 0.95;
 
-	mPosition += mVelocityY * GetUp();
+	mPosition += mVelocityY * glm::vec3(0.0f, 1.0f, 0.0f);
 	mVelocityY *= 0.95;
+
+	mPosition += -mVelocityZ * playerForward;
+	mVelocityZ *= 0.95;
+
+
 
 	for (BaseNode* bn : getChildNodes())
 	{
@@ -147,26 +149,27 @@ void Camera::SwitchCameraPerspective()
 }
 
 void Camera::Pitch(float angle){
-
-    glm::quat rotation = glm::angleAxis(angle, GetSide());
+	glm::quat rotation = glm::angleAxis(angle, GetSide());
     mOrientation = rotation * mOrientation;
     mOrientation = glm::normalize(mOrientation);
 }
 
 
 void Camera::Yaw(float angle){
-
-    glm::quat rotation = glm::angleAxis(angle, GetUp());
-    mOrientation = rotation * mOrientation;
-    mOrientation = glm::normalize(mOrientation);
+	glm::quat rotation = glm::angleAxis(angle, GetUp());
+	mOrientation = rotation * mOrientation;
+	mOrientation = glm::normalize(mOrientation);
+	
+	glm::quat movement_rot = glm::angleAxis(angle, glm::vec3(0.0f, -1.0f, 0.0f));
+	playerForward = playerForward * glm::mat3_cast(movement_rot);
+	playerForward = glm::normalize(playerForward);
 }
 
 
 void Camera::Roll(float angle){
-
-    glm::quat rotation = glm::angleAxis(angle, GetForward());
-    mOrientation = rotation * mOrientation;
-    mOrientation = glm::normalize(mOrientation);
+	glm::quat rotation = glm::angleAxis(angle, GetForward());
+	mOrientation = rotation * mOrientation;
+	mOrientation = glm::normalize(mOrientation);
 }
 
 
@@ -182,6 +185,8 @@ void Camera::SetView(glm::vec3 position, glm::vec3 look_at, glm::vec3 up){
     // Reset orientation and position of camera
     mPosition = position;
     mOrientation = glm::quat();
+	playerForward = mForward;
+	playerForward = glm::normalize(playerForward);
 }
 
 
@@ -209,9 +214,24 @@ void Camera::SetupShader(GLuint program){
 }
 
 
+SceneNode * Camera::findPlayerNode()
+{
+	SceneNode* playerNode;
+	for (BaseNode* m : getChildNodes())
+	{
+		if (m->getName() == "PLAYER")
+		{
+			playerNode = reinterpret_cast<SceneNode*>(m);
+			break;
+		}
+	}
+
+	return playerNode;
+}
+
 void Camera::SetupViewMatrix(void){
 
-    //view_matrix_ = glm::lookAt(position, look_at, up);
+    // view_matrix_ = glm::lookAt(position, look_at, up);
 
     // Get current vectors of coordinate system
     // [side, up, forward]
@@ -223,6 +243,9 @@ void Camera::SetupViewMatrix(void){
 
     // Initialize the view matrix as an identity matrix
     mViewMatrix = glm::mat4(1.0); 
+
+	// Adding player to the view Matrix
+	mViewMatrix = glm::translate(mViewMatrix, findPlayerNode()->GetPosition());
 
     // Copy vectors to matrix
     // Add vectors to rows, not columns of the matrix, so that we get
@@ -238,6 +261,9 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix[0][2] = current_forward[0]; // Third row
     mViewMatrix[1][2] = current_forward[1];
     mViewMatrix[2][2] = current_forward[2];
+
+
+	mViewMatrix = glm::translate(mViewMatrix, -findPlayerNode()->GetPosition());
 
     // Create translation to camera position
     glm::mat4 trans = glm::translate(glm::mat4(1.0), -mPosition);

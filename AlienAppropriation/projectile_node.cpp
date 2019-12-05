@@ -121,9 +121,23 @@ void HeatMissileNode::Update()
 	if (!rootNode)
 		throw("Root Node could not be found from " + getName());
 
-	SceneNode* playerNode;
+	BaseNode* cameraNode;
 
 	for (BaseNode* m : rootNode->getChildNodes())
+	{
+		if (m->getName() == "CAMERA")
+		{
+			cameraNode = m;
+			break;
+		}
+	}
+
+	if (!cameraNode)
+		throw("cameraNode could not be found from " + getName());
+
+	// Comment this out to switch back to player pos
+	SceneNode* playerNode;
+	for (BaseNode* m : cameraNode->getChildNodes())
 	{
 		if (m->getName() == "PLAYER")
 		{
@@ -132,22 +146,7 @@ void HeatMissileNode::Update()
 		}
 	}
 
-	if (!playerNode)
-		throw("Player Node could not be found from " + getName());
-
-
-	// Comment this out to switch back to player pos
-	Camera* cameraNode;
-	for (BaseNode* m : playerNode->getChildNodes())
-	{
-		if (m->getName() == "CAMERA")
-		{
-			cameraNode = reinterpret_cast<Camera*>(m);
-			break;
-		}
-	}
-	glm::vec3 playerPos = cameraNode->GetPosition();
-	playerPos.z -= 20.0f;
+	glm::vec3 playerPos = playerNode->GetPosition() + ((Camera*)cameraNode)->GetPosition();
 	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;

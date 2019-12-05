@@ -26,7 +26,7 @@ namespace game {
 		~SceneNode();
 
 		// Get node attributes
-		glm::vec3 GetPosition(void) const;
+		virtual glm::vec3 GetPosition(void) const;
 		glm::quat GetOrientation(void) const;
 		glm::vec3 GetScale(void) const;
 

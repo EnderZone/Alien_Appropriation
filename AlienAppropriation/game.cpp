@@ -217,7 +217,7 @@ void Game::SetupScene(void){
 	}
 
 	SceneNode* player = CreatePlayerInstance("PLAYER", "ufoMesh", "litTextureMaterial", "ufoTexture");
-	player->Translate(glm::vec3(0,0,-20));
+	((PlayerNode*)player)->setPlayerPosition();
 	mMapGenerator->GenerateMap();
 
 	// Create skybox
@@ -271,16 +271,16 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
         game->mCamera->Pitch(-rotFactor);
     }
     if (key == GLFW_KEY_LEFT){
-        game->mCamera->Yaw(rotFactor);
-    }
-    if (key == GLFW_KEY_RIGHT){
-        game->mCamera->Yaw(-rotFactor);
-    }
-    if (key == GLFW_KEY_Q){
         game->mCamera->Roll(-rotFactor);
     }
-    if (key == GLFW_KEY_E){
+    if (key == GLFW_KEY_RIGHT){
         game->mCamera->Roll(rotFactor);
+    }
+    if (key == GLFW_KEY_Q){
+		game->mCamera->Yaw(rotFactor);
+    }
+    if (key == GLFW_KEY_E){
+		game->mCamera->Yaw(-rotFactor);
     }
     if (key == GLFW_KEY_W){
 		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() + velocityFactor);
@@ -327,6 +327,7 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	if (key == GLFW_KEY_F) {
 		game->mCamera->setVelocityForward(0.0f);
 		game->mCamera->setVelocitySide(0.0f);
+		game->mCamera->setVelocityUp(0.0f);
 	}
 
 }
