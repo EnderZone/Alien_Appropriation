@@ -57,7 +57,7 @@ SceneNode::~SceneNode(){
 
 
 
-glm::vec3 SceneNode::GetPosition(void) const {
+glm::vec3 SceneNode::GetPosition(void) {
 
     return mPosition;
 }

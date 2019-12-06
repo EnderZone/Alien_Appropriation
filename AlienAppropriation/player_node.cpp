@@ -9,7 +9,9 @@ namespace game {
 	PlayerNode::PlayerNode(const std::string name, const Resource *geometry, const Resource *material, BaseNode* camera) : SceneNode(name, geometry, material),
 		forward_factor(40.0f),
 		x_tilt_percentage(0.0f),
-		y_tilt_percentage(0.0f)
+		y_tilt_percentage(0.0f),
+		tractor_beam_on(false),
+		shielding_on(false)
 	{
 		// Set This as the parentNode of the camera while taking its own parent as his
 		camera->addChildNode(this);
@@ -18,9 +20,9 @@ namespace game {
 
 	PlayerNode::~PlayerNode() {}
 
-	glm::vec3 PlayerNode::GetPosition(void) const
+	glm::vec3 PlayerNode::GetPosition(void)
 	{
-		return mPosition;
+		return mPosition + (dynamic_cast<Camera*>(getParentNode()))->GetPosition();
 	}
 
 	void PlayerNode::rotateLeft() {
@@ -86,12 +88,91 @@ namespace game {
 		{
 			bn->Draw(camera, parentTransf);
 		}
+
+		for (BaseNode *bn : weapons) {
+			std::string node_name = bn->getName();
+
+			if (tractor_beam_on && node_name.compare("TRACTORBEAM") == 0) {
+				bn->Draw(camera, parentTransf);
+			}
+			if (shielding_on && node_name.compare("SHIELD") == 0) {
+				bn->Draw(camera, parentTransf);
+			}
+		}
 	}
 
 	void PlayerNode::Update() {
 		SceneNode::Update();
 		rotateByCamera();
 		setPlayerPosition();
+		checkWeapons();
+
+		for (BaseNode* bn : getChildNodes())
+		{
+			bn->Update();
+		}
+
+		for (BaseNode* bn : weapons)
+		{
+			bn->Update();
+		}
+	}
+
+	void PlayerNode::checkWeapons() {
+		if (tractor_beam_on)
+			updateTractorBeam();
+		if (shielding_on)
+			updateShield();
+	}
+
+	void PlayerNode::updateTractorBeam() {
+		BaseNode* rootNode = getRootNode();
+		for (BaseNode* bn : rootNode->getChildNodes()) {
+			EntityNode* en = dynamic_cast<EntityNode*>(bn);
+			if (en != NULL) {
+				suckEntity(en);
+			}
+		}
+	}
+
+	void PlayerNode::updateShield() {
+		BaseNode* rootNode = getRootNode();
+		for (BaseNode* bn : rootNode->getChildNodes()) {
+			ProjectileNode* pn = (ProjectileNode*)bn;
+			if (pn != NULL) {
+				shieldProjectile(pn);
+			}
+		}
+	}
+
+	void PlayerNode::suckEntity(EntityNode* en) {
+		glm::vec3 curr_pos = GetPosition();// +GetPosition();
+		glm::vec3 entity_pos = en->GetPosition();
+		
+		if (curr_pos.y < entity_pos.y)
+			return;
+
+		float dist = glm::distance(glm::vec2(curr_pos.x, curr_pos.z), glm::vec2(entity_pos.x, entity_pos.z));
+		glm::vec2 pos_diff = glm::vec2(curr_pos.x, curr_pos.z) - glm::vec2(entity_pos.x, entity_pos.z);
+		
+		if (dist < 5.0f) {
+			en->Translate(glm::vec3(0.0f, 0.05f, 0.0f));
+			std::cout << "PICKING UP ::: " << en->getName() << std::endl;
+		}
+	}
+
+	void PlayerNode::shieldProjectile(ProjectileNode* pn) {
+
+	}
+
+	BaseNode* PlayerNode::getRootNode() {
+		BaseNode* rootNode = getParentNode();
+
+		while (rootNode != NULL && rootNode->getName().compare("ROOT") != 0) {
+			rootNode = rootNode->getParentNode();
+		}
+
+		return rootNode;
 	}
 
 	void PlayerNode::setPlayerPosition() {

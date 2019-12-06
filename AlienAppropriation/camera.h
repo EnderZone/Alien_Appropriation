@@ -82,6 +82,8 @@ namespace game {
             void SetupShader(GLuint program);
 			SceneNode* findPlayerNode();
 
+			inline float GetHeight() { return mPosition.y; };
+
         private:
             glm::vec3 mPosition; // Position of camera
             glm::quat mOrientation; // Orientation of camera

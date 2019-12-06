@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "game.h"
-#include "bin/path_config.h"
+#include "../../Vs_solution/bin/path_config.h"
 #include "entity_game_nodes.h"
 
 namespace game {
@@ -129,9 +129,11 @@ void Game::SetupResources(void){
 	mResourceManager->CreateCube("cubeMesh");
 	mResourceManager->CreateCylinder("hayMesh");
 	mResourceManager->CreateCylinder("PlayerMesh");
+	mResourceManager->CreateCone("coneMesh");
+	mResourceManager->CreateSphereParticles("shieldMesh");
 
 	std::string filename;
-	std::string materials[] = { "default", "textured", "litTexture", "skybox" };
+	std::string materials[] = { "default", "textured", "litTexture", "skybox", "particle" };
 	for (std::string name : materials) {
 		filename = std::string(shader_directory) + std::string("/" + name);
 		mResourceManager->LoadResource(Material, name + "Material", filename.c_str());
@@ -220,6 +222,20 @@ void Game::SetupScene(void){
 	((PlayerNode*)player)->setPlayerPosition();
 	mMapGenerator->GenerateMap();
 
+	//Create tractor beam
+	SceneNode* weapon = CreateInstance<SceneNode>("TRACTORBEAM", "coneMesh", "defaultMaterial");
+	mSceneGraph->getRootNode()->removeChildNode("TRACTORBEAM");
+	((PlayerNode*)player)->addWeapon(weapon);
+	weapon->Translate(glm::vec3(0.0,0.0,0.0));
+	weapon->Scale(glm::vec3(10.0,50.0,10.0));
+
+	//Create shields
+	weapon = CreateInstance<SceneNode>("SHIELD", "shieldMesh", "particleMaterial");
+	mSceneGraph->getRootNode()->removeChildNode("SHIELD");
+	((PlayerNode*)player)->addWeapon(weapon);
+	weapon->Translate(glm::vec3(0.0, 0.0, 0.0));
+	weapon->Scale(glm::vec3(10.0, 10.0, 10.0));
+
 	// Create skybox
 	skybox_ = CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
 	skybox_->Scale(glm::vec3(1000.0, 1000.0, 1000.0));
@@ -258,7 +274,7 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     void* ptr = glfwGetWindowUserPointer(window);
     Game *game = (Game *) ptr;
 
-	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PlayerTemp");
+	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PLAYER");
 
     // View control
     float rotFactor(glm::pi<float>() * 50.0f / 180);
@@ -269,12 +285,6 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     }
     if (key == GLFW_KEY_DOWN){
         game->mCamera->Pitch(-rotFactor);
-    }
-    if (key == GLFW_KEY_LEFT){
-        game->mCamera->Roll(-rotFactor);
-    }
-    if (key == GLFW_KEY_RIGHT){
-        game->mCamera->Roll(rotFactor);
     }
     if (key == GLFW_KEY_Q){
 		game->mCamera->Yaw(rotFactor);
@@ -312,11 +322,11 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     if (key == GLFW_KEY_K){
         game->mCamera->Translate(-game->mCamera->GetUp()*transFactor);
     }
-	if (key == GLFW_KEY_X) {
-		playerNode->rotateLeft();
+	if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS || action == GLFW_RELEASE)) {
+		playerNode->toggleTractorBeam();
 	}
-	if (key == GLFW_KEY_C) {
-		playerNode->rotateRight();
+	if (key == GLFW_KEY_C && (action == GLFW_PRESS || action == GLFW_RELEASE)) {
+		playerNode->toggleShields();
 	}
 	if (key == GLFW_KEY_Y) {
 		playerNode->rotateForward();
