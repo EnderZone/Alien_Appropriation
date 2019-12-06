@@ -26,6 +26,7 @@ namespace game
 		virtual void Update();
 
 		const std::string getName() const { return mName; }
+		inline void SetName(std::string new_name) { mName = new_name; }
 
 		inline void setParentNode(BaseNode* n) { mParentNode = n; }
 		inline BaseNode* getParentNode() { return mParentNode; }

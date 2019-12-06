@@ -11,12 +11,13 @@ namespace game {
 		forward_factor(40.0f),
 		x_tilt_percentage(0.0f),
 		y_tilt_percentage(0.0f),
+		hull_strength(100),
+		energy(100),
 		tractor_beam_on(false),
 		shielding_on(false)
 	{
 		// Set This as the parentNode of the camera while taking its own parent as his
 		camera->addChildNode(this);
-		this->setParentNode(camera);
 	}
 
 	PlayerNode::~PlayerNode() {}
@@ -47,7 +48,7 @@ namespace game {
 	}
 
 	void PlayerNode::rotateByCamera() {
-		float velocity_limit = glm::pi<float>() / 4.0f;
+		float velocity_limit = glm::pi<float>() / 2.0f;
 		
 		glm::vec3 current_velocity = ((Camera*)this->getParentNode())->getCurrentVelocity();
 
@@ -128,12 +129,23 @@ namespace game {
 
 	void PlayerNode::updateTractorBeam() {
 		BaseNode* rootNode = getRootNode();
+		std::vector<BaseNode*>* to_remove = new std::vector<BaseNode*>;
 		for (BaseNode* bn : rootNode->getChildNodes()) {
 			EntityNode* en = dynamic_cast<EntityNode*>(bn);
 			if (en != NULL) {
-				suckEntity(en);
+				suckEntity(en, to_remove);
 			}
 		}
+
+		for (BaseNode* removee : *to_remove) {
+			rootNode->removeChildNode(removee->getName());
+			delete removee;
+		}
+		delete to_remove;
+	}
+
+	void PlayerNode::takeDamage(DamageType damage) {
+		hull_strength -= damage;
 	}
 
 	void PlayerNode::updateShield() {
@@ -146,19 +158,35 @@ namespace game {
 		}
 	}
 
-	void PlayerNode::suckEntity(EntityNode* en) {
-		glm::vec3 curr_pos = GetPosition();// +GetPosition();
+	void PlayerNode::suckEntity(EntityNode* en, std::vector<BaseNode*>* to_remove) {
+		glm::vec3 curr_pos = GetPosition();
 		glm::vec3 entity_pos = en->GetPosition();
-		
+				
 		if (curr_pos.y < entity_pos.y)
 			return;
 
 		float dist = glm::distance(glm::vec2(curr_pos.x, curr_pos.z), glm::vec2(entity_pos.x, entity_pos.z));
-		glm::vec2 pos_diff = glm::vec2(curr_pos.x, curr_pos.z) - glm::vec2(entity_pos.x, entity_pos.z);
-		
-		if (dist < 5.0f) {
-			en->Translate(glm::vec3(0.0f, 0.05f, 0.0f));
-			std::cout << "PICKING UP ::: " << en->getName() << std::endl;
+		float height = curr_pos.y - entity_pos.y;
+
+		if (dist < height / 4.0f) {
+			en->Translate(glm::vec3(0.0f, 0.25f, 0.0f));
+			
+			CowEntityNode* cn = dynamic_cast<CowEntityNode*>(en);
+			BullEntityNode* bn = dynamic_cast<BullEntityNode*>(en);
+
+			if ((bn != NULL || cn != NULL) && glm::distance(curr_pos, entity_pos) < 3.0f) {
+				to_remove->push_back(en);
+				if (bn != NULL) {
+					takeDamage(BULL);
+				}
+				else {
+					SceneNode* collected = new SceneNode(*((SceneNode*)cn));
+					addChildNode(collected);
+					collected->SetPosition(glm::vec3(0.0f));
+					collected->Translate(glm::vec3(2.0f * cos(getChildNodes().size()), 1.0f,2.0f * sin(getChildNodes().size())));
+					collected->Scale(glm::vec3(0.25f));
+				}
+			}
 		}
 	}
 
@@ -209,22 +237,23 @@ namespace game {
 
 		// std::cout << "PERCENTAGES ::: " << x_tilt_percentage << " " << y_tilt_percentage << std::endl;
 		// std::cout << "ANGLES ::: " << angle_x << " " << angle_y << std::endl;
-
-		glm::quat current_rotation = mOrientation;
-		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_x, glm::vec3(0.0, 0.0, 1.0)));
+		glm::quat current_rotation;
+		current_rotation = glm::quat_cast(glm::rotate(glm::mat4(), angle_x, glm::vec3(0.0, 0.0, 1.0)));
 		current_rotation = glm::normalize(current_rotation);
 		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_y, glm::vec3(1.0, 0.0, 0.0)));
 		current_rotation = glm::normalize(current_rotation);
+		mOrientation *= glm::angleAxis(glm::pi<float>() / 2, glm::vec3(0.0f, 1.0f, 0.0f));
 
 
 		// Aply transformations *ISROT*
 		glm::mat4 scaling = glm::scale(glm::mat4(1.0), mScale);
 		glm::mat4 rotation = glm::mat4_cast(current_rotation);
 		glm::mat4 translation = glm::translate(glm::mat4(1.0), mPosition);
-		parentTransf *= translation * rotation;
+		glm::mat4 temp_transf = parentTransf * translation * rotation;
+		parentTransf *= translation * glm::mat4_cast(glm::normalize(mOrientation));
 
 		// Scaling is done only on local object
-		glm::mat4 transf = glm::scale(parentTransf, mScale);
+		glm::mat4 transf = glm::scale(temp_transf, mScale);
 
 		GLint world_mat = glGetUniformLocation(program, "world_mat");
 		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(transf));

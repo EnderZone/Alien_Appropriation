@@ -11,6 +11,8 @@
 
 namespace game
 {	
+	enum DamageType { BULL = 10, MISSLE = 20, GUN = 5};
+
 	class PlayerNode : public SceneNode
 	{
 	public:
@@ -39,21 +41,24 @@ namespace game
 	private:
 		float x_tilt_percentage;
 		float y_tilt_percentage;
+		float forward_factor;
+
+		int energy;
+		int hull_strength;
 
 		bool tractor_beam_on = false;
 		bool shielding_on = false;
-
-		float forward_factor;
 
 		void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));
 		void checkWeapons();
 		void updateTractorBeam();
 		void updateShield();
-		void suckEntity(EntityNode*);
+		void suckEntity(EntityNode*, std::vector<BaseNode*>*);
 		void shieldProjectile(ProjectileNode*);
+		void takeDamage(DamageType);
 		
 		BaseNode* getRootNode();
 
-		std::vector<SceneNode*> weapons;
+		std::vector<SceneNode*> weapons;		
 	};
 }

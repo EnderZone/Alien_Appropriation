@@ -54,6 +54,7 @@ namespace game {
 		GLuint GetElementArrayBuffer(void) const;
 		GLsizei GetSize(void) const;
 		GLuint GetMaterial(void) const;
+		GLuint GetTexture(void) const;
 
 	protected:
 
