@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "game.h"
-#include "../../Vs_solution/bin/path_config.h"
+#include "bin/path_config.h"
 #include "entity_game_nodes.h"
 
 namespace game {
