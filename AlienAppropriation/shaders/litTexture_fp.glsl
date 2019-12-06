@@ -50,4 +50,6 @@ void main()
 	// Lighting is multiplied with the ambient color
     gl_FragColor = pixel * Ia + Id * diffuse_color;
 
+	//gl_FragColor = vec4(1.0) * sign(N.z);
+
 }

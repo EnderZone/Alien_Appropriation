@@ -61,6 +61,8 @@ void Camera::Rotate(glm::quat rot){
 }
 
 
+
+
 glm::vec3 Camera::GetForward(void) const {
 
     glm::vec3 current_forward = mOrientation * mForward;
@@ -114,7 +116,9 @@ void Camera::Update()
 	mPosition += -mVelocityZ * playerForward;
 	mVelocityZ *= 0.95;
 
-
+	mPosition.x = glm::clamp(mPosition.x, 0.0f, 300.0f);
+	mPosition.y = glm::clamp(mPosition.y, 0.0f, 200.0f);
+	mPosition.z = glm::clamp(mPosition.z, 40.0f, 340.0f);
 
 	for (BaseNode* bn : getChildNodes())
 	{

@@ -15,7 +15,7 @@ namespace game
 		ProjectileNode(std::string name, const Resource *geometry, const Resource *material, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec, const Resource *texture = nullptr);
 		~ProjectileNode();
 
-		void Update();
+		virtual void Update();
 	
 	protected:
 		float mRemainingLife;
@@ -30,7 +30,7 @@ namespace game
 		HeatMissileNode(std::string name, const Resource *geometry, const Resource *material, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec, const Resource *texture = nullptr);
 		~HeatMissileNode();
 
-		void Update();
+		virtual void Update();
 	private:
 
 

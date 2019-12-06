@@ -32,7 +32,7 @@ namespace game {
 		// Destructor
 		~CowEntityNode();
 
-		void Update();
+		virtual void Update();
 
 	private:
 

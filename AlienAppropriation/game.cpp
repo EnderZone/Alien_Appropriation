@@ -45,6 +45,7 @@ void Game::Init(void)
 	// Set up the base nodes
 	mSceneGraph = new SceneGraph(mResourceManager);
 	mSceneGraph->getRootNode()->addChildNode(mCamera);
+	mSceneGraph->mCameraNode = mCamera;
 	mMapGenerator = new MapGenerator(mSceneGraph, mResourceManager);
 
     // Run all initialization steps
@@ -147,7 +148,7 @@ void Game::SetupResources(void){
 		mResourceManager->LoadResource(Mesh, name + "Mesh", filename.c_str());
 	}
 
-	std::string textures[] = { "ground", "hay", "tree", "barn", "cow", "bull", "cannon", "placeholder", "farmer", "ufo" };
+	std::string textures[] = { "ground", "hay", "tree", "barn", "cow", "bull", "cannon", "farmer", "placeholder", "ufo" };
 	for (std::string name : textures) {
 		// Load texture to be applied to the cube
 		filename = std::string(asset_directory) + std::string("/" + name + ".png");
@@ -161,8 +162,8 @@ void Game::SetupResources(void){
 	//	mResourceManager->LoadResource(CubeMap, name + "CubeMap", filename.c_str());
 	//}
 	
-	filename = std::string(asset_directory) + std::string("/skyboxes/day1/day1.tga");
-	mResourceManager->LoadResource(CubeMap, "Day1CubeMap", filename.c_str());
+//	filename = std::string(asset_directory) + std::string("/skyboxes/day1/day1.tga");
+//	mResourceManager->LoadResource(CubeMap, "Day1CubeMap", filename.c_str());
 
 }
 
@@ -221,8 +222,8 @@ void Game::SetupScene(void){
 	mMapGenerator->GenerateMap();
 
 	// Create skybox
-	skybox_ = CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
-	skybox_->Scale(glm::vec3(1000.0, 1000.0, 1000.0));
+//	skybox_ = CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
+//	skybox_->Scale(glm::vec3(1000.0, 1000.0, 1000.0));
 
 }
 
@@ -237,7 +238,7 @@ void Game::MainLoop(void){
         if ((current_time - last_time) > 0.05){
             mSceneGraph->Update();
             last_time = current_time;
-			skybox_->SetPosition(mCamera->GetPosition());
+		//	skybox_->SetPosition(mCamera->GetPosition());
         }
 
         // Draw the scene
@@ -261,7 +262,7 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PlayerTemp");
 
     // View control
-    float rotFactor(glm::pi<float>() * 50.0f / 180);
+    float rotFactor(glm::pi<float>()  / 180);
     float transFactor = 3.0;
 	float velocityFactor = 0.2f;
     if (key == GLFW_KEY_UP){

@@ -38,6 +38,7 @@ namespace game {
             void Rotate(glm::quat rot);
 
 
+
 			// Dummy Draw function, just to update parentTransF for any children
 			virtual void Draw(Camera *camera, glm::mat4 parentTransf = glm::mat4(1.0));
 			virtual void Update();
