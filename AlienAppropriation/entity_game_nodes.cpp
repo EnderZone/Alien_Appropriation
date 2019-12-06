@@ -237,7 +237,7 @@ void FarmerEntityNode::Update()
 
 
 	glm::vec3 playerPos = getPlayerPosition();
-	playerPos.z -= 20.0f;
+	playerPos.y = 0;
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
 	dirPlayer.y = 0.0f;
