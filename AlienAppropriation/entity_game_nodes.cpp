@@ -235,6 +235,7 @@ void FarmerEntityNode::Update()
 {
 	EntityNode::Update();
 
+
 	glm::vec3 playerPos = getPlayerPosition();
 	playerPos.z -= 20.0f;
 
@@ -302,9 +303,22 @@ void CannonMissileEntityNode::Update()
 	if (!rootNode)
 		throw("Root Node could not be found from " + getName());
 
-	SceneNode* playerNode;
+	SceneNode* cameraNode;
 
 	for (BaseNode* m : rootNode->getChildNodes())
+	{
+		if (m->getName() == "CAMERA")
+		{
+			cameraNode = reinterpret_cast<SceneNode*>(m);
+			break;
+		}
+	}
+
+	if (!cameraNode)
+		throw("CameraNode could not be found from " + getName());
+
+	SceneNode* playerNode;
+	for (BaseNode* m : cameraNode->getChildNodes())
 	{
 		if (m->getName() == "PLAYER")
 		{
@@ -318,17 +332,7 @@ void CannonMissileEntityNode::Update()
 
 
 	// Comment this out to switch back to player pos
-	Camera* cameraNode;
-	for (BaseNode* m : playerNode->getChildNodes())
-	{
-		if (m->getName() == "CAMERA")
-		{
-			cameraNode = reinterpret_cast<Camera*>(m);
-			break;
-		}
-	}
-	glm::vec3 playerPos = cameraNode->GetPosition();
-	playerPos.z -= 20.0f;
+	glm::vec3 playerPos = playerNode->GetPosition();
 	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;

@@ -40,6 +40,8 @@ namespace game {
             void CreateSphere(std::string object_name, float radius = 0.6, int num_samples_theta = 90, int num_samples_phi = 45);
 			// Create the geometry for a cylinder
 			void CreateCylinder(std::string object_name, float radius = 0.6, int resolution = 30);
+			// Create the geometry for a cone
+			void CreateCone(std::string object_name, float radius = 0.6, int resolution = 30);
 			// Create the geometry of a plane using two triangles
 			void CreateSquare(std::string object_name, float width = 1.0);
 			// Create the geometry of a plane using a grid
