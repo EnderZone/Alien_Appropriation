@@ -249,7 +249,7 @@ void FarmerEntityNode::Update()
 
 
 	// Comment this out to switch back to player pos
-	glm::vec3 playerPos = playerNode->GetPosition() + ((Camera*)cameraNode)->GetPosition();
+	glm::vec3 playerPos = playerNode->GetPosition();
 	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
@@ -347,7 +347,7 @@ void CannonMissileEntityNode::Update()
 
 
 	// Comment this out to switch back to player pos
-	glm::vec3 playerPos = playerNode->GetPosition() + ((Camera*)cameraNode)->GetPosition();
+	glm::vec3 playerPos = playerNode->GetPosition();
 	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;

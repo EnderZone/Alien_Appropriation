@@ -114,7 +114,12 @@ void Camera::Update()
 	mPosition += -mVelocityZ * playerForward;
 	mVelocityZ *= 0.95;
 
-
+	if (mPosition.y < 5.0) {
+		mPosition.y = 5.0;
+	}
+	if (mPosition.y > 50.0) {
+		mPosition.y = 50.0;
+	}
 
 	for (BaseNode* bn : getChildNodes())
 	{
@@ -245,7 +250,7 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix = glm::mat4(1.0); 
 
 	// Adding player to the view Matrix
-	mViewMatrix = glm::translate(mViewMatrix, findPlayerNode()->GetPosition());
+	mViewMatrix = glm::translate(mViewMatrix, findPlayerNode()->GetPosition() - mPosition);
 
     // Copy vectors to matrix
     // Add vectors to rows, not columns of the matrix, so that we get
@@ -263,7 +268,7 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix[2][2] = current_forward[2];
 
 
-	mViewMatrix = glm::translate(mViewMatrix, -findPlayerNode()->GetPosition());
+	mViewMatrix = glm::translate(mViewMatrix, -(findPlayerNode()->GetPosition() - mPosition));
 
     // Create translation to camera position
     glm::mat4 trans = glm::translate(glm::mat4(1.0), -mPosition);

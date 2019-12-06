@@ -804,6 +804,143 @@ void ResourceManager::CreateCylinder(std::string object_name, float radius, int 
 	// Create resource
 	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
 }
+
+void ResourceManager::CreateCone(std::string object_name, float radius, int resolution) {
+
+	// Create a cylinder
+	// The cylinder is built from two circles
+	// Vertices are sampled along the circles, and both circles have a vertex at their center (the poles)
+
+	// Number of vertices and faces to be created
+	const GLuint vertex_num = resolution * 1 + 2;
+	const GLuint face_num = resolution * 3;
+
+	// Number of attributes for vertices and faces
+	const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
+	const int face_att = 3; // Vertex indices (3)
+
+	// Data buffers for the torus
+	GLfloat *vertex = NULL;
+	GLuint *face = NULL;
+
+	// Allocate memory for buffers
+	try {
+		vertex = new GLfloat[vertex_num * vertex_att];
+		face = new GLuint[face_num * face_att];
+	}
+	catch (std::exception &e) {
+		throw e;
+	}
+
+	// Create vertices 
+	float theta; //Angle around the cylinder
+	glm::vec3 vertex_position;
+	glm::vec3 vertex_normal;
+	glm::vec3 vertex_color;
+	glm::vec2 vertex_coord;
+
+	for (int i = 0; i < resolution; i++) {
+		for (int y = 0; y < 1; y++) { //Only need top rim
+
+			theta = 2.0*glm::pi<GLfloat>()*i / resolution; // angle for circle sampling
+
+			// Define position, normal and color of vertex
+			vertex_normal = glm::vec3(cos(theta), 0, sin(theta));
+			vertex_position = vertex_normal * radius;
+			vertex_position.y = 0.5f * (y * 2 - 1);
+			vertex_color = glm::vec3(1.0 - ((float)i / (float)resolution),
+				(float)i / (float)resolution,
+				(float)i / (float)resolution);
+			vertex_coord = glm::vec2(
+				theta / (2.0*glm::pi<GLfloat>())
+				, 0.25f + y / 2.0f
+			);
+			// Add vectors to the data buffer
+			for (int k = 0; k < 3; k++) {
+				vertex[(i + resolution * y)*vertex_att + k] = vertex_position[k];
+				vertex[(i + resolution * y)*vertex_att + k + 3] = vertex_normal[k];
+				vertex[(i + resolution * y)*vertex_att + k + 6] = vertex_color[k];
+			}
+			vertex[(i + resolution * y)*vertex_att + 9] = vertex_coord[0];
+			vertex[(i + resolution * y)*vertex_att + 10] = vertex_coord[1];
+		}
+	}
+
+	//Add the poles
+	for (int y = 0; y < 2; y++) {
+		// Define position, normal and color of vertex
+		vertex_normal = glm::vec3(0.0f, (y * 2 - 1), 0.0f);
+		vertex_position = glm::vec3(0.0f, (y - 0.5f), 0.0f);
+		vertex_color = glm::vec3(0.0f, 1.0f - y, y + 0.0f);
+		vertex_coord = glm::vec2(0.0f, (float)y);
+		// Add vectors to the data buffer
+		for (int k = 0; k < 3; k++) {
+			vertex[(resolution * 2 + y)*vertex_att + k] = vertex_position[k];
+			vertex[(resolution * 2 + y)*vertex_att + k + 3] = vertex_normal[k];
+			vertex[(resolution * 2 + y)*vertex_att + k + 6] = vertex_color[k];
+		}
+		vertex[(resolution * 2 + y)*vertex_att + 9] = vertex_coord[0];
+		vertex[(resolution * 2 + y)*vertex_att + 10] = vertex_coord[1];
+	}
+
+	// Create triangles
+	for (int i = 0; i < resolution; i++) {
+		//Four triangles per vertex along the rim
+		//Two triangles per side face
+/*		glm::vec3 t1(
+			i,
+			i + resolution,
+			(i + 1) % resolution + 1
+		);
+/*		glm::vec3 t2(
+			i,
+			(i + 1) % resolution + resolution,
+			(i + 1) % resolution
+		);*/
+		//One triangle per endcap
+		glm::vec3 t3(
+			i,
+			(i + 1) % resolution,
+			resolution * 2
+		);
+		glm::vec3 t4(
+			i + resolution,
+			resolution * 2 + 1,
+			(i + 1) % resolution + resolution
+		);
+		// Add the four triangles to the data buffer
+		for (int k = 0; k < 3; k++) {
+			//face[(i)*face_att + k] = (GLuint)t1[k];
+			//face[(i + resolution)*face_att + k] = (GLuint)t2[k];
+			//face[(i + resolution * 2) * face_att + k] = (GLuint)t3[k];
+			//face[(i + resolution * 3) * face_att + k] = (GLuint)t4[k];
+			face[(i) * face_att + k] = (GLuint)t3[k];
+			face[(i + resolution) * face_att + k] = (GLuint)t4[k];
+
+		}
+
+	}
+
+	// Create model 
+	// Create OpenGL buffer for vertices
+	GLuint vbo, ebo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, vertex_num * vertex_att * sizeof(GLfloat), vertex, GL_STATIC_DRAW);
+
+	// Create OpenGL buffer for faces
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, face_num * face_att * sizeof(GLuint), face, GL_STATIC_DRAW);
+
+	// Free data buffers
+	delete[] vertex;
+	delete[] face;
+
+	// Create resource
+	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
+}
+
 void ResourceManager::CreateSquare(std::string object_name, float width /*= 1.0*/)
 {
 	// Create a sphere using a well-known parameterization
