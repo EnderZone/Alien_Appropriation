@@ -43,7 +43,7 @@ void CowEntityNode::Update()
 	// This behaviors repeats indefinitely
 	// If a cow is picked up and then dropped, it should run around erratically for some time, before stopping and continuing normal behavior
 
-	//Timer Stuff
+	// Behaviour state timer stuff
 	float currentTime = glfwGetTime();
 	if (currentTime >= mNextTimer)
 	{
@@ -67,44 +67,58 @@ void CowEntityNode::Update()
 
 	// Behaviour Stuff
 	if (mBehaviour == stand)
-	{
-		mVelocity = glm::vec3(0.0f);
-	}
+		doStand();
 	else if (mBehaviour == walk)
-	{
-		glm::vec3 dirVec = glm::vec3(
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
-			0.0f,
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
-		);
-
-		mVelocity += 0.02f * glm::normalize(dirVec);
-		mVelocity = 0.2f * glm::normalize(mVelocity);
-		Rotate(mVelocity);
-	}
+		doWalk();
 	else if (mBehaviour == run)
-	{
-		glm::vec3 dirVec = glm::vec3(
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
-			0.0f,
-			-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
-		);
-
-		mVelocity += 0.2f * glm::normalize(dirVec);
-		mVelocity = 0.5f * glm::normalize(mVelocity);
-		Rotate(mVelocity);
-	}
+		doRun();
 
 	// When dropped, we will manually set mNextTimer
 
 	
 }
 
+void CowEntityNode::doStand()
+{
+	mVelocity = glm::vec3(0.0f);
+}
+
+void CowEntityNode::doWalk()
+{
+	glm::vec3 dirVec = glm::vec3(
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
+		0.0f,
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
+	);
+
+	mVelocity += 0.02f * glm::normalize(dirVec);
+	mVelocity = 0.2f * glm::normalize(mVelocity);
+	Rotate(mVelocity);
+}
+
+void CowEntityNode::doRun()
+{
+	glm::vec3 dirVec = glm::vec3(
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
+		0.0f,
+		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f)))
+	);
+
+	mVelocity += 0.2f * glm::normalize(dirVec);
+	mVelocity = 0.5f * glm::normalize(mVelocity);
+	Rotate(mVelocity);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 BullEntityNode::BullEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
 	: EntityNode(name, geometry, material, texture)
 	, mLastTimer(0.0f)
 	, mNextTimer(0.0f)
 {
+	// Random start behaviour
 	int defaultBehaviour = rand() % 2;
 	switch (defaultBehaviour)
 	{
@@ -118,7 +132,6 @@ BullEntityNode::BullEntityNode(const std::string name, const Resource *geometry,
 
 	// Behaviour override
 	//mBehaviour = run;
-
 }
 
 
@@ -136,33 +149,45 @@ void BullEntityNode::Update()
 	// Will thrash if picked up and will run for longer when dropped
 
 	//Timer Stuff
-float currentTime = glfwGetTime();
-if (currentTime >= mNextTimer)
-{
-	if (mNextTimer != 0.0f)
+	float currentTime = glfwGetTime();
+	if (currentTime >= mNextTimer)
 	{
-		if (mBehaviour == stand)
-			mBehaviour = walk;
-		else if (mBehaviour == walk)
-			mBehaviour = stand;
-		else if (mBehaviour == run)
-			mBehaviour = stand;
+		if (mNextTimer != 0.0f)
+		{
+			if (mBehaviour == stand)
+				mBehaviour = walk;
+			else if (mBehaviour == walk)
+				mBehaviour = stand;
+			else if (mBehaviour == run)
+				mBehaviour = stand;
+		}
+
+		mLastTimer = currentTime;
+
+		float minPeriod = 3.0f;
+		float maxPeriod = 6.0f;
+
+		mNextTimer = currentTime + minPeriod + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / maxPeriod - minPeriod);
 	}
 
-	mLastTimer = currentTime;
+	// Behaviour Stuff
+	if (mBehaviour == stand)
+		doStand();
+	else if (mBehaviour == walk)
+		doWalk();
+	else if (mBehaviour == run)
+		doRun();
 
-	float minPeriod = 3.0f;
-	float maxPeriod = 6.0f;
-
-	mNextTimer = currentTime + minPeriod + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / maxPeriod - minPeriod);
+	//Thrashing will occur when picked up?
+	//When dropped, need to manually set mNextTimer to a greater number than cow
 }
 
-// Behaviour Stuff
-if (mBehaviour == stand)
+void BullEntityNode::doStand()
 {
 	mVelocity = glm::vec3(0.0f);
 }
-else if (mBehaviour == walk)
+
+void BullEntityNode::doWalk()
 {
 	glm::vec3 dirVec = glm::vec3(
 		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
@@ -174,7 +199,8 @@ else if (mBehaviour == walk)
 	mVelocity = 0.2f * glm::normalize(mVelocity);
 	Rotate(mVelocity);
 }
-else if (mBehaviour == run)
+
+void BullEntityNode::doRun()
 {
 	glm::vec3 dirVec = glm::vec3(
 		-1.0f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX / (1.0f - (-1.0f))),
@@ -187,9 +213,11 @@ else if (mBehaviour == run)
 	Rotate(mVelocity);
 }
 
-//Thrashing will occur when picked up?
-//When dropped, need to manually set mNextTimer to a greater number than cow
-}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 FarmerEntityNode::FarmerEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
 	: EntityNode(name, geometry, material, texture)
@@ -207,47 +235,8 @@ void FarmerEntityNode::Update()
 {
 	EntityNode::Update();
 
-
-	// Get the player node
-	BaseNode* rootNode = this;
-
-	while (rootNode->getName() != "ROOT")
-	{
-		rootNode = rootNode->getParentNode();
-	}
-
-	if (!rootNode)
-		throw("Root Node could not be found from " + getName());
-
-	SceneNode* playerNode;
-
-	for (BaseNode* m : rootNode->getChildNodes())
-	{
-		if (m->getName() == "PLAYER")
-		{
-			playerNode = reinterpret_cast<SceneNode*>(m);
-			break;
-		}
-	}
-
-	if (!playerNode)
-		throw("Player Node could not be found from " + getName());
-
-
-
-	// Comment this out to switch back to player pos
-	Camera* cameraNode;
-	for (BaseNode* m : playerNode->getChildNodes())
-	{
-		if (m->getName() == "CAMERA")
-		{
-			cameraNode = reinterpret_cast<Camera*>(m);
-			break;
-		}
-	}
-	glm::vec3 playerPos = cameraNode->GetPosition();
+	glm::vec3 playerPos = getPlayerPosition();
 	playerPos.z -= 20.0f;
-	//glm::vec3 playerPos = playerNode->GetPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
 	dirPlayer.y = 0.0f;
@@ -258,9 +247,7 @@ void FarmerEntityNode::Update()
 		Rotate(dirPlayer);
 
 		if (glm::distance(mPosition, playerPos) > 10.0)
-		{
 			mVelocity = 0.2f * glm::normalize(dirPlayer);
-		}
 		else
 			mVelocity = glm::vec3(0.0f);
 	}

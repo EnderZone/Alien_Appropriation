@@ -23,6 +23,9 @@ namespace game {
 		void Update();
 
 	protected:
+
+		glm::vec3 getPlayerPosition();
+
 		// mPosition is stored in SceneNode
 		glm::vec3 mVelocity;
 		glm::vec3 mAcceleration;

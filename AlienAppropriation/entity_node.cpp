@@ -1,5 +1,6 @@
 
 #include "entity_node.h"
+#include "player_node.h"
 
 namespace game
 {
@@ -33,9 +34,47 @@ void EntityNode::Update()
 		mVelocity.y = std::max(mVelocity.y, 0.0f);
 
 	mPosition += mVelocity;
+}
 
-	//todo Friction
+glm::vec3 EntityNode::getPlayerPosition()
+{
+	// Get the root node
+	BaseNode* rootNode = this;
+	while (rootNode->getName() != "ROOT")
+	{
+		rootNode = rootNode->getParentNode();
+	}
 
+	if (!rootNode)
+		throw("Root Node could not be found from " + getName());
+
+	Camera* cameraNode;
+	for (BaseNode* m : rootNode->getChildNodes())
+	{
+		if (m->getName() == "CAMERA")
+		{
+			cameraNode = reinterpret_cast<Camera*>(m);
+			break;
+		}
+	}
+
+	if (!cameraNode)
+		throw("Camera Node could not be found from " + getName());
+
+	PlayerNode* playerNode;
+	for (BaseNode* m : cameraNode->getChildNodes())
+	{
+		if (m->getName() == "PLAYER")
+		{
+			playerNode = reinterpret_cast<PlayerNode*>(m);
+			break;
+		}
+	}
+
+	if (!playerNode)
+		throw("Player Node could not be found from " + getName());
+
+	return playerNode->GetPosition();
 }
 
 }

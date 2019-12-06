@@ -4,24 +4,24 @@
 
 #include "entity_node.h"
 
-
-
-// In game entities
+// Implemented game entities
 // Cow
 // Bull
 // Farmer with shotgun
+// Stationary cannon (homing missile)
+
+// Potential game entities
 // Military person with rifle
 // Military person with missile launcher
 // Jeep with mounted gun
 // Tank with mounted cannon
 // Stationary cannon (laser)
 // Stationary cannon (missile)
-// Stationary cannon (homing missile)
 
 namespace game {
 
 	// Cow :)
-	// Cow talks around grazing, oblivious
+	// Cow walks around grazing, oblivious
 	// Player tries to take them 
 	class CowEntityNode : public EntityNode {
 
@@ -36,6 +36,10 @@ namespace game {
 
 	private:
 
+		void doStand();
+		void doWalk();
+		void doRun();
+
 		enum Behaviour
 		{
 			walk,
@@ -44,6 +48,7 @@ namespace game {
 		};
 
 		Behaviour mBehaviour;
+
 
 		// Timers for behaviors purposes
 		float mLastTimer;
@@ -67,6 +72,10 @@ namespace game {
 		void Update();
 
 	private:
+
+		void doStand();
+		void doWalk();
+		void doRun();
 
 		enum Behaviour
 		{
