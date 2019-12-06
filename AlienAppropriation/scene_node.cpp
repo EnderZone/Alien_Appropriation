@@ -170,6 +170,11 @@ GLuint SceneNode::GetMaterial(void) const {
     return mMaterial;
 }
 
+GLuint SceneNode::GetTexture(void) const {
+
+	return mTexture;
+}
+
 
 void SceneNode::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/){
 

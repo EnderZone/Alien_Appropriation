@@ -26,9 +26,21 @@ void BaseNode::Draw(Camera* camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
 
 void BaseNode::Update()
 {
+	for (BaseNode* m : getChildNodes())
+	{
+		if (m->getName() == "CAMERA")
+		{
+			m->Update();
+			break;
+		}
+	}
+
 	for (BaseNode* bn : getChildNodes())
 	{
-		bn->Update();
+		if (bn->getName() != "CAMERA")
+		{
+			bn->Update();
+		}
 	}
 }
 

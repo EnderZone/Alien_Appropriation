@@ -113,7 +113,7 @@ void Camera::Update()
 
 	mPosition += -mVelocityZ * playerForward;
 	mVelocityZ *= 0.95;
-
+	
 	if (mPosition.y < 5.0) {
 		mPosition.y = 5.0;
 	}
