@@ -54,7 +54,7 @@ namespace game
 		void updateTractorBeam();
 		void updateShield();
 		void suckEntity(EntityNode*, std::vector<BaseNode*>*);
-		void shieldProjectile(ProjectileNode*);
+		void shieldProjectile(ProjectileNode*, std::vector<BaseNode*>*);
 		void takeDamage(DamageType);
 		
 		BaseNode* getRootNode();

@@ -150,12 +150,18 @@ namespace game {
 
 	void PlayerNode::updateShield() {
 		BaseNode* rootNode = getRootNode();
+		std::vector<BaseNode*>* to_remove = new std::vector<BaseNode*>;
 		for (BaseNode* bn : rootNode->getChildNodes()) {
-			ProjectileNode* pn = (ProjectileNode*)bn;
+			ProjectileNode* pn = dynamic_cast<ProjectileNode*>(bn);
 			if (pn != NULL) {
-				shieldProjectile(pn);
+				shieldProjectile(pn, to_remove);
 			}
 		}
+		for (BaseNode* removee : *to_remove) {
+			rootNode->removeChildNode(removee->getName());
+			delete removee;
+		}
+		delete to_remove;
 	}
 
 	void PlayerNode::suckEntity(EntityNode* en, std::vector<BaseNode*>* to_remove) {
@@ -190,8 +196,17 @@ namespace game {
 		}
 	}
 
-	void PlayerNode::shieldProjectile(ProjectileNode* pn) {
+	void PlayerNode::shieldProjectile(ProjectileNode* pn, std::vector<BaseNode*>* to_remove) {
+		glm::vec3 curr_pos = GetPosition();
+		glm::vec3 entity_pos = pn->GetPosition();
 
+		float dist = glm::distance(curr_pos, entity_pos);
+		
+		std::cout << dist << std::endl;
+
+		if (dist < 7.5f) {
+			to_remove->push_back(pn);
+		}
 	}
 
 	BaseNode* PlayerNode::getRootNode() {
