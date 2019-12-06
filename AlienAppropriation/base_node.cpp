@@ -46,4 +46,19 @@ void BaseNode::removeChildNode(std::string name)
 	}
 }
 
+BaseNode* BaseNode::getRootNode()
+{
+	// Get the root node
+	BaseNode* rootNode = this;
+	while (rootNode->getName() != "ROOT")
+	{
+		rootNode = rootNode->getParentNode();
+	}
+
+	if (!rootNode)
+		throw("Root Node could not be found from " + getName());
+
+	return rootNode;
+}
+
 }

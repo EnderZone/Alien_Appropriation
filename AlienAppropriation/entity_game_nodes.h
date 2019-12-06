@@ -107,8 +107,11 @@ namespace game {
 		~FarmerEntityNode();
 
 		void Update();
+		
 
 	private:
+
+		void doFire();
 
 		// Timers for behaviors purposes
 		float mNextTimer;
@@ -131,10 +134,13 @@ namespace game {
 
 	private:
 
+		void fireHeatMissile();
+
 		// Timers for behaviors purposes
 		float mLastTimer;
 		float mNextTimer;
 
+		// total number of missiles fired by this cannon
 		int mProjectiles;
 
 	}; // class CannonMissileEntityNode

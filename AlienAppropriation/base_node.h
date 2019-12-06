@@ -35,6 +35,8 @@ namespace game
 		inline std::vector<BaseNode*> getChildNodes() { return mChildNodes; }
 		void removeChildNode(std::string name);
 
+		BaseNode* getRootNode();
+
 		inline void setSceneGraph(SceneGraph* s) { mSceneGraph = s; }
 		inline SceneGraph* getSceneGraph() { return mSceneGraph; }
 

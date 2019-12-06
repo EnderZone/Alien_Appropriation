@@ -262,7 +262,7 @@ void FarmerEntityNode::Update()
 		float currentTime = glfwGetTime();
 		if (currentTime >= mNextTimer)
 		{
-			// Fire at player call
+			doFire();
 
 			// In the meantime, player entity will rise 1 unit.
 			//mPosition.y += 1.0;
@@ -272,6 +272,15 @@ void FarmerEntityNode::Update()
 	}
 
 }
+
+
+void FarmerEntityNode::doFire()
+{
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 CannonMissileEntityNode::CannonMissileEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/)
 	: EntityNode(name, geometry, material, texture)
@@ -292,48 +301,7 @@ void CannonMissileEntityNode::Update()
 	EntityNode::Update();
 
 
-	// Get the player node
-	BaseNode* rootNode = this;
-
-	while (rootNode->getName() != "ROOT")
-	{
-		rootNode = rootNode->getParentNode();
-	}
-
-	if (!rootNode)
-		throw("Root Node could not be found from " + getName());
-
-	SceneNode* cameraNode;
-
-	for (BaseNode* m : rootNode->getChildNodes())
-	{
-		if (m->getName() == "CAMERA")
-		{
-			cameraNode = reinterpret_cast<SceneNode*>(m);
-			break;
-		}
-	}
-
-	if (!cameraNode)
-		throw("CameraNode could not be found from " + getName());
-
-	SceneNode* playerNode;
-	for (BaseNode* m : cameraNode->getChildNodes())
-	{
-		if (m->getName() == "PLAYER")
-		{
-			playerNode = reinterpret_cast<SceneNode*>(m);
-			break;
-		}
-	}
-
-	if (!playerNode)
-		throw("Player Node could not be found from " + getName());
-
-
-	// Comment this out to switch back to player pos
-	glm::vec3 playerPos = playerNode->GetPosition();
-	//glm::vec3 playerPos = playerNode->GetPosition();
+	glm::vec3 playerPos = getPlayerPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
 	dirPlayer.y = 0.0f;
@@ -348,21 +316,29 @@ void CannonMissileEntityNode::Update()
 	{
 		if (glm::distance(mPosition, playerPos) < 50.0)
 		{
-			glm::vec3 initVelVec = 1.0f * glm::normalize(dirPlayer);
-			SceneGraph* sceneGraph = rootNode->getSceneGraph();
-			HeatMissileNode* missile = sceneGraph->CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "cubeMesh", "texturedMaterial", "placeholderTexture", 10, mPosition, initVelVec);
-			mProjectiles += 1;
-			missile->Scale(glm::vec3(0.2, 0.2, 1.5));
+			fireHeatMissile();
 
-
-
-			mNextTimer = currentTime + 10;
+			mLastTimer = currentTime;
+			mNextTimer = currentTime + 15;
 		}
 		
-
-		//MissileNode* missile = new MissileNode("missile1", "CubeMesh", "TexturedMaterial", 100, mPosition, initVelVec, "Texture");
 	}
 
+}
+
+void CannonMissileEntityNode::fireHeatMissile()
+{
+	glm::vec3 playerPos = getPlayerPosition();
+
+	glm::vec3 dirPlayer = playerPos - mPosition;
+	dirPlayer.y = 0.0f;
+
+	glm::vec3 initVelVec = 1.0f * glm::normalize(dirPlayer);
+
+	SceneGraph* sceneGraph = getRootNode()->getSceneGraph();
+	HeatMissileNode* missile = sceneGraph->CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "cubeMesh", "texturedMaterial", "placeholderTexture", 10, mPosition, initVelVec);
+	mProjectiles += 1;
+	missile->Scale(glm::vec3(0.2, 0.2, 1.5));
 }
 
 }
