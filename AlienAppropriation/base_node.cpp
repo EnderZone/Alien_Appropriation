@@ -27,22 +27,8 @@ void BaseNode::Draw(Camera* camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
 
 void BaseNode::Update()
 {
-	for (BaseNode* m : getChildNodes())
-	{
-		if (m->getName() == "CAMERA")
-		{
-			m->Update();
-			break;
-		}
-	}
-
-	for (BaseNode* bn : getChildNodes())
-	{
-		if (bn->getName() != "CAMERA")
-		{
-			bn->Update();
-		}
-	}
+	for (BaseNode* n : getChildNodes())
+		n->Update();
 
 	std::vector<std::string> nodesToDelete;
 	deleteNodes(nodesToDelete);
@@ -91,15 +77,18 @@ void BaseNode::deleteNodes(std::vector<std::string>& nodesToDelete)
 			n->deleteNodes(nodesToDelete);
 
 			for (std::string nodeName : nodesToDelete)
-			{
 				removeChildNode(nodeName);
-			}
 		}
 	}
 	else
 	{
 		if (mDeleteNextTick)
 			nodesToDelete.push_back(mName);
+
+		for (BaseNode* n : getChildNodes())
+		{
+			n->deleteNodes(nodesToDelete);
+		}
 	}
 
 
