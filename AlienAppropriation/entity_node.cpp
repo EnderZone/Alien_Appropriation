@@ -52,7 +52,7 @@ void EntityNode::rise()
 	setIsGrounded(false);
 }
 
-glm::vec3 EntityNode::getPlayerPosition()
+game::PlayerNode* EntityNode::getPlayerNode()
 {
 	// Get the root node
 	BaseNode* rootNode = this;
@@ -90,7 +90,12 @@ glm::vec3 EntityNode::getPlayerPosition()
 	if (!playerNode)
 		throw("Player Node could not be found from " + getName());
 
-	return playerNode->GetPosition();
+	return playerNode;
+}
+
+glm::vec3 EntityNode::getPlayerPosition()
+{
+	return getPlayerNode()->GetPosition();
 }
 
 }

@@ -144,7 +144,7 @@ void Game::SetupResources(void){
 	mResourceManager->LoadResource(Material, "testMaterial", filename.c_str());
 
 
-	std::string meshes[] = { "barn", "tree", "cow", "cannon", "farmer", "ufo" };
+	std::string meshes[] = { "barn", "tree", "cow", "cannon", "farmer", "ufo"};
 	for (std::string name : meshes) {
 		filename = std::string(asset_directory) + std::string("/" + name + ".obj");
 		mResourceManager->LoadResource(Mesh, name + "Mesh", filename.c_str());

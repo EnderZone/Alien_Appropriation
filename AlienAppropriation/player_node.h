@@ -11,7 +11,7 @@
 
 namespace game
 {	
-	enum DamageType { BULL = 10, MISSLE = 20, GUN = 5};
+	enum DamageType { BULL = 10, MISSILE = 20, GUN = 5};
 
 	class PlayerNode : public SceneNode
 	{
@@ -38,6 +38,8 @@ namespace game
 		inline void toggleTractorBeam() { tractor_beam_on = !tractor_beam_on; }
 		inline void toggleShields() { shielding_on = !shielding_on; }
 
+		void takeDamage(DamageType);
+
 	private:
 		float x_tilt_percentage;
 		float y_tilt_percentage;
@@ -55,7 +57,6 @@ namespace game
 		void updateShield();
 		void suckEntity(EntityNode*, std::vector<BaseNode*>*);
 		void shieldProjectile(ProjectileNode*, std::vector<BaseNode*>*);
-		void takeDamage(DamageType);
 		
 		BaseNode* getRootNode();
 

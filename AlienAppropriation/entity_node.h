@@ -31,6 +31,7 @@ namespace game {
 
 	protected:
 
+		PlayerNode* getPlayerNode();
 		glm::vec3 getPlayerPosition();
 
 		// mPosition is stored in SceneNode

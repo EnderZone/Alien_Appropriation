@@ -263,7 +263,7 @@ void FarmerEntityNode::Update()
 	dirPlayer.y = 0.0f;
 
 	// If player is within range x, rotate to face player and walk towards until player is within range v
-	if (glm::distance(mPosition, playerPos) < 200.0)
+	if (glm::distance(mPosition, playerPos) < 70.0)
 	{
 		Rotate(dirPlayer);
 
@@ -296,7 +296,8 @@ void FarmerEntityNode::Update()
 
 void FarmerEntityNode::doFire()
 {
-
+	PlayerNode* playerNode = getPlayerNode();
+	playerNode->takeDamage(GUN);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
