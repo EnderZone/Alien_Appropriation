@@ -178,7 +178,7 @@ namespace game {
 			}
 		}
 
-		SceneNode *scn = scene->CreateNode<SceneNode>(entity_name, geom, mat, tex, parent);
+		EntityNode *scn = scene->CreateNode<EntityNode>(entity_name, geom, mat, tex, parent);
 		return scn;
 	}
 

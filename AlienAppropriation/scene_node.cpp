@@ -49,6 +49,9 @@ SceneNode::SceneNode(const std::string name, const Resource *geometry, const Res
 
     // Other attributes
     mScale = glm::vec3(1.0, 1.0, 1.0);
+	radius = 1.0;
+	collisionType = Point;
+	gridPosition = glm::vec2(floor(mPosition.x / 15), floor(mPosition.x / 15));
 }
 
 
@@ -90,6 +93,12 @@ void SceneNode::SetOrientation(glm::quat orientation){
 void SceneNode::SetScale(glm::vec3 scale){
 
     mScale = scale;
+}
+
+void SceneNode::SetGridPosition(glm::vec3 pos)
+{
+	gridPosition.x = floor(pos.x / 15);
+	gridPosition.y = floor(pos.z / 15);
 }
 
 
@@ -208,10 +217,13 @@ void SceneNode::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/
 
 void SceneNode::Update(void)
 {
-	for (BaseNode* bn : getChildNodes())
+	mPosition = glm::clamp(mPosition, 0.0f, 300.0f);
+	gridPosition = glm::vec2(floor(mPosition.x / 15), floor(mPosition.z / 15));
+
+	/*for (BaseNode* bn : getChildNodes())
 	{
 		bn->Update();
-	}
+	}*/
 
     // Do nothing specific for this generic type of scene node
 }

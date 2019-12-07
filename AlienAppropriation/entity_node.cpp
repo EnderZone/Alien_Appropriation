@@ -27,7 +27,6 @@ void EntityNode::Update()
 	SceneNode::Update();
 
 	//Apply Gravity
-
 	if (!mIsGrounded)
 	{
 		if (mPosition.y > 0.0f)

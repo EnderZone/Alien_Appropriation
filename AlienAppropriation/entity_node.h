@@ -10,6 +10,8 @@
 
 namespace game {
 
+	
+
 	// Class that manages one object in a scene 
 	class EntityNode : public SceneNode {
 
@@ -20,7 +22,7 @@ namespace game {
 		// Destructor
 		~EntityNode();
 
-		void Update();
+		virtual void Update();
 
 		void rise();
 
@@ -36,6 +38,10 @@ namespace game {
 		glm::vec3 mAcceleration;
 
 		bool mIsGrounded;
+
+
+
+
 
 	}; // class EntityNode
 

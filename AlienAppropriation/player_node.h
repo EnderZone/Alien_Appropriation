@@ -16,7 +16,7 @@ namespace game
 	class PlayerNode : public SceneNode
 	{
 	public:
-		PlayerNode(const std::string name, const Resource *geometry, const Resource *material, BaseNode* camera);
+		PlayerNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture, BaseNode* camera);
 		~PlayerNode();
 
 		glm::vec3 GetPosition(void);
@@ -29,7 +29,7 @@ namespace game
 		void rotateByCamera();
 
 		void Draw(Camera* camera, glm::mat4 parentTransf = glm::mat4(1.0));
-		void Update(void);
+		virtual void Update(void);
 
 		void setPlayerPosition();
 		float getDistanceFromCamera();

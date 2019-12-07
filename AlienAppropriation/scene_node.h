@@ -15,6 +15,11 @@
 #include "camera.h"
 
 namespace game {
+
+
+	enum CollisionType { Point, Capsule };
+
+
 	// Class that manages one object in a scene 
 	class SceneNode : public BaseNode {
 
@@ -29,11 +34,15 @@ namespace game {
 		virtual glm::vec3 GetPosition(void);
 		glm::quat GetOrientation(void) const;
 		glm::vec3 GetScale(void) const;
+		inline glm::vec2 GetGridPosition(void) { return gridPosition; }
+		inline float GetRadius(void) { return radius; }
+		inline CollisionType GetCollisionType(void) { return collisionType; }
 
 		// Set node attributes
 		void SetPosition(glm::vec3 position);
 		void SetOrientation(glm::quat orientation);
 		void SetScale(glm::vec3 scale);
+		void SetGridPosition(glm::vec3 pos);
 
 		// Perform transformations on node
 		void Translate(glm::vec3 trans);
@@ -76,6 +85,12 @@ namespace game {
 		// Finds a quat such that q*start = dest
 		// Source code from https://github.com/opengl-tutorials/ogl/blob/master/common/quaternion_utils.cpp
 		glm::quat QuatBetweenVectors(glm::vec3 start, glm::vec3 dest);
+
+
+		glm::vec2 gridPosition;
+		//bool collidable;
+		float radius;
+		CollisionType collisionType;
 
 
 	}; // class SceneNode

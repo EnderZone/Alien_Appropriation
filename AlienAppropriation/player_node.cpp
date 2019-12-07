@@ -7,7 +7,7 @@
 #include <iostream>
 
 namespace game {
-	PlayerNode::PlayerNode(const std::string name, const Resource *geometry, const Resource *material, BaseNode* camera) : SceneNode(name, geometry, material),
+	PlayerNode::PlayerNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture, BaseNode* camera) : SceneNode(name, geometry, material, texture),
 		forward_factor(40.0f),
 		x_tilt_percentage(0.0f),
 		y_tilt_percentage(0.0f),
@@ -18,6 +18,7 @@ namespace game {
 	{
 		// Set This as the parentNode of the camera while taking its own parent as his
 		camera->addChildNode(this);
+		radius = 2;
 	}
 
 	PlayerNode::~PlayerNode() {}
@@ -273,6 +274,20 @@ namespace game {
 
 		GLint world_mat = glGetUniformLocation(program, "world_mat");
 		glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(transf));
+
+		// Texture
+		if (mTexture) {
+			GLint tex = glGetUniformLocation(program, "texture_map");
+			glUniform1i(tex, 0); // Assign the first texture to the map
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, mTexture); // First texture we bind
+			// Define texture interpolation
+			glGenerateMipmap(GL_TEXTURE_2D);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		}
 
 		// Timer
 		GLint timer_var = glGetUniformLocation(program, "timer");
