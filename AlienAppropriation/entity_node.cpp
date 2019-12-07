@@ -40,6 +40,7 @@ void EntityNode::Update()
 			mVelocity.y = 0.0f;
 			mPosition.y = 0.0f;
 			mIsGrounded = true;
+			hitGround();
 		}
 	}
 	else
@@ -100,6 +101,11 @@ game::PlayerNode* EntityNode::getPlayerNode()
 glm::vec3 EntityNode::getPlayerPosition()
 {
 	return getPlayerNode()->GetPosition();
+}
+
+void EntityNode::hitGround()
+{
+
 }
 
 }
