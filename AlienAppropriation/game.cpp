@@ -278,7 +278,8 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PLAYER");
 
     // View control
-    float rotFactor(glm::pi<float>() * 100  / 180);
+	// This 1 variable is for ashton, turning is super slow on my system so I use it to amp up turning, please ignore for now until we solve that
+    float rotFactor(glm::pi<float>() * 1  / 180);
     float transFactor = 3.0;
 	float velocityFactor = 0.2f;
     if (key == GLFW_KEY_UP){
