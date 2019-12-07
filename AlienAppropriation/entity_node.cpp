@@ -29,11 +29,28 @@ void EntityNode::Update()
 	//Apply Gravity
 
 	if (!mIsGrounded)
-		mVelocity += GRAVITY;
+	{
+		if (mPosition.y > 0.0f)
+			mVelocity += GRAVITY;
+		else
+		{
+			mVelocity.y = 0.0f;
+			mPosition.y = 0.0f;
+			mIsGrounded = true;
+		}
+	}
 	else
 		mVelocity.y = std::max(mVelocity.y, 0.0f);
 
 	mPosition += mVelocity;
+}
+
+void EntityNode::rise()
+{
+ 	if (mPosition.y == 0.0f)
+		mPosition.y = 0.1f;
+	mVelocity += glm::vec3(0.0, 0.5, 0.0) + -GRAVITY;
+	setIsGrounded(false);
 }
 
 glm::vec3 EntityNode::getPlayerPosition()

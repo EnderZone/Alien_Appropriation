@@ -66,16 +66,26 @@ void CowEntityNode::Update()
 	}
 
 	// Behaviour Stuff
-	if (mBehaviour == stand)
-		doStand();
-	else if (mBehaviour == walk)
-		doWalk();
-	else if (mBehaviour == run)
-		doRun();
+	if (mIsGrounded)
+	{
+		if (mBehaviour == stand)
+			doStand();
+		else if (mBehaviour == walk)
+			doWalk();
+		else if (mBehaviour == run)
+			doRun();
+	}
 
 	// When dropped, we will manually set mNextTimer
 
 	
+}
+
+void CowEntityNode::rise()
+{
+	EntityNode::rise();
+
+	mBehaviour = run;
 }
 
 void CowEntityNode::doStand()
@@ -171,15 +181,25 @@ void BullEntityNode::Update()
 	}
 
 	// Behaviour Stuff
-	if (mBehaviour == stand)
-		doStand();
-	else if (mBehaviour == walk)
-		doWalk();
-	else if (mBehaviour == run)
-		doRun();
+	if (mIsGrounded)
+	{
+		if (mBehaviour == stand)
+			doStand();
+		else if (mBehaviour == walk)
+			doWalk();
+		else if (mBehaviour == run)
+			doRun();
+	}
 
 	//Thrashing will occur when picked up?
 	//When dropped, need to manually set mNextTimer to a greater number than cow
+}
+
+void BullEntityNode::rise()
+{
+	EntityNode::rise();
+
+	mBehaviour = run;
 }
 
 void BullEntityNode::doStand()

@@ -6,7 +6,7 @@
 
 #include "scene_node.h"
 
-#define GRAVITY glm::vec3(0.0f, -0.01f, 0.0f)
+#define GRAVITY glm::vec3(0.0f, -1.0f, 0.0f)
 
 namespace game {
 
@@ -21,6 +21,11 @@ namespace game {
 		~EntityNode();
 
 		void Update();
+
+		void rise();
+
+		inline bool getIsGrounded() { return mIsGrounded; }
+		inline void setIsGrounded(bool b) { mIsGrounded = b; }
 
 	protected:
 

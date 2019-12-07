@@ -36,6 +36,8 @@ namespace game {
 
 	private:
 
+		void rise();
+
 		void doStand();
 		void doWalk();
 		void doRun();
@@ -72,6 +74,8 @@ namespace game {
 		void Update();
 
 	private:
+
+		void rise();
 
 		void doStand();
 		void doWalk();

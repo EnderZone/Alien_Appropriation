@@ -175,7 +175,8 @@ namespace game {
 		float height = curr_pos.y - entity_pos.y;
 
 		if (dist < height / 4.0f) {
-			en->Translate(glm::vec3(0.0f, 0.25f, 0.0f));
+			en->rise();
+			
 			
 			CowEntityNode* cn = dynamic_cast<CowEntityNode*>(en);
 			BullEntityNode* bn = dynamic_cast<BullEntityNode*>(en);
