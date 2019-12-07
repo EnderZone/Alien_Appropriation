@@ -40,7 +40,9 @@ namespace game {
 
 		bool mIsGrounded;
 
+	private:
 
+		virtual void hitGround();
 
 
 
