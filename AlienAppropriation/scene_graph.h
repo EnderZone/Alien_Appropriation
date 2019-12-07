@@ -14,6 +14,7 @@
 #include "camera.h"
 #include "player_node.h"
 #include "resource_manager.h"
+#include "projectile_node.h"
 
 
 // Size of the texture that we will draw
@@ -33,7 +34,8 @@ namespace game {
 			BaseNode* mRootNode;
 
 			// Player Node
-			BaseNode* mPlayerNode;
+			PlayerNode* mPlayerNode;
+
 
 			// Resource Manager (so scene graph can create new nodes on its own)
 			ResourceManager* mResourceManager;
@@ -47,7 +49,14 @@ namespace game {
 			GLuint mTexture;
 			GLuint mDepthBuffer;
 
+			std::vector<SceneNode*> nodes;
+
         public:
+
+
+			Camera* mCameraNode;
+
+
             // Constructor and destructor
             SceneGraph(ResourceManager* resourceManager);
             ~SceneGraph();
@@ -71,6 +80,8 @@ namespace game {
 					parent->addChildNode(scn);
 				}
 
+				nodes.push_back(scn);
+
 				return scn;
 			}
 
@@ -82,6 +93,7 @@ namespace game {
 
 				// Add node to the scene
 				mRootNode->addChildNode(scn);
+				nodes.push_back(scn);
 
 				return scn;
 			}
@@ -114,6 +126,8 @@ namespace game {
 			void DisplayTexture(GLuint program);
 			// Save texture to a file in ppm format
 			void SaveTexture(char *filename);
+
+			bool checkCollision(SceneNode *object);
 
 
 

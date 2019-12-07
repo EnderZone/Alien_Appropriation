@@ -17,6 +17,7 @@
 
 #include "scene_graph.h"
 #include "resource_manager.h"
+#include "entity_node.h"
 
 
 namespace game {

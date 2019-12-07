@@ -20,7 +20,7 @@ SceneGraph::SceneGraph(ResourceManager* resourceManager)
 
 	mRootNode = new BaseNode("ROOT");
 	mRootNode->setSceneGraph(this);
-	
+
 }
 
 
@@ -44,18 +44,22 @@ glm::vec3 SceneGraph::GetBackgroundColor(void) const {
 SceneNode *SceneGraph::CreatePlayerNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture, BaseNode* camera)
 {
 	// Create scene node with the specified resources
-	PlayerNode* pn = new PlayerNode(node_name, geometry, material, camera);
+	PlayerNode* pn = new PlayerNode(node_name, geometry, material, texture, camera);
 
 	// Add node to the scene (Dont do this as it is a child of the camera already)
 	// mRootNode->addChildNode((SceneNode*)pn);
 	
+	//nodes.push_back(pn);
+	mPlayerNode = pn;
 	return (SceneNode*)pn;
+
 }
 
 
 void SceneGraph::AddNode(SceneNode *node)
 {
     //node_.push_back(node);
+	nodes.push_back(node);
 	mRootNode->addChildNode(node);
 }
 
@@ -251,10 +255,46 @@ void SceneGraph::SaveTexture(char *filename) {
 
 }
 
+// Check for collision
+// If return true, then the object will be deleted (used for projectiles, cows)
+bool SceneGraph::checkCollision(SceneNode * object)
+{
+	if (object->GetCollisionType() == Point) {
+		if ((glm::distance(object->GetPosition(), mPlayerNode->GetPosition() + mCameraNode->GetPosition())) < object->GetRadius() + mPlayerNode->GetRadius()) {
+			ProjectileNode* proj = dynamic_cast<ProjectileNode*> (object);
+			if (proj) {
+				proj->getParentNode()->removeChildNode(proj->getName());
+				//damage the player here
+				return true;
+			}
+			else {
+				mCameraNode->setVelocityUp(0.0f);
+				mCameraNode->setVelocityForward(0.0f);
+				mCameraNode->setVelocitySide(0.0f);
+
+			}
+
+		}
+	}
+
+
+	return false;
+}
+
 
 void SceneGraph::Update(void)
 {
 	mRootNode->Update();
+	mPlayerNode->SetGridPosition(mPlayerNode->GetPosition() + mCameraNode->GetPosition());
+	for (int i = 0; i < nodes.size(); i++) {
+		glm::vec2 temp = (mPlayerNode->GetGridPosition() - nodes.at(i)->GetGridPosition());
+		if (glm::length(temp) < 2.0f) {
+			if (checkCollision(nodes.at(i))) {
+				nodes.erase(nodes.begin() + i);
+				i--;
+			}
+		}
+	}
 }
 
 } // namespace game
