@@ -138,11 +138,11 @@ namespace game {
 			}
 		}
 
-		for (BaseNode* removee : *to_remove) {
-			rootNode->removeChildNode(removee->getName());
-			delete removee;
-		}
-		delete to_remove;
+		//for (BaseNode* removee : *to_remove) {
+		//	rootNode->removeChildNode(removee->getName());
+		//	delete removee;
+		//}
+		//delete to_remove;
 	}
 
 	void PlayerNode::takeDamage(DamageType damage) {
@@ -181,7 +181,12 @@ namespace game {
 			CowEntityNode* cn = dynamic_cast<CowEntityNode*>(en);
 			BullEntityNode* bn = dynamic_cast<BullEntityNode*>(en);
 
-			en->rise();
+			if (bn != nullptr)
+				bn->rise();
+			else if (cn != nullptr)
+				cn->rise();
+			else
+				en->rise();
 
 			if ((bn != NULL || cn != NULL) && glm::distance(curr_pos, entity_pos) < 3.0f) {
 				//to_remove->push_back(en);

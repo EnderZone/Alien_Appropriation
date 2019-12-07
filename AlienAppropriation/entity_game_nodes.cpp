@@ -76,12 +76,16 @@ void CowEntityNode::Update()
 			doRun();
 	}
 
+	// When dropped, we will manually set mNextTimer
+
+	
 }
 
-void CowEntityNode::hitGround()
+void CowEntityNode::rise()
 {
+	EntityNode::rise();
+
 	mBehaviour = run;
-	mNextTimer = glfwGetTime() + 6.0f;
 }
 
 void CowEntityNode::doStand()
@@ -191,10 +195,11 @@ void BullEntityNode::Update()
 	//When dropped, need to manually set mNextTimer to a greater number than cow
 }
 
-void BullEntityNode::hitGround()
+void BullEntityNode::rise()
 {
+	EntityNode::rise();
+
 	mBehaviour = run;
-	mNextTimer = glfwGetTime() + 8.0f;
 }
 
 void BullEntityNode::doStand()
@@ -289,11 +294,6 @@ void FarmerEntityNode::Update()
 }
 
 
-void FarmerEntityNode::hitGround()
-{
-	mDeleteNextTick = true;
-}
-
 void FarmerEntityNode::doFire()
 {
 	PlayerNode* playerNode = getPlayerNode();
@@ -345,11 +345,6 @@ void CannonMissileEntityNode::Update()
 		
 	}
 
-}
-
-void CannonMissileEntityNode::hitGround()
-{
-	mDeleteNextTick = true;
 }
 
 void CannonMissileEntityNode::fireHeatMissile()

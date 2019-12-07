@@ -34,9 +34,9 @@ namespace game {
 
 		virtual void Update();
 
-	private:
+		void rise();
 
-		void hitGround();
+	private:
 
 		void doStand();
 		void doWalk();
@@ -73,9 +73,9 @@ namespace game {
 
 		void Update();
 
-	private:
+		void rise();
 
-		void hitGround();
+	private:
 
 		void doStand();
 		void doWalk();
@@ -115,8 +115,6 @@ namespace game {
 
 	private:
 
-		void hitGround();
-
 		void doFire();
 
 		// Timers for behaviors purposes
@@ -139,8 +137,6 @@ namespace game {
 		void Update();
 
 	private:
-
-		void hitGround();
 
 		void fireHeatMissile();
 
