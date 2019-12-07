@@ -41,11 +41,15 @@ namespace game
 		inline void setSceneGraph(SceneGraph* s) { mSceneGraph = s; }
 		inline SceneGraph* getSceneGraph() { return mSceneGraph; }
 
+		void deleteNodes(std::vector<std::string>& nodesToDelete);
+
 	protected:
 		std::string mName;
 
 		BaseNode* mParentNode;
 		std::vector<BaseNode*> mChildNodes;
+
+		bool mDeleteNextTick;
 		
 	private:
 		// Only the root node has a pointer to the scene graph

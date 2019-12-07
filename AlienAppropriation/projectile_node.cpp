@@ -82,7 +82,7 @@ void HeatMissileNode::Update()
 		PlayerNode* playerNode = getPlayerNode();
 		playerNode->takeDamage(MISSILE);
 
-		// deleteNode
+		mDeleteNextTick = true;
 	}
 }
 
