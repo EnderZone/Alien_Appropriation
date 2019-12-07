@@ -41,6 +41,7 @@ namespace game
 		inline void setSceneGraph(SceneGraph* s) { mSceneGraph = s; }
 		inline SceneGraph* getSceneGraph() { return mSceneGraph; }
 
+		inline void setDeleteNextTick(bool t) { mDeleteNextTick = t; }
 		void deleteNodes(std::vector<std::string>& nodesToDelete);
 
 	protected:

@@ -278,7 +278,7 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PLAYER");
 
     // View control
-    float rotFactor(glm::pi<float>()  / 180);
+    float rotFactor(glm::pi<float>() * 100  / 180);
     float transFactor = 3.0;
 	float velocityFactor = 0.2f;
     if (key == GLFW_KEY_UP){

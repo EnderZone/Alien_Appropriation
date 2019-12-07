@@ -138,11 +138,11 @@ namespace game {
 			}
 		}
 
-		for (BaseNode* removee : *to_remove) {
-			rootNode->removeChildNode(removee->getName());
-			delete removee;
-		}
-		delete to_remove;
+		//for (BaseNode* removee : *to_remove) {
+		//	rootNode->removeChildNode(removee->getName());
+		//	delete removee;
+		//}
+		//delete to_remove;
 	}
 
 	void PlayerNode::takeDamage(DamageType damage) {
@@ -156,13 +156,14 @@ namespace game {
 			ProjectileNode* pn = dynamic_cast<ProjectileNode*>(bn);
 			if (pn != NULL) {
 				shieldProjectile(pn, to_remove);
+
 			}
 		}
-		for (BaseNode* removee : *to_remove) {
-			rootNode->removeChildNode(removee->getName());
-			delete removee;
-		}
-		delete to_remove;
+		//for (BaseNode* removee : *to_remove) {
+		//	rootNode->removeChildNode(removee->getName());
+		//	delete removee;
+		//}
+		//delete to_remove;
 	}
 
 	void PlayerNode::suckEntity(EntityNode* en, std::vector<BaseNode*>* to_remove) {
@@ -176,14 +177,20 @@ namespace game {
 		float height = curr_pos.y - entity_pos.y;
 
 		if (dist < height / 4.0f) {
-			en->rise();
-			
 			
 			CowEntityNode* cn = dynamic_cast<CowEntityNode*>(en);
 			BullEntityNode* bn = dynamic_cast<BullEntityNode*>(en);
 
+			if (bn != nullptr)
+				bn->rise();
+			else if (cn != nullptr)
+				cn->rise();
+			else
+				en->rise();
+
 			if ((bn != NULL || cn != NULL) && glm::distance(curr_pos, entity_pos) < 3.0f) {
-				to_remove->push_back(en);
+				//to_remove->push_back(en);
+				en->setDeleteNextTick(true);
 				if (bn != NULL) {
 					takeDamage(BULL);
 				}
@@ -207,7 +214,8 @@ namespace game {
 		std::cout << dist << std::endl;
 
 		if (dist < 7.5f) {
-			to_remove->push_back(pn);
+			//to_remove->push_back(pn);
+			pn->setDeleteNextTick(true);
 		}
 	}
 

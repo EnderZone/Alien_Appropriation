@@ -30,7 +30,11 @@ void EntityNode::Update()
 	if (!mIsGrounded)
 	{
 		if (mPosition.y > 0.0f)
+		{
 			mVelocity += GRAVITY;
+			mVelocity.x = 0.0f;
+			mVelocity.z = 0.0f;
+		}
 		else
 		{
 			mVelocity.y = 0.0f;

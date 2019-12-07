@@ -34,9 +34,9 @@ namespace game {
 
 		virtual void Update();
 
-	private:
-
 		void rise();
+
+	private:
 
 		void doStand();
 		void doWalk();
@@ -73,9 +73,9 @@ namespace game {
 
 		void Update();
 
-	private:
-
 		void rise();
+
+	private:
 
 		void doStand();
 		void doWalk();
