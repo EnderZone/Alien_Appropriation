@@ -813,7 +813,7 @@ void ResourceManager::CreateCone(std::string object_name, float radius, int reso
 
 	// Number of vertices and faces to be created
 	const GLuint vertex_num = resolution * 1 + 2;
-	const GLuint face_num = resolution * 3;
+	const GLuint face_num = resolution * 2;
 
 	// Number of attributes for vertices and faces
 	const int vertex_att = 11;  // 11 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), 2D texture coordinates (2)
@@ -875,9 +875,9 @@ void ResourceManager::CreateCone(std::string object_name, float radius, int reso
 		vertex_coord = glm::vec2(0.0f, (float)y);
 		// Add vectors to the data buffer
 		for (int k = 0; k < 3; k++) {
-			vertex[(resolution * 2 + y)*vertex_att + k] = vertex_position[k];
-			vertex[(resolution * 2 + y)*vertex_att + k + 3] = vertex_normal[k];
-			vertex[(resolution * 2 + y)*vertex_att + k + 6] = vertex_color[k];
+			vertex[(resolution + y)*vertex_att + k] = vertex_position[k];
+			vertex[(resolution + y)*vertex_att + k + 3] = vertex_normal[k];
+			vertex[(resolution + y)*vertex_att + k + 6] = vertex_color[k];
 		}
 		vertex[(resolution * 2 + y)*vertex_att + 9] = vertex_coord[0];
 		vertex[(resolution * 2 + y)*vertex_att + 10] = vertex_coord[1];
