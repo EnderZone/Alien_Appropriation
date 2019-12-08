@@ -11,6 +11,6 @@ namespace game {
 
 	void UINode::update(double deltaTime) {
 		float degrees = 5.0f * (*tracker / *max_stat);
-		setScale(glm::vec3(degrees, 0.5f, degrees));
+		setScale(glm::vec3(degrees, 0.5f, degrees) * 0.75f);
 	}
 }

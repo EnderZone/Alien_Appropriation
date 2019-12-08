@@ -48,6 +48,9 @@ namespace game {
 			void CreateGrid(std::string object_name, float heightVariance= 0, int width = 11, int height = 11, float tileSize = 10.0);
 			// Create particles distributed over a sphere
 			void CreateSphereParticles(std::string object_name, int num_particles = 20000);
+			void CreateParticles_Point(std::string object_name, int num_particles = 3000);
+			void CreateParticles_UFO(std::string object_name, const char *filename);
+
 			void CreateTorusParticles(std::string object_name, int num_particles, float loop_radius, float circle_radius);
 			void CreateCube(std::string object_name);
 

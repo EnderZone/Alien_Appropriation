@@ -42,6 +42,7 @@ namespace game {
 			GLuint mMaterial; // Reference to shader program
 			GLuint mTexture; // Reference to texture resource
 
+
 			// Quaternion helper function
 			// Finds a quat such that q*start = dest
 			// Source code from https://github.com/opengl-tutorials/ogl/blob/master/common/quaternion_utils.cpp

@@ -128,13 +128,13 @@ void Game::SetupResources(void){
 	mResourceManager->CreateCube("cubeMesh");
 	mResourceManager->CreateCylinder("hayMesh");
 	mResourceManager->CreateCylinder("PlayerMesh");
-	mResourceManager->CreateCone("coneMesh");
-	mResourceManager->CreateSphereParticles("shieldMesh");
+	mResourceManager->CreateParticles_Point("coneParticles");
+	mResourceManager->CreateParticles_UFO("shieldParticles", (std::string(asset_directory) + std::string("/shield.obj")).c_str());
 	mResourceManager->CreateCylinder("healthMesh", 0.6f, 30, glm::vec3(1.0f, 0.0f, 0.0f));
 	mResourceManager->CreateCylinder("energyMesh", 0.6f, 30, glm::vec3(0.0f, 0.7f, 0.7f));
 
 	std::string filename;
-	std::string materials[] = { "default", "textured", "litTexture", "skybox", "particle" };
+	std::string materials[] = { "default", "textured", "litTexture", "skybox", "particleBeam", "particleShield" };
 	for (std::string name : materials) {
 		filename = std::string(shader_directory) + std::string("/" + name);
 		mResourceManager->LoadResource(Material, name + "Material", filename.c_str());
@@ -150,23 +150,19 @@ void Game::SetupResources(void){
 		mResourceManager->LoadResource(Mesh, name + "Mesh", filename.c_str());
 	}
 
-	std::string textures[] = { "placeholder", "ground", "hay", "tree", "barn", "cow", "bull", "cannon", "farmer", "ufo", "missile" };
+	std::string textures[] = { "placeholder", "ground", "hay", "tree", "barn", "cow", "bull", "cannon", "farmer", "ufo", "missile", "beam" };
 	for (std::string name : textures) {
 		// Load texture to be applied to the cube
 		filename = std::string(asset_directory) + std::string("/" + name + ".png");
 		mResourceManager->LoadResource(Texture, name + "Texture", filename.c_str());
 	}
 
-	//std::string skyboxes[] = { "Day1", "Dusk", "Night1", "Night2" };
-	//for (std::string name : skyboxes) {
-	//	// Load texture to be applied to the cube
-	//	filename = std::string(asset_directory) + std::string("/skyboxes/" + name + "/" +name +".png");
-	//	mResourceManager->LoadResource(CubeMap, name + "CubeMap", filename.c_str());
-	//}
-	
-	filename = std::string(asset_directory) + std::string("/skyboxes/day1/day1.tga");
-	mResourceManager->LoadResource(CubeMap, "Day1CubeMap", filename.c_str());
-
+	std::string skyboxes[] = { "Day1", "Dusk", "Night1", "Night2" };
+	for (std::string name : skyboxes) {
+		// Load texture to be applied to the cube
+		filename = std::string(asset_directory) + std::string("/skyboxes/" + name + "/" +name +".png");
+		mResourceManager->LoadResource(CubeMap, name + "CubeMap", filename.c_str());
+	}
 }
 
 
@@ -211,7 +207,7 @@ void Game::SetupScene(void){
 	player->setPlayerPosition();
 
 	//Create tractor beam
-	SceneNode* weapon = mSceneGraph->CreateInstance<SceneNode>("TRACTORBEAM", "coneMesh", "defaultMaterial");
+	SceneNode* weapon = mSceneGraph->CreateInstance<SceneNode>("TRACTORBEAM", "coneParticles", "particleBeamMaterial");
 	mSceneGraph->getRootNode()->removeChildNode("TRACTORBEAM");
 	player->addWeapon(weapon);
 	weapon->translate(glm::vec3(0.0, 0.0, 0.0));
@@ -221,7 +217,7 @@ void Game::SetupScene(void){
 
 
 	//Create shields
-	weapon = mSceneGraph->CreateInstance<SceneNode>("SHIELD", "shieldMesh", "particleMaterial");
+	weapon = mSceneGraph->CreateInstance<SceneNode>("SHIELD", "shieldParticles", "particleShieldMaterial");
 	mSceneGraph->getRootNode()->removeChildNode("SHIELD");
 	player->addWeapon(weapon);
 	weapon->translate(glm::vec3(0.0, 0.0, 0.0));
@@ -232,16 +228,64 @@ void Game::SetupScene(void){
 
 	//Create UI elements
 	SceneNode* ui_nodes = mSceneGraph->CreateInstance<UINode>("HEALTH_UI", "healthMesh", "defaultMaterial", "", player);
-	ui_nodes->translate(glm::vec3(0.0f, 1.5f, 0.0f));
+	ui_nodes->translate(glm::vec3(0.0f, 2.0f, 0.0f));
 	((UINode*)ui_nodes)->addStat(health, max_stat);
 
 	ui_nodes = mSceneGraph->CreateInstance<UINode>("SHIELD_UI", "energyMesh", "defaultMaterial", "", player);
-	ui_nodes->translate(glm::vec3(0.0f, 3.0f, 0.0f));
+	ui_nodes->translate(glm::vec3(0.0f, 3.5f, 0.0f));
 	((UINode*)ui_nodes)->addStat(shield, max_stat);
 
 	// Create skybox
-	skybox_ = mSceneGraph->CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
+	std::string skyboxes[] = { "Day1", "Dusk", "Night1" };
+	int index = rand() % 3;
+	skybox_ = mSceneGraph->CreateInstance<SceneNode>("skybox", "cubeMesh", "skyboxMaterial", skyboxes[index] + "CubeMap");
 	skybox_->scale(glm::vec3(1000.0, 1000.0, 1000.0));
+
+
+	//Set up lighting
+	// lighting information
+	glm::vec3 light_direction; //direction of the directional light
+	glm::vec4 ambient_color;
+	glm::vec4 diffuse_color;
+	glm::vec4 specular_color;
+	float Ia = 0.4; // Ambient light amount
+
+	switch (index) {
+	case 0:
+		light_direction = glm::vec3(-1.0, -0.7, -1.0); 
+		ambient_color = glm::vec4(1.0, 1.0, 1.0, 1.0);
+		diffuse_color = glm::vec4(0.6, 0.6, 0.6, 1.0);
+		specular_color = glm::vec4(0.7, 0.7, 0.7, 1.0);
+		Ia = 0.4; 
+		break;
+	case 1:
+		light_direction = glm::vec3(-1.0, -0.3, -1.0);
+		ambient_color = glm::vec4(0.9, 0.2, 0.4, 1.0);
+		diffuse_color = glm::vec4(0.7, 0.3, 0.4, 1.0);
+		specular_color = glm::vec4(0.7, 0.7, 0.7, 1.0);
+		Ia = 0.3;
+		break;
+	case 2:
+		light_direction = glm::vec3(-1.0, 0.7, -1.0);
+		ambient_color = glm::vec4(0.4, 0.4, 0.8, 1.0);
+		diffuse_color = glm::vec4(0.5, 0.5, 0.6, 1.0);
+		specular_color = glm::vec4(0.7, 0.7, 0.7, 1.0);
+		Ia = 0.2;
+		break;
+	}
+
+	GLuint program = ResourceManager::getResource("litTextureMaterial")->getResource();
+
+	GLint uniform = glGetUniformLocation(program, "light_direction");
+	glUniform3f(uniform, light_direction.x, light_direction.y, light_direction.z);
+	uniform = glGetUniformLocation(program, "ambient_color");
+	glUniform4f(uniform, ambient_color.x, ambient_color.y, ambient_color.z, ambient_color.w);
+	uniform = glGetUniformLocation(program, "diffuse_color");
+	glUniform4f(uniform, diffuse_color.x, diffuse_color.y, diffuse_color.z, diffuse_color.w);
+	uniform = glGetUniformLocation(program, "specular_color");
+	glUniform4f(uniform, specular_color.x, specular_color.y, specular_color.z, specular_color.w);
+	uniform = glGetUniformLocation(program, "Ia");
+	glUniform1f(uniform, Ia);
 
 }
 

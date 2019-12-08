@@ -1,4 +1,3 @@
-// There are two lights: A red directional light from the left, and a blue point light from the right
 // Renders texture and applies lighting on top
 
 #version 130
@@ -14,12 +13,12 @@ in vec3 light_pos;
 uniform sampler2D texture_map;
 
 // Material attributes (constants)
-vec3 light_direction = vec3(-1.0, -0.7, -1.0); //direction of the directional light
-vec4 ambient_color = vec4(1.0, 1.0, 1.0, 1.0);
-vec4 diffuse_color = vec4(0.6, 0.6, 0.6, 1.0);
-vec4 specular_color = vec4(0.7, 0.7, 0.7, 1.0);
+uniform vec3 light_direction = vec3(-1.0, -0.7, -1.0); //direction of the directional light
+uniform vec4 ambient_color = vec4(1.0, 1.0, 1.0, 1.0);
+uniform vec4 diffuse_color = vec4(0.6, 0.6, 0.6, 1.0);
+uniform vec4 specular_color = vec4(0.7, 0.7, 0.7, 1.0);
 float phong_exponent = 7.0;
-float Ia = 0.4; // Ambient light amount
+uniform float Ia = 0.4; // Ambient light amount
 
 
 void main() 

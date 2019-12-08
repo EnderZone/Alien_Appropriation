@@ -6,19 +6,54 @@ project(${PROJ_NAME})
 
 # Specify project files: header files and source files
 set(HDRS
-
-    camera.h game.h model_loader.h resource.h resource_manager.h scene_graph.h ui_node.h
-    scene_node.h base_node.h player_node.h projectile_node.h map_generator.h PoissonGenerator.h entity_node.h entity_game_nodes.h
+    base_node.h
+    camera.h
+    entity_game_nodes.h
+    entity_node.h
+    game.h
+    map_generator.h
+    model_loader.h
+    player_node.h
+    PoissonGenerator.h
+    projectile_node.h
+    resource.h
+    resource_manager.h
+    scene_graph.h
+    scene_node.h
+    ui_node.h
 )
  
 set(SRCS
-    camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp ui_node.cpp
-    base_node.cpp player_node.cpp projectile_node.cpp entity_game_nodes.cpp entity_node.cpp  map_generator.cpp shaders/default_fp.glsl
-    shaders/default_vp.glsl shaders/metal_fp.glsl shaders/metal_vp.glsl shaders/plastic_fp.glsl
-    shaders/plastic_vp.glsl shaders/textured_fp.glsl shaders/textured_vp.glsl
-    shaders/three-term_shiny_blue_fp.glsl shaders/three-term_shiny_blue_vp.glsl shaders/normal_map_vp.glsl
-    shaders/normal_map_fp.glsl shaders/screen_space_vp.glsl shaders/screen_space_fp.glsl shaders/particle_vp.glsl
-    shaders/particle_fp.glsl shaders/particle_gp.glsl shaders/litTexture_fp.glsl shaders/litTexture_vp.glsl shaders/skybox_fp.glsl shaders/skybox_vp.glsl
+    base_node.cpp
+    camera.cpp
+    entity_game_nodes.cpp
+    entity_node.cpp
+    game.cpp
+    main.cpp
+    map_generator.cpp
+    player_node.cpp
+    projectile_node.cpp
+    resource.cpp
+    resource_manager.cpp
+    scene_graph.cpp
+    scene_node.cpp
+    shaders/default_fp.glsl
+    shaders/default_vp.glsl
+    shaders/litTexture_fp.glsl
+    shaders/litTexture_vp.glsl
+    shaders/particleBeam_fp.glsl
+    shaders/particleBeam_gp.glsl
+    shaders/particleBeam_vp.glsl
+    shaders/particleShield_fp.glsl
+    shaders/particleShield_gp.glsl
+    shaders/particleShield_vp.glsl
+    shaders/skybox_fp.glsl
+    shaders/skybox_vp.glsl
+    shaders/textured_fp.glsl
+    shaders/textured_vp.glsl
+    shaders/three-term_shiny_blue_fp.glsl
+    shaders/three-term_shiny_blue_vp.glsl
+    ui_node.cpp
 )
 
 # Add path name to configuration file

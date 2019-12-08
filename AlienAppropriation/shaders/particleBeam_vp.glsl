@@ -25,17 +25,23 @@ float speed = 2.5; // Allows to control the speed of the explosion
 void main()
 {
     // Let time cycle every four seconds
-    float circtime = timer - 4.0 * floor(timer / 4);
-    float t = circtime; // Our time parameter
-    
+	float particle_id = color.r;
+	float phase = particle_id * 80;
+	float time = timer + phase;
+    float t = time - 80.0 * floor(time / 80);
+	float t2 = timer - 80.0 * floor(timer / 80);
+
     // Let's first work in model space (apply only world matrix)
     vec4 position = world_mat * vec4(vertex, 1.0);
     vec4 norm = normal_mat * vec4(normal, 1.0);
 
+	float offset = 0;
+	if (norm.x < 0) offset = 3.14159;
+
     // Move point along normal and down with t*t (acceleration under gravity)
-    position.x += norm.x*t*speed - grav*speed*up_vec.x*t*t;
-    position.y += norm.y*t*speed - grav*speed*up_vec.y*t*t;
-    position.z += norm.z*t*speed - grav*speed*up_vec.z*t*t;
+    position.x += (t / 20) * sin(t + offset + t2);
+    position.y -= t/2;
+    position.z += (t / 20) * cos(t + offset + t2);
     
     // Now apply view transformation
     gl_Position = view_mat * position;

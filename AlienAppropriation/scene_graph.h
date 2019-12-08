@@ -52,6 +52,9 @@ namespace game {
 
 			static std::vector<SceneNode*> nodes;
 
+
+
+
         public:
             // Constructor and destructor
             SceneGraph(Camera* camera);

@@ -12,7 +12,7 @@ in float timestep[];
 uniform mat4 projection_mat;
 
 // Simulation parameters (constants)
-uniform float particle_size = 0.01;
+uniform float particle_size = 0.1;
 
 // Attributes passed to the fragment shader
 out vec4 frag_color;

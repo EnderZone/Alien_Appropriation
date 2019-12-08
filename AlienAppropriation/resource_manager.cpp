@@ -1177,6 +1177,139 @@ void ResourceManager::CreateSphereParticles(std::string object_name, int num_par
 	AddResource(PointSet, object_name, vbo, 0, num_particles);
 }
 
+void ResourceManager::CreateParticles_Point(std::string object_name, int num_particles)
+{
+
+	// A large amount of particles packed into a single point
+	// Data buffer
+	GLfloat *particle = NULL;
+
+	// Number of attributes per particle: position (3), normal (3), and color (3), texture coordinates (2)
+	const int particle_att = 11;
+
+	// Allocate memory for buffer
+	try {
+		particle = new GLfloat[num_particles * particle_att];
+	}
+	catch (std::exception &e) {
+		throw e;
+	}
+
+	for (int i = 0; i < num_particles; i++) {
+		glm::vec3 normal(glm::vec3(1));
+		if (i % 2 == 0) normal *= -1;
+		glm::vec3 position(glm::vec3(0));
+		glm::vec3 color(i / (float)num_particles, 0.0, 1.0 - (i / (float)num_particles));
+		for (int k = 0; k < 3; k++) {
+			particle[i*particle_att + k] = position[k];
+			particle[i*particle_att + k + 3] = normal[k];
+			particle[i*particle_att + k + 6] = color[k];
+		}
+	}
+
+	// Create OpenGL buffer and copy data
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, num_particles * particle_att * sizeof(GLfloat), particle, GL_STATIC_DRAW);
+
+	// Free data buffers
+	delete[] particle;
+
+	// Create resource
+	AddResource(PointSet, object_name, vbo, 0, num_particles);
+}
+
+void ResourceManager::CreateParticles_UFO(std::string object_name, const char *filename)
+{
+	// Create particles in the shape of a ufo
+	// First we load the mesh
+	TriMesh mesh;
+
+	// Parse file
+	// Open file
+	std::ifstream f;
+	f.open(filename);
+	if (f.fail()) {
+		throw(std::ios_base::failure(std::string("Error opening file ") + std::string(filename)));
+	}
+
+	// Parse lines
+	std::string line;
+	std::string ignore(" \t\r\n");
+	std::string part_separator(" \t");
+	std::string face_separator("/");
+	bool added_normal = false;
+	while (std::getline(f, line)) {
+		// Clean extremities of the string
+		string_trim(line, ignore);
+		// Ignore comments
+		if ((line.size() <= 0) ||
+			(line[0] == '#')) {
+			continue;
+		}
+		// Parse string
+		std::vector<std::string> part = string_split(line, part_separator);
+		// Check commands
+		if (!part[0].compare(std::string("v"))) {
+			if (part.size() >= 4) {
+				glm::vec3 position(str_to_num<float>(part[1].c_str()), str_to_num<float>(part[2].c_str()), str_to_num<float>(part[3].c_str()));
+				mesh.position.push_back(position);
+			}
+			else {
+				throw(std::ios_base::failure(std::string("Error: v command should have exactly 3 parameters")));
+			}
+		}
+		// Ignore other commands
+	}
+
+	// Close file
+	f.close();
+
+	// With the vertex positions, we can create the particles
+
+	// A large amount of particles packed into a single point
+	// Data buffer
+	GLfloat *particle = NULL;
+	int num_particles = mesh.position.size();
+	// Number of attributes per particle: position (3), normal (3), and color (3), texture coordinates (2)
+	const int particle_att = 11;
+
+	// Allocate memory for buffer
+	try {
+		particle = new GLfloat[num_particles * particle_att];
+	}
+	catch (std::exception &e) {
+		throw e;
+	}
+
+	for (int i = 0; i < num_particles; i++) {
+		glm::vec3 normal = glm::normalize(mesh.position.at(i));
+		glm::vec3 position(mesh.position.at(i) * 0.2f);
+		glm::vec3 color(i / (float)num_particles, 0.0, 1.0 - (i / (float)num_particles));
+		for (int k = 0; k < 3; k++) {
+			particle[i*particle_att + k] = position[k];
+			particle[i*particle_att + k + 3] = normal[k];
+			particle[i*particle_att + k + 6] = color[k];
+		}
+	}
+
+	// Create OpenGL buffer and copy data
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, num_particles * particle_att * sizeof(GLfloat), particle, GL_STATIC_DRAW);
+
+	// Free data buffers
+	delete[] particle;
+
+	// Create resource
+	AddResource(PointSet, object_name, vbo, 0, num_particles);
+
+}
+
+
+
 
 void ResourceManager::CreateTorusParticles(std::string object_name, int num_particles, float loop_radius, float circle_radius) {
 
