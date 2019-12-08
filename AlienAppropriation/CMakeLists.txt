@@ -7,12 +7,12 @@ project(${PROJ_NAME})
 # Specify project files: header files and source files
 set(HDRS
 
-    camera.h game.h model_loader.h resource.h resource_manager.h scene_graph.h
+    camera.h game.h model_loader.h resource.h resource_manager.h scene_graph.h ui_node.h
     scene_node.h base_node.h player_node.h projectile_node.h map_generator.h PoissonGenerator.h entity_node.h entity_game_nodes.h
 )
  
 set(SRCS
-    camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp
+    camera.cpp game.cpp main.cpp resource.cpp resource_manager.cpp scene_graph.cpp scene_node.cpp ui_node.cpp
     base_node.cpp player_node.cpp projectile_node.cpp entity_game_nodes.cpp entity_node.cpp  map_generator.cpp shaders/default_fp.glsl
     shaders/default_vp.glsl shaders/metal_fp.glsl shaders/metal_vp.glsl shaders/plastic_fp.glsl
     shaders/plastic_vp.glsl shaders/textured_fp.glsl shaders/textured_vp.glsl
