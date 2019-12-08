@@ -10,87 +10,81 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include "base_node.h"
-
 #include "resource.h"
-#include "camera.h"
 
 namespace game {
+	
+	enum CollisionType { Point, Capsule, None };
 
-
-	enum CollisionType { Point, Capsule };
-
-
-	// Class that manages one object in a scene 
+	// class SceneNode
+	// A node that exists within a scene. It has a 3D transform.
+	// Additionaly, scene nodes can be drawn and can collide.
 	class SceneNode : public BaseNode {
 
-	public:
-		// Create scene node from given resources
-		SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
-
-		// Destructor
-		~SceneNode();
-
-		// Get node attributes
-		virtual glm::vec3 GetPosition(void);
-		glm::quat GetOrientation(void) const;
-		glm::vec3 GetScale(void) const;
-		inline glm::vec2 GetGridPosition(void) { return gridPosition; }
-		inline float GetRadius(void) { return radius; }
-		inline CollisionType GetCollisionType(void) { return collisionType; }
-
-		// Set node attributes
-		void SetPosition(glm::vec3 position);
-		void SetOrientation(glm::quat orientation);
-		void SetScale(glm::vec3 scale);
-		void SetGridPosition(glm::vec3 pos);
-
-		// Perform transformations on node
-		void Translate(glm::vec3 trans);
-		void Rotate(glm::quat rot);
-		void Rotate(glm::vec3 direction);
-		void Scale(glm::vec3 scale);
-
-		// Draw the node according to scene parameters in 'camera'
-		// variable
-		virtual void Draw(Camera *camera, glm::mat4 parentTransf = glm::mat4(1.0));
-
-		// Update the node
-		virtual void Update(void);
-
-		// OpenGL variables
-		GLenum GetMode(void) const;
-		GLuint GetArrayBuffer(void) const;
-		GLuint GetElementArrayBuffer(void) const;
-		GLsizei GetSize(void) const;
-		GLuint GetMaterial(void) const;
-		GLuint GetTexture(void) const;
-
-	protected:
-
-		glm::vec3 mPosition; // Position of node
-		glm::quat mOrientation; // Orientation of node
-		glm::vec3 mScale; // Scale of node
-
-		GLuint mArrayBuffer; // References to geometry: vertex and array buffers
-		GLuint mElementArrayBuffer;
-		GLenum mMode; // Type of geometry
-		GLsizei mSize; // Number of primitives in geometry
-		GLuint mMaterial; // Reference to shader program
-		GLuint mTexture; // Reference to texture resource
-
-		// Set matrices that transform the node in a shader program
-		void SetupShader(GLuint program, glm::mat4& parentTransformation = glm::mat4(1.0));
-
-		// Quaternion helper fn
-		// Finds a quat such that q*start = dest
-		// Source code from https://github.com/opengl-tutorials/ogl/blob/master/common/quaternion_utils.cpp
-		glm::quat QuatBetweenVectors(glm::vec3 start, glm::vec3 dest);
+		protected:
 
 
-		glm::vec2 gridPosition;
-		//bool collidable;
-		float radius;
-		CollisionType collisionType;
+			// 3D Transform
+			glm::vec3 mPosition;
+			glm::quat mOrientation;
+			glm::vec3 mScale;
+
+			// Collision
+			glm::vec2 gridPosition;
+			float radius;
+			CollisionType collisionType;
+
+			// drawing
+			GLuint mArrayBuffer; // References to geometry: vertex and array buffers
+			GLuint mElementArrayBuffer;
+			GLenum mMode; // Type of geometry
+			GLsizei mSize; // Number of primitives in geometry
+			GLuint mMaterial; // Reference to shader program
+			GLuint mTexture; // Reference to texture resource
+
+			// Quaternion helper function
+			// Finds a quat such that q*start = dest
+			// Source code from https://github.com/opengl-tutorials/ogl/blob/master/common/quaternion_utils.cpp
+			glm::quat QuatBetweenVectors(glm::vec3 start, glm::vec3 dest);
+
+		public:
+			SceneNode(const std::string name);
+			SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
+			~SceneNode();
+
+			// Draw the node relative to its parent according to scene parameters in 'camera'
+			virtual void draw(SceneNode *camera, glm::mat4 parentTransf = glm::mat4(1.0));
+			virtual void update(double deltaTime);
+
+			// Transformations
+			void translate(glm::vec3 trans);
+			void rotate(glm::quat rot);
+			void rotate(glm::vec3 direction);
+			void scale(glm::vec3 scale);
+
+			// Getters
+			virtual glm::vec3 getPosition(void);
+			glm::quat getOrientation(void) const;
+			glm::vec3 getscale(void) const;
+			inline glm::vec2 getGridPosition(void) { return gridPosition; }
+			inline float getRadius(void) { return radius; }
+			inline CollisionType getCollisionType(void) { return collisionType; }
+
+			// OpenGL variables
+			GLenum getMode(void) const;
+			GLuint getArrayBuffer(void) const;
+			GLuint getElementArrayBuffer(void) const;
+			GLsizei getSize(void) const;
+			GLuint getMaterial(void) const;
+			GLuint getTexture(void) const;
+
+			// Setters
+			void setPosition(glm::vec3 position);
+			void setOrientation(glm::quat orientation);
+			void setscale(glm::vec3 scale);
+			void setGridPosition(glm::vec3 pos);
+
+			virtual void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));	// Set matrices that transform the node in a shader program
 
 
 	}; // class SceneNode

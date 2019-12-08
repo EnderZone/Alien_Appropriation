@@ -7,154 +7,159 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+
+#include <stack>
+
 #include "base_node.h"
 
 #include "scene_node.h"
-//#include "resource.h"
 #include "camera.h"
 #include "player_node.h"
 #include "resource_manager.h"
 #include "projectile_node.h"
-
-
-// Size of the texture that we will draw
-#define FRAME_BUFFER_WIDTH 1024
-#define FRAME_BUFFER_HEIGHT 768
+#include "entity_node.h"
 
 namespace game {
 
-    // Class that manages all the objects in a scene
+	// Exception type for the game
+	class GameException : public std::exception
+	{
+	private:
+		std::string message_;
+	public:
+		GameException(std::string message) : message_(message) {};
+		virtual const char* what() const throw() { return message_.c_str(); };
+		virtual ~GameException() throw() {};
+	};
+
+    // class SceneGraph
+	// The Scene Graph contains all nodes within the scene.
+	// It is responsible for managing nodes: creating, updating, and deleting
+	// It also takes care of any high-level functionality that affects all nodes, such as collision
+
+	// Nodes are stored in a vector - the hierarchy is used for drawing
+
     class SceneGraph {
 
         private:
             // Background color
             glm::vec3 mBackgroundColor;
 
-			// Root Node
-			BaseNode* mRootNode;
-
-			// Player Node
-			PlayerNode* mPlayerNode;
-
-
-			// Resource Manager (so scene graph can create new nodes on its own)
-			ResourceManager* mResourceManager;
-
-
-			// Frame buffer for drawing to texture
-			GLuint mFrameBuffer;
-			// Quad vertex array for drawing from texture
-			GLuint mQuadArrayBuffer;
-			// Render targets
-			GLuint mTexture;
-			GLuint mDepthBuffer;
-
-			std::vector<SceneNode*> nodes;
-
-        public:
-
-
+			// Reference to important nodes
+			static BaseNode* mRootNode;
+			static PlayerNode* mPlayerNode;
 			Camera* mCameraNode;
 
+			static std::vector<SceneNode*> nodes;
 
+        public:
             // Constructor and destructor
-            SceneGraph(ResourceManager* resourceManager);
+            SceneGraph(Camera* camera);
             ~SceneGraph();
 
             // Background color
             void SetBackgroundColor(glm::vec3 color);
             glm::vec3 GetBackgroundColor(void) const;
             
-            // Create a scene node from the specified resources
+			// Basic functionality
+			void draw(Camera *camera);
+			void update(double deltaTime);
+			bool checkCollision(SceneNode *object);
+
+			// Getters
+			inline static BaseNode* getRootNode() { return mRootNode; }
+			inline static PlayerNode* getPlayerNode() { return mPlayerNode; }
+			inline Camera* getCameraNode() { return mCameraNode; }
+
+			// Setters
+			inline void setPlayerNode(PlayerNode* player) { mPlayerNode = player; }
+
+			// Hierarchy Management
+			void addNode(SceneNode *node, BaseNode *parent = nullptr);
+			void deleteNode(BaseNode *node);
+			void deleteNode(std::string name);
+			BaseNode* getNode(std::string node_name);
+
+
+			// Node Creation
 			template<class T>
-			T* CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture=NULL, SceneNode* parent = nullptr)
+			T* CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL, BaseNode* parent = nullptr)
 			{
 				// Create scene node with the specified resources
 				T* scn = new T(node_name, geometry, material, texture);
 
-				// Add node to the scene
-				if (parent == nullptr) {
-					mRootNode->addChildNode(scn);
-				}
-				else {
-					parent->addChildNode(scn);
-				}
-
-				nodes.push_back(scn);
+				addNode(scn, parent);
 
 				return scn;
 			}
 
 			template<class T>
-			T* CreateProjectileNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec)
+			static T* CreateProjectileNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec)
 			{
 				// Create scene node with the specified resources
 				T* scn = new T(node_name, geometry, material, lifespan, initialPos, initialVelocityVec, texture);
 
 				// Add node to the scene
 				mRootNode->addChildNode(scn);
+				scn->setParentNode(mRootNode);
 				nodes.push_back(scn);
 
 				return scn;
 			}
 
-            // Add an already-created node
-			SceneNode* CreatePlayerNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL, BaseNode* camera = NULL);
-			// Add an already-created node
-            void AddNode(SceneNode *node);
-            // Find a scene node with a specific name
-            BaseNode* GetNode(std::string node_name, BaseNode* currentNode = nullptr) const;
-			
-			// Keep pointer to root and player for easier access
-			inline BaseNode* getRootNode() { return mRootNode; }
-			inline BaseNode* getPlayerNode() { return mPlayerNode; }
-			inline ResourceManager* getResourceManager() { return mResourceManager; }
-
-            // Draw the entire scene
-            void Draw(Camera *camera);
-
-            // Update entire scene
-            void Update(void);
-
-
-			// Drawing from/to a texture
-			// Setup the texture
-			void SetupDrawToTexture(void);
-			// Draw the scene into a texture
-			void DrawToTexture(Camera *camera);
-			// Process and draw the texture on the screen
-			void DisplayTexture(GLuint program);
-			// Save texture to a file in ppm format
-			void SaveTexture(char *filename);
-
-			bool checkCollision(SceneNode *object);
-
-
-
-			template<class T> T *CreateProjectileInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec)
+			// Node Creation + Resource Fetching
+			template<class T> T *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""), BaseNode *parent=nullptr)
 			{
-				Resource *geom = mResourceManager->GetResource(object_name);
+				
+				Resource *geom =  ResourceManager::getResource(object_name);
+				if (!geom) {
+					throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
+				}
+
+				Resource *mat = ResourceManager::getResource(material_name);
+				if (!mat) {
+					throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+				}
+
+				Resource *tex = NULL;
+				if (texture_name != "") {
+					tex = ResourceManager::getResource(texture_name);
+					if (!tex) {
+						throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
+					}
+				}
+
+				T *scn = CreateNode<T>(entity_name, geom, mat, tex, parent);
+				return scn;
+			}
+
+			template<class T> static T *CreateProjectileInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name, float lifespan, glm::vec3 initialPos, glm::vec3 initialVelocityVec)
+			{
+				Resource *geom = ResourceManager::getResource(object_name);
 				if (!geom) {
 					throw(("Could not find resource \"") + object_name + "\"");
 				}
 
-				Resource *mat = mResourceManager->GetResource(material_name);
+				Resource *mat = ResourceManager::getResource(material_name);
 				if (!mat) {
 					throw("Could not find resource \"" + material_name + "\"");
 				}
 
 				Resource *tex = NULL;
 				if (texture_name != "") {
-					tex = mResourceManager->GetResource(texture_name);
+					tex = ResourceManager::getResource(texture_name);
 					if (!tex) {
 						throw("Could not find resource \"" + material_name + "\"");
 					}
 			}
 
 				T *scn = CreateProjectileNode<T>(entity_name, geom, mat, tex, lifespan, initialPos, initialVelocityVec);
-				//T *scn = CreateNode<T>(entity_name, geom, mat, tex);
 				return scn;
 			}
+
+
+
+
 
     }; // class SceneGraph
 

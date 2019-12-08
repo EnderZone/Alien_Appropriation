@@ -1,39 +1,21 @@
-
 #include "base_node.h"
 #include "camera.h"
 
 namespace game
 {
 
-BaseNode::BaseNode(std::string name)
-	: mName(name)
-	, mDeleteNextTick(false)
+BaseNode::BaseNode(std::string name) : mName(name)
 {
-
 }
 
 BaseNode::~BaseNode()
 {
-	//do nothing
 }
 
-void BaseNode::Draw(Camera* camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
+void BaseNode::update(double deltaTime)
 {
-	for (BaseNode* bn : getChildNodes())
-	{
-		bn->Draw(camera, parentTransf);
-	}
+	for (BaseNode* n : getChildNodes())	n->update(deltaTime);
 }
-
-void BaseNode::Update()
-{
-	for (BaseNode* n : getChildNodes())
-		n->Update();
-
-	std::vector<std::string> nodesToDelete;
-	deleteNodes(nodesToDelete);
-}
-
 
 void BaseNode::removeChildNode(std::string name)
 {
@@ -43,6 +25,23 @@ void BaseNode::removeChildNode(std::string name)
 		if (n->getName() == name)
 		{
 			mChildNodes.erase(mChildNodes.begin() + index);
+			n->setParentNode(nullptr);
+			continue;
+		}
+		index++;
+	}
+}
+
+void BaseNode::removeChildNode(BaseNode * node)
+{
+	int index = 0;
+	for (BaseNode* n : getChildNodes())
+	{
+		if (n == node)
+		{
+			mChildNodes.erase(mChildNodes.begin() + index);
+			n->setParentNode(nullptr);
+			continue;
 		}
 		index++;
 	}
@@ -63,35 +62,28 @@ BaseNode* BaseNode::getRootNode()
 	return rootNode;
 }
 
-void BaseNode::deleteNodes(std::vector<std::string>& nodesToDelete)
+void BaseNode::addTag(std::string tag)
 {
-	// go through all nodes of root
-	// iterate and find any to be deleted and add to vector
-	// remove these nodes from hierarchy
-	// delete these nodes
-
-	if (mName == "ROOT")
-	{
-		for (BaseNode* n : getChildNodes())
-		{
-			n->deleteNodes(nodesToDelete);
-
-			for (std::string nodeName : nodesToDelete)
-				removeChildNode(nodeName);
-		}
-	}
-	else
-	{
-		if (mDeleteNextTick)
-			nodesToDelete.push_back(mName);
-
-		for (BaseNode* n : getChildNodes())
-		{
-			n->deleteNodes(nodesToDelete);
-		}
-	}
-
-
+	tags.push_back(tag);
 }
 
+void BaseNode::removeTag(std::string tag)
+{
+	for (int i = 0; i < tags.size(); i++) {
+		if (tag.compare(tags.at(i)) == 0) {
+			tags.erase(tags.begin() + i);
+			return;
+		}
+	}
+}
+
+bool BaseNode::hasTag(std::string tag)
+{
+	for (std::string t : tags) {
+		if (t.compare(tag) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
 }

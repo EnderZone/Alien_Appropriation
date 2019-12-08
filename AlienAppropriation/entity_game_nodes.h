@@ -32,7 +32,7 @@ namespace game {
 		// Destructor
 		~CowEntityNode();
 
-		virtual void Update();
+		virtual void update(double deltaTime);
 
 	private:
 
@@ -71,7 +71,7 @@ namespace game {
 		// Destructor
 		~BullEntityNode();
 
-		void Update();
+		void update(double deltaTime);
 
 	private:
 
@@ -110,7 +110,7 @@ namespace game {
 		// Destructor
 		~FarmerEntityNode();
 
-		void Update();
+		void update(double deltaTime);
 		
 
 	private:
@@ -136,7 +136,7 @@ namespace game {
 		// Destructor
 		~CannonMissileEntityNode();
 
-		void Update();
+		void update(double deltaTime);
 
 	private:
 

@@ -41,12 +41,10 @@ void Game::Init(void)
 {
 	// Set up base variables and members
 	mResourceManager = new ResourceManager();
-	mCamera = new Camera("CAMERA");
+	mCamera = new Camera("camera");
 	// Set up the base nodes
-	mSceneGraph = new SceneGraph(mResourceManager);
-	mSceneGraph->getRootNode()->addChildNode(mCamera);
-	mSceneGraph->mCameraNode = mCamera;
-	mMapGenerator = new MapGenerator(mSceneGraph, mResourceManager);
+	mSceneGraph = new SceneGraph(mCamera);
+	mMapGenerator = new MapGenerator(mSceneGraph);
 
     // Run all initialization steps
     InitWindow();
@@ -144,13 +142,13 @@ void Game::SetupResources(void){
 	mResourceManager->LoadResource(Material, "testMaterial", filename.c_str());
 
 
-	std::string meshes[] = { "barn", "tree", "cow", "cannon", "farmer", "ufo"};
+	std::string meshes[] = { "barn", "tree", "cow", "cannon", "farmer", "ufo", "missile"};
 	for (std::string name : meshes) {
 		filename = std::string(asset_directory) + std::string("/" + name + ".obj");
 		mResourceManager->LoadResource(Mesh, name + "Mesh", filename.c_str());
 	}
 
-	std::string textures[] = { "ground", "hay", "tree", "barn", "cow", "bull", "cannon", "farmer", "placeholder", "ufo" };
+	std::string textures[] = { "placeholder", "ground", "hay", "tree", "barn", "cow", "bull", "cannon", "farmer", "ufo", "missile" };
 	for (std::string name : textures) {
 		// Load texture to be applied to the cube
 		filename = std::string(asset_directory) + std::string("/" + name + ".png");
@@ -174,72 +172,57 @@ void Game::SetupScene(void){
 
     // Set background color for the scene
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
-
-	// Create test Cow
-	//CowEntityNode* cow1 = CreateInstance<CowEntityNode>("Cow1", "cowMesh", "texturedMaterial", "cowTexture");
-	//cow1->Translate(glm::vec3(50.0, 0.0, 50.0));
-
+/*
 	for (int i = 0; i < 40; i++)
 	{
-		CowEntityNode* cow = CreateInstance<CowEntityNode>("Cow" + std::to_string(i), "cowMesh", "texturedMaterial", "cowTexture");
-		cow->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+		CowEntityNode* cow = mSceneGraph->CreateInstance<CowEntityNode>("Cow" + std::to_string(i), "cowMesh", "texturedMaterial", "cowTexture");
+		cow->translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
 	}
-
-	// Create test bull
-	//BullEntityNode* bull1 = CreateInstance<BullEntityNode>("Bull1", "cowMesh", "texturedMaterial", "bullTexture");
-	//bull1->Translate(glm::vec3(55.0, 0.0, 55.0));
 
 	for (int i = 0; i < 20; i++)
 	{
-		BullEntityNode* bull = CreateInstance<BullEntityNode>("Bull" + std::to_string(i), "cowMesh", "texturedMaterial", "bullTexture");
-		bull->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+		BullEntityNode* bull = mSceneGraph->CreateInstance<BullEntityNode>("Bull" + std::to_string(i), "cowMesh", "texturedMaterial", "bullTexture");
+		bull->translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
 	}
-
-	// Create test Farmer
-	//FarmerEntityNode* farmer1 = CreateInstance<FarmerEntityNode>("Farmer1", "farmerMesh", "texturedMaterial", "farmerTexture");
-	//farmer1->Scale(glm::vec3(0.75, 1.5, 0.75));
-	//farmer1->Translate(glm::vec3(60.0, 0.0, 60.0));
 
 	for (int i = 0; i < 20; i++)
 	{
-		FarmerEntityNode* farmer = CreateInstance<FarmerEntityNode>("Farmer" + std::to_string(i), "farmerMesh", "texturedMaterial", "farmerTexture");
-		farmer->Scale(glm::vec3(0.75, 1.5, 0.75));
-		farmer->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+		FarmerEntityNode* farmer = mSceneGraph->CreateInstance<FarmerEntityNode>("Farmer" + std::to_string(i), "farmerMesh", "texturedMaterial", "farmerTexture");
+		farmer->scale(glm::vec3(0.75, 1.5, 0.75));
+		farmer->translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
 	}
-
-	// Create test cannon
-	//CannonMissileEntityNode* cannon1 = CreateInstance<CannonMissileEntityNode>("Cannon1", "cannonMesh", "litTextureMaterial", "cannonTexture");
-	//cannon1->Scale(glm::vec3(2.0, 2.0, 2.0));
-	//cannon1->Translate(glm::vec3(40.0, 0.0, 40.0));
 
 	for (int i = 0; i < 5; i++)
 	{
-		CannonMissileEntityNode* cannon = CreateInstance<CannonMissileEntityNode>("Cannon" + std::to_string(i), "cannonMesh", "litTextureMaterial", "cannonTexture");
-		cannon->Scale(glm::vec3(2.0, 2.0, 2.0));
-		cannon->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
-	}
+		CannonMissileEntityNode* cannon = mSceneGraph->CreateInstance<CannonMissileEntityNode>("Cannon" + std::to_string(i), "cannonMesh", "litTextureMaterial", "cannonTexture");
+		cannon->scale(glm::vec3(2.0, 2.0, 2.0));
+		cannon->translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
+	}*/
 
-	SceneNode* player = CreatePlayerInstance("PLAYER", "ufoMesh", "litTextureMaterial", "ufoTexture");
-	((PlayerNode*)player)->setPlayerPosition();
-	mMapGenerator->GenerateMap();
+	PlayerNode* player = mSceneGraph->CreateInstance<PlayerNode>("player", "ufoMesh", "litTextureMaterial", "ufoTexture", mCamera);
+	mSceneGraph->setPlayerNode(player);
+	player->setPlayerPosition();
 
 	//Create tractor beam
-	SceneNode* weapon = CreateInstance<SceneNode>("TRACTORBEAM", "coneMesh", "defaultMaterial");
+	SceneNode* weapon = mSceneGraph->CreateInstance<SceneNode>("TRACTORBEAM", "coneMesh", "defaultMaterial");
 	mSceneGraph->getRootNode()->removeChildNode("TRACTORBEAM");
-	((PlayerNode*)player)->addWeapon(weapon);
-	weapon->Translate(glm::vec3(0.0,0.0,0.0));
-	weapon->Scale(glm::vec3(10.0,50.0,10.0));
+	player->addWeapon(weapon);
+	weapon->translate(glm::vec3(0.0,0.0,0.0));
+	weapon->scale(glm::vec3(10.0,50.0,10.0));
 
 	//Create shields
-	weapon = CreateInstance<SceneNode>("SHIELD", "shieldMesh", "particleMaterial");
+	weapon = mSceneGraph->CreateInstance<SceneNode>("SHIELD", "shieldMesh", "particleMaterial");
 	mSceneGraph->getRootNode()->removeChildNode("SHIELD");
-	((PlayerNode*)player)->addWeapon(weapon);
-	weapon->Translate(glm::vec3(0.0, 0.0, 0.0));
-	weapon->Scale(glm::vec3(10.0, 10.0, 10.0));
+	player->addWeapon(weapon);
+	weapon->translate(glm::vec3(0.0, 0.0, 0.0));
+	weapon->scale(glm::vec3(10.0, 10.0, 10.0));
+
+	mMapGenerator->GenerateMap();
+
 
 	// Create skybox
 //	skybox_ = CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
-//	skybox_->Scale(glm::vec3(1000.0, 1000.0, 1000.0));
+//	skybox_->scale(glm::vec3(1000.0, 1000.0, 1000.0));
 
 }
 
@@ -251,19 +234,20 @@ void Game::MainLoop(void){
         // Animate the scene
         static double last_time = 0;
         double current_time = glfwGetTime();
+		double deltaTime = current_time - last_time;
         if ((current_time - last_time) > 0.05){
-            mSceneGraph->Update();
+            mSceneGraph->update(deltaTime);
             last_time = current_time;
-		//	skybox_->SetPosition(mCamera->GetPosition());
+		//	skybox_->setPosition(mCamera->getPosition());
         }
 
-        // Draw the scene
-        mSceneGraph->Draw(mCamera);
+        // draw the scene
+        mSceneGraph->draw(mCamera);
 
         // Push buffer drawn in the background onto the display
         glfwSwapBuffers(mWindow);
 
-        // Update other events like input handling
+        // update other events like input handling
         glfwPollEvents();
     }
 }
@@ -275,10 +259,9 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
     void* ptr = glfwGetWindowUserPointer(window);
     Game *game = (Game *) ptr;
 
-	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->GetNode("PLAYER");
+	PlayerNode *playerNode = (PlayerNode*)game->mSceneGraph->getPlayerNode();
 
     // View control
-	// This 1 variable is for ashton, turning is super slow on my system so I use it to amp up turning, please ignore for now until we solve that
     float rotFactor(glm::pi<float>() * 1  / 180);
     float transFactor = 3.0;
 	float velocityFactor = 0.2f;
@@ -295,35 +278,34 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 		game->mCamera->Yaw(-rotFactor);
     }
     if (key == GLFW_KEY_W){
-		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() + velocityFactor);
+		//game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() + velocityFactor);
+		game->mCamera->addVelocity(glm::vec3(0, 0, velocityFactor));
     }
     if (key == GLFW_KEY_S){
-		game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() - velocityFactor);
+		//game->mCamera->setVelocityForward(game->mCamera->getVelocityForward() - velocityFactor);
+		game->mCamera->addVelocity(glm::vec3(0, 0, -velocityFactor));
+
     }
 	if (key == GLFW_KEY_A) {
-		game->mCamera->setVelocitySide(game->mCamera->getVelocitySide() - velocityFactor / 2);
+		//game->mCamera->setVelocitySide(game->mCamera->getVelocitySide() - velocityFactor / 2);
+		game->mCamera->addVelocity(glm::vec3(-velocityFactor/2, 0, 0));
+
 	}
 	if (key == GLFW_KEY_D) {
-		game->mCamera->setVelocitySide(game->mCamera->getVelocitySide() + velocityFactor / 2);
+		//game->mCamera->setVelocitySide(game->mCamera->getVelocitySide() + velocityFactor / 2);
+		game->mCamera->addVelocity(glm::vec3(velocityFactor / 2, 0, 0));
+
 	}
 	if (key == GLFW_KEY_LEFT_SHIFT) {
-		game->mCamera->setVelocityUp(game->mCamera->getVelocityUp() + velocityFactor / 5);
+		//game->mCamera->setVelocityUp(game->mCamera->getVelocityUp() + velocityFactor / 5);
+		game->mCamera->addVelocity(glm::vec3(0, velocityFactor / 5, 0));
+
 	}
 	if (key == GLFW_KEY_LEFT_CONTROL) {
-		game->mCamera->setVelocityUp(game->mCamera->getVelocityUp() - velocityFactor / 5);
+		//game->mCamera->setVelocityUp(game->mCamera->getVelocityUp() - velocityFactor / 5);
+		game->mCamera->addVelocity(glm::vec3(0, -velocityFactor / 5, 0));
+
 	}
-    if (key == GLFW_KEY_J){
-        game->mCamera->Translate(-game->mCamera->GetSide()*transFactor);
-    }
-    if (key == GLFW_KEY_L){
-        game->mCamera->Translate(game->mCamera->GetSide()*transFactor);
-    }
-    if (key == GLFW_KEY_I){
-        game->mCamera->Translate(game->mCamera->GetUp()*transFactor);
-    }
-    if (key == GLFW_KEY_K){
-        game->mCamera->Translate(-game->mCamera->GetUp()*transFactor);
-    }
 	if (key == GLFW_KEY_SPACE && (action == GLFW_PRESS || action == GLFW_RELEASE)) {
 		playerNode->toggleTractorBeam();
 	}
@@ -337,9 +319,7 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 		playerNode->rotateBackward();
 	}
 	if (key == GLFW_KEY_F) {
-		game->mCamera->setVelocityForward(0.0f);
-		game->mCamera->setVelocitySide(0.0f);
-		game->mCamera->setVelocityUp(0.0f);
+		game->mCamera->setVelocity(glm::vec3(0));
 	}
 
 }
@@ -359,30 +339,5 @@ Game::~Game(){
 
     glfwTerminate();
 }
-
-SceneNode *Game::CreatePlayerInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name) {
-
-	Resource *geom = mResourceManager->GetResource(object_name);
-	if (!geom) {
-		throw(GameException(std::string("Could not find resource \"") + object_name + std::string("\"")));
-	}
-
-	Resource *mat = mResourceManager->GetResource(material_name);
-	if (!mat) {
-		throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
-	}
-
-	Resource *tex = NULL;
-	if (texture_name != "") {
-		tex = mResourceManager->GetResource(texture_name);
-		if (!tex) {
-			throw(GameException(std::string("Could not find resource \"") + material_name + std::string("\"")));
-		}
-	}
-
-	SceneNode* scn = mSceneGraph->CreatePlayerNode(entity_name, geom, mat, tex, mCamera);
-	return scn;
-}
-
 
 } // namespace game

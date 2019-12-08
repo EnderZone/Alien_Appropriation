@@ -15,37 +15,40 @@
 #include "scene_node.h"
 
 namespace game {
+	SceneNode::SceneNode(const std::string name) : BaseNode(name)
+	{
+	}
 
-SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/) 
+	SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture)
 	: BaseNode(name)
 {
     // Set geometry
-    if (geometry->GetType() == PointSet){
+    if (geometry->getType() == PointSet){
         mMode = GL_POINTS;
-    } else if (geometry->GetType() == Mesh){
+    } else if (geometry->getType() == Mesh){
         mMode = GL_TRIANGLES;
     } else {
         throw(std::invalid_argument(std::string("Invalid type of geometry")));
     }
 
-    mArrayBuffer = geometry->GetArrayBuffer();
-    mElementArrayBuffer = geometry->GetElementArrayBuffer();
-    mSize = geometry->GetSize();
+    mArrayBuffer = geometry->getArrayBuffer();
+    mElementArrayBuffer = geometry->getElementArrayBuffer();
+    mSize = geometry->getSize();
 
     // Set material (shader program)
-    if (material->GetType() != Material){
+    if (material->getType() != Material){
         throw(std::invalid_argument(std::string("Invalid type of material")));
     }
 
+	mMaterial = material->getResource();
+
 	// Set texture
 	if (texture) {
-		mTexture = texture->GetResource();
+		mTexture = texture->getResource();
 	}
 	else {
 		mTexture = 0;
 	}
-
-    mMaterial = material->GetResource();
 
     // Other attributes
     mScale = glm::vec3(1.0, 1.0, 1.0);
@@ -60,62 +63,62 @@ SceneNode::~SceneNode(){
 
 
 
-glm::vec3 SceneNode::GetPosition(void) {
+glm::vec3 SceneNode::getPosition(void) {
 
     return mPosition;
 }
 
 
-glm::quat SceneNode::GetOrientation(void) const {
+glm::quat SceneNode::getOrientation(void) const {
 
     return mOrientation;
 }
 
 
-glm::vec3 SceneNode::GetScale(void) const {
+glm::vec3 SceneNode::getscale(void) const {
 
     return mScale;
 }
 
 
-void SceneNode::SetPosition(glm::vec3 position){
+void SceneNode::setPosition(glm::vec3 position){
 
     mPosition = position;
 }
 
 
-void SceneNode::SetOrientation(glm::quat orientation){
+void SceneNode::setOrientation(glm::quat orientation){
 
     mOrientation = orientation;
 }
 
 
-void SceneNode::SetScale(glm::vec3 scale){
+void SceneNode::setscale(glm::vec3 scale){
 
     mScale = scale;
 }
 
-void SceneNode::SetGridPosition(glm::vec3 pos)
+void SceneNode::setGridPosition(glm::vec3 pos)
 {
 	gridPosition.x = floor(pos.x / 15);
 	gridPosition.y = floor(pos.z / 15);
 }
 
 
-void SceneNode::Translate(glm::vec3 trans){
+void SceneNode::translate(glm::vec3 trans){
 
     mPosition += trans;
 }
 
 
-void SceneNode::Rotate(glm::quat rot){
+void SceneNode::rotate(glm::quat rot){
 
     mOrientation *= rot;
     mOrientation = glm::normalize(mOrientation);
 }
 
 // Code adapted from https://github.com/opengl-tutorials/ogl/blob/master/common/quaternion_utils.cpp
-void SceneNode::Rotate(glm::vec3 direction)
+void SceneNode::rotate(glm::vec3 direction)
 {
 	
 	glm::vec3 upVec = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -139,94 +142,96 @@ void SceneNode::Rotate(glm::vec3 direction)
 
 	// Apply them
 	//return rot2 * rot1; // remember, in reverse order.
-	SetOrientation(rot1 * rot2);
+	setOrientation(rot1 * rot2);
 
 }
 
-void SceneNode::Scale(glm::vec3 scale){
+void SceneNode::scale(glm::vec3 scale){
 
     mScale *= scale;
 }
 
 
 
-GLenum SceneNode::GetMode(void) const {
+GLenum SceneNode::getMode(void) const {
 
     return mMode;
 }
 
 
-GLuint SceneNode::GetArrayBuffer(void) const {
+GLuint SceneNode::getArrayBuffer(void) const {
 
     return mArrayBuffer;
 }
 
 
-GLuint SceneNode::GetElementArrayBuffer(void) const {
+GLuint SceneNode::getElementArrayBuffer(void) const {
 
     return mElementArrayBuffer;
 }
 
 
-GLsizei SceneNode::GetSize(void) const {
+GLsizei SceneNode::getSize(void) const {
 
     return mSize;
 }
 
 
-GLuint SceneNode::GetMaterial(void) const {
+GLuint SceneNode::getMaterial(void) const {
 
     return mMaterial;
 }
 
-GLuint SceneNode::GetTexture(void) const {
+GLuint SceneNode::getTexture(void) const {
 
 	return mTexture;
 }
 
 
-void SceneNode::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/){
+void SceneNode::draw(SceneNode *camera, glm::mat4 parentTransf){
 
-    // Select proper material (shader program)
-    glUseProgram(mMaterial);
+	// Select proper material (shader program)
+	glUseProgram(mMaterial);
 
-    // Set geometry to draw
-    glBindBuffer(GL_ARRAY_BUFFER, mArrayBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mElementArrayBuffer);
+	// Set geometry to draw
+	glBindBuffer(GL_ARRAY_BUFFER, mArrayBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mElementArrayBuffer);
 
-    // Set globals for camera
-    camera->SetupShader(mMaterial);
+	// Set globals for camera
+	camera->SetupShader(mMaterial);
 
-    // Set world matrix and other shader input variables
-    SetupShader(mMaterial, parentTransf);
+	// Set world matrix and other shader input variables
+	SetupShader(mMaterial, parentTransf);
 
-    // Draw geometry
-    if (mMode == GL_POINTS){
-        glDrawArrays(mMode, 0, mSize);
-    } else {
-        glDrawElements(mMode, mSize, GL_UNSIGNED_INT, 0);
-    }
+	// draw geometry
+	if (mMode == GL_POINTS) {
+		glDrawArrays(mMode, 0, mSize);
+	}
+	else {
+		glDrawElements(mMode, mSize, GL_UNSIGNED_INT, 0);
+	}
 
 	for (BaseNode* bn : getChildNodes())
 	{
-		bn->Draw(camera, parentTransf);
+		dynamic_cast<SceneNode*>(bn)->draw(camera, parentTransf);
 	}
 	
 }
 
 
-void SceneNode::Update(void)
+void SceneNode::update(double deltaTime)
 {
-	mPosition = glm::clamp(mPosition, 0.0f, 300.0f);
+	mPosition = glm::clamp(mPosition, 0.0f, 300.0f); // clamp to map limits
 	gridPosition = glm::vec2(floor(mPosition.x / 15), floor(mPosition.z / 15));
 
-	/*for (BaseNode* bn : getChildNodes())
+	for (BaseNode* bn : getChildNodes())
 	{
-		bn->Update();
-	}*/
+		bn->update(deltaTime);
+	}
 
-    // Do nothing specific for this generic type of scene node
 }
+
+
 
 
 void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat4(1.0)*/){
@@ -249,14 +254,10 @@ void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat
     glEnableVertexAttribArray(tex_att);
 
 	// Aply transformations *ISROT*
-	glm::mat4 scaling = glm::scale(glm::mat4(1.0), mScale);
 	glm::mat4 rotation = glm::mat4_cast(mOrientation);
 	glm::mat4 translation = glm::translate(parentTransf, mPosition);
 
 	parentTransf = translation * rotation;
-
-	// Scaling is done only on local object
-	//glm::mat4 transf = glm::scale(parentTransf, mScale);
 
     GLint world_mat = glGetUniformLocation(program, "world_mat");
     glUniformMatrix4fv(world_mat, 1, GL_FALSE, glm::value_ptr(glm::scale(parentTransf, mScale)));
@@ -264,7 +265,6 @@ void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat
     glm::mat4 normal_matrix = glm::transpose(glm::inverse(parentTransf));
     GLint normal_mat = glGetUniformLocation(program, "normal_mat");
     glUniformMatrix4fv(normal_mat, 1, GL_FALSE, glm::value_ptr(normal_matrix));
-
 
 	// Texture
 	if (mTexture) {
@@ -279,7 +279,6 @@ void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
-
 
     // Timer
     GLint timer_var = glGetUniformLocation(program, "timer");

@@ -32,12 +32,12 @@ namespace game {
             Resource(ResourceType type, std::string name, GLuint resource, GLsizei size);
             Resource(ResourceType type, std::string name, GLuint array_buffer, GLuint element_array_buffer, GLsizei size);
             ~Resource();
-            ResourceType GetType(void) const;
-            const std::string GetName(void) const;
-            GLuint GetResource(void) const;
-            GLuint GetArrayBuffer(void) const;
-            GLuint GetElementArrayBuffer(void) const;
-            GLsizei GetSize(void) const;
+            ResourceType getType(void) const;
+            const std::string getName(void) const;
+            GLuint getResource(void) const;
+            GLuint getArrayBuffer(void) const;
+            GLuint getElementArrayBuffer(void) const;
+            GLsizei getSize(void) const;
 
     }; // class Resource
 

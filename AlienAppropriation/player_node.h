@@ -7,6 +7,7 @@
 #include "projectile_node.h"
 #include "entity_game_nodes.h"
 
+
 #include <string.h>
 
 namespace game
@@ -16,10 +17,10 @@ namespace game
 	class PlayerNode : public SceneNode
 	{
 	public:
-		PlayerNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture, BaseNode* camera);
+		PlayerNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture);
 		~PlayerNode();
 
-		glm::vec3 GetPosition(void);
+		glm::vec3 getPosition(void);
 
 		void rotateLeft();
 		void rotateRight();
@@ -28,8 +29,8 @@ namespace game
 
 		void rotateByCamera();
 
-		void Draw(Camera* camera, glm::mat4 parentTransf = glm::mat4(1.0));
-		virtual void Update(void);
+		virtual void draw(SceneNode* camera, glm::mat4 parentTransf = glm::mat4(1.0));
+		virtual void update(double deltaTime);
 
 		void setPlayerPosition();
 		float getDistanceFromCamera();
@@ -38,7 +39,11 @@ namespace game
 		inline void toggleTractorBeam() { tractor_beam_on = !tractor_beam_on; }
 		inline void toggleShields() { shielding_on = !shielding_on; }
 
+		inline bool isTractorBeamActive() { return tractor_beam_on; }
+		inline bool isShieldActive() { return shielding_on;  }
 		void takeDamage(DamageType);
+
+		void addCollected();
 
 	private:
 		float x_tilt_percentage;
@@ -52,14 +57,8 @@ namespace game
 		bool shielding_on = false;
 
 		void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));
-		void checkWeapons();
-		void updateTractorBeam();
-		void updateShield();
-		void suckEntity(EntityNode*, std::vector<BaseNode*>*);
-		void shieldProjectile(ProjectileNode*, std::vector<BaseNode*>*);
-		
-		BaseNode* getRootNode();
 
+		
 		std::vector<SceneNode*> weapons;		
 	};
 }

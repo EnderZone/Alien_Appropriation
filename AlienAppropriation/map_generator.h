@@ -21,17 +21,9 @@
 
 
 namespace game {
-	// Exception type for the game
-	class GameException2 : public std::exception
-	{
-	private:
-		std::string message_;
-	public:
-		GameException2(std::string message) : message_(message) {};
-		virtual const char* what() const throw() { return message_.c_str(); };
-		virtual ~GameException2() throw() {};
-	};
 
+	// struct Object
+	// An object on the map. Purely abstract - does not exist in the scene
 	struct Object {
 		glm::vec2 pos;
 		int a = 0, b = 0;
@@ -39,10 +31,12 @@ namespace game {
 		float rotation = 0;
 	};
 
+	// class MapGenerator
+	// Handles map generation
 	class MapGenerator
 	{
 	public:
-		MapGenerator(SceneGraph* sceneGraph, ResourceManager* resourceManager);
+		MapGenerator(SceneGraph* sceneGraph, int initWidth = 3, int initHeight = 3);
 		~MapGenerator();
 		void GenerateMap();
 
@@ -50,22 +44,13 @@ namespace game {
 		// Scene graph containing all nodes to render
 		SceneGraph* scene;
 
-		// Resources available to the game
-		ResourceManager* resman;
-
 		PoissonGenerator::DefaultPRNG PRNG;
-
-
-		// Create an instance of an object stored in the resource manager
-		SceneNode *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""), SceneNode* parent=nullptr);
-
 		void GenerateCluster(Object origin);
-
 
 		//Generate points
 		int gridWidth;
 		int gridHeight;
-		int cellSize;
+		const int cellSize;
 		int width;
 		int height;
 		int difficulty;

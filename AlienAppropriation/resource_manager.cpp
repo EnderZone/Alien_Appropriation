@@ -12,6 +12,8 @@
 
 namespace game {
 
+std::vector<Resource*> ResourceManager::mResource;
+
 ResourceManager::ResourceManager(void){
 }
 
@@ -60,11 +62,11 @@ void ResourceManager::LoadResource(ResourceType type, const std::string name, co
 }
 
 
-Resource *ResourceManager::GetResource(const std::string name) const {
+Resource *ResourceManager::getResource(const std::string name) {
 
     // Find resource with the specified name
     for (int i = 0; i < mResource.size(); i++){
-        if (mResource[i]->GetName() == name){
+        if (mResource[i]->getName() == name){
             return mResource[i];
         }
     }

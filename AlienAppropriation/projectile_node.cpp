@@ -2,6 +2,7 @@
 
 #include "projectile_node.h"
 #include "player_node.h"
+#include "scene_graph.h"
 
 
 #include <typeinfo>
@@ -25,14 +26,9 @@ ProjectileNode::~ProjectileNode()
 
 }
 
-void ProjectileNode::Update()
+void ProjectileNode::update(double deltaTime)
 {
-	EntityNode::Update();
-
-	for (BaseNode* bn : getChildNodes())
-	{
-		bn->Update();
-	}
+	EntityNode::update(deltaTime);
 
 	// Check to see if the projectile is still alive, if not destroy it
 	double currentTime = glfwGetTime();
@@ -44,8 +40,7 @@ void ProjectileNode::Update()
 
 	if (mRemainingLife <= 0.0f)
 	{
-		mParentNode->removeChildNode(getName());
-		return;
+		addTag("delete");
 	}
 }
 
@@ -62,28 +57,18 @@ HeatMissileNode::~HeatMissileNode()
 
 }
 
-void HeatMissileNode::Update()
+void HeatMissileNode::update(double deltaTime)
 {
-	ProjectileNode::Update();
-
+	ProjectileNode::update(deltaTime);
 
 	// Get the player pos
-	glm::vec3 playerPos = getPlayerPosition();
+	glm::vec3 playerPos = SceneGraph::getPlayerNode()->getPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
-	Rotate(dirPlayer);
+	rotate(dirPlayer);
 
 	mVelocity += 0.2f * dirPlayer;
 	mVelocity = mMaxVelocity * glm::normalize(mVelocity);
-
-
-	if (glm::distance(mPosition, playerPos) < 0.5f)
-	{
-		PlayerNode* playerNode = getPlayerNode();
-		playerNode->takeDamage(MISSILE);
-
-		mDeleteNextTick = true;
-	}
 }
 
 }

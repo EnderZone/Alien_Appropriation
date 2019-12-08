@@ -26,37 +26,37 @@ Resource::~Resource(){
 }
 
 
-ResourceType Resource::GetType(void) const {
+ResourceType Resource::getType(void) const {
 
     return mType;
 }
 
 
-const std::string Resource::GetName(void) const {
+const std::string Resource::getName(void) const {
 
     return mName;
 }
 
 
-GLuint Resource::GetResource(void) const {
+GLuint Resource::getResource(void) const {
 
     return mResource;
 }
 
 
-GLuint Resource::GetArrayBuffer(void) const {
+GLuint Resource::getArrayBuffer(void) const {
 
     return mArrayBuffer;
 }
 
 
-GLuint Resource::GetElementArrayBuffer(void) const {
+GLuint Resource::getElementArrayBuffer(void) const {
 
     return mElementArrayBuffer;
 }
 
 
-GLsizei Resource::GetSize(void) const {
+GLsizei Resource::getSize(void) const {
 
     return mSize;
 }
