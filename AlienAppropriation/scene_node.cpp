@@ -93,7 +93,7 @@ void SceneNode::setOrientation(glm::quat orientation){
 }
 
 
-void SceneNode::setscale(glm::vec3 scale){
+void SceneNode::setScale(glm::vec3 scale){
 
     mScale = scale;
 }

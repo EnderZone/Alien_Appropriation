@@ -681,7 +681,7 @@ void ResourceManager::LoadMesh(const std::string name, const char *filename) {
 
 }
 
-void ResourceManager::CreateCylinder(std::string object_name, float radius, int resolution) {
+void ResourceManager::CreateCylinder(std::string object_name, float radius, int resolution, glm::vec3 color) {
 
 	// Create a cylinder
 	// The cylinder is built from two circles
@@ -724,9 +724,7 @@ void ResourceManager::CreateCylinder(std::string object_name, float radius, int 
 			vertex_normal = glm::vec3(cos(theta), 0, sin(theta));
 			vertex_position = vertex_normal * radius;
 			vertex_position.y = 0.5f * (y * 2 - 1);
-			vertex_color = glm::vec3(1.0 - ((float)i / (float)resolution),
-				(float)i / (float)resolution,
-				(float)i / (float)resolution);
+			vertex_color = color;
 			vertex_coord = glm::vec2(
 				theta / (2.0*glm::pi<GLfloat>())
 				, 0.25f + y / 2.0f
@@ -747,7 +745,7 @@ void ResourceManager::CreateCylinder(std::string object_name, float radius, int 
 		// Define position, normal and color of vertex
 		vertex_normal = glm::vec3(0.0f, (y * 2 - 1), 0.0f);
 		vertex_position = glm::vec3(0.0f, (y - 0.5f), 0.0f);
-		vertex_color = glm::vec3(0.0f, 1.0f - y, y + 0.0f);
+		vertex_color = color;
 		vertex_coord = glm::vec2(0.0f, (float)y);
 		// Add vectors to the data buffer
 		for (int k = 0; k < 3; k++) {

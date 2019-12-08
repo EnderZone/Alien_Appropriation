@@ -117,6 +117,11 @@ namespace game {
 			*energy = 100.0f;
 		}
 
+		for (BaseNode* bn : getChildNodes())
+		{
+			bn->update(deltaTime);
+		}
+		
 		for (BaseNode* bn : weapons)
 		{
 			bn->update(deltaTime);

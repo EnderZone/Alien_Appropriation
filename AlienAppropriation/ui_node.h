@@ -10,7 +10,7 @@ namespace game {
 		
 		void addStat(float*, float*);
 
-		void Update(void);
+		virtual void update(double deltaTime);
 
 	private:
 		float* max_stat;

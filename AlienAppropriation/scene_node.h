@@ -81,7 +81,7 @@ namespace game {
 			// Setters
 			void setPosition(glm::vec3 position);
 			void setOrientation(glm::quat orientation);
-			void setscale(glm::vec3 scale);
+			void setScale(glm::vec3 scale);
 			void setGridPosition(glm::vec3 pos);
 
 			virtual void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));	// Set matrices that transform the node in a shader program

@@ -13,7 +13,7 @@ namespace game {
 
 Camera::Camera(std::string name)
 	: SceneNode(name)
-	, mCameraPerspective(First)
+	, mCameraPerspective(Third)
 {
 }
 
@@ -52,7 +52,7 @@ void Camera::draw(SceneNode *camera, glm::mat4 parentTransf)
 	
 	for (BaseNode* bn : getChildNodes())
 	{
-		if (mCameraPerspective == First) {
+		if (mCameraPerspective == Third) {
 			dynamic_cast<SceneNode*>(bn)->draw(camera, parentTransf);
 		}
 	}
@@ -83,9 +83,9 @@ void Camera::SwitchCameraPerspective()
 {
 	glm::vec3 camShiftVec = glm::vec3(0.0f, 0.0f, (SceneGraph::getPlayerNode()->getPosition() - mPosition).z);
 
-	if (mCameraPerspective == First)
+	if (mCameraPerspective == Third)
 	{
-		mCameraPerspective = Third;
+		mCameraPerspective = First;
 		translate(((GetUp() * camShiftVec.y) + (GetForward() * -camShiftVec.z)));
 		for (BaseNode* bn : getChildNodes())
 		{
@@ -93,9 +93,9 @@ void Camera::SwitchCameraPerspective()
 				sn->translate(-camShiftVec);
 		}
 	}
-	else if (mCameraPerspective == Third)
+	else if (mCameraPerspective == First)
 	{
-		mCameraPerspective = First;
+		mCameraPerspective = Third;
 		translate(((GetUp() * -camShiftVec.y) + (GetForward() * camShiftVec.z)));
 		for (BaseNode* bn : getChildNodes())
 		{
@@ -187,7 +187,7 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix = glm::mat4(1.0); 
 
 	// Adding player to the view Matrix
-	if (mCameraPerspective == First)
+	if (mCameraPerspective == Third)
 	mViewMatrix = glm::translate(mViewMatrix, SceneGraph::getPlayerNode()->getPosition() - mPosition);
 
     // Copy vectors to matrix
@@ -205,7 +205,7 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix[1][2] = current_forward[1];
     mViewMatrix[2][2] = current_forward[2];
 
-	if (mCameraPerspective == First)
+	if (mCameraPerspective == Third)
 		mViewMatrix = glm::translate(mViewMatrix, -(SceneGraph::getPlayerNode()->getPosition() - mPosition));
 
     // Create translation to camera position

@@ -9,8 +9,8 @@ namespace game {
 		max_stat = max_pointer;
 	}
 
-	void UINode::Update() {
+	void UINode::update(double deltaTime) {
 		float degrees = 5.0f * (*tracker / *max_stat);
-		SetScale(glm::vec3(degrees, 0.5f, 1.0f));
+		setScale(glm::vec3(degrees, 0.5f, degrees));
 	}
 }

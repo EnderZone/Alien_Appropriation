@@ -130,8 +130,8 @@ void Game::SetupResources(void){
 	mResourceManager->CreateCylinder("PlayerMesh");
 	mResourceManager->CreateCone("coneMesh");
 	mResourceManager->CreateSphereParticles("shieldMesh");
-	mResourceManager->CreateSquare("healthMesh", 1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	mResourceManager->CreateSquare("energyMesh", 1.0f, glm::vec3(0.0f, 0.7f, 0.7f));
+	mResourceManager->CreateCylinder("healthMesh", 0.6f, 30, glm::vec3(1.0f, 0.0f, 0.0f));
+	mResourceManager->CreateCylinder("energyMesh", 0.6f, 30, glm::vec3(0.0f, 0.7f, 0.7f));
 
 	std::string filename;
 	std::string materials[] = { "default", "textured", "litTexture", "skybox", "particle" };
@@ -231,18 +231,12 @@ void Game::SetupScene(void){
 
 
 	//Create UI elements
-	SceneNode* ui_nodes = mSceneGraph->CreateInstance<UINode>("HEALTH_UI", "healthMesh", "defaultMaterial");
-	mSceneGraph->getRootNode()->removeChildNode("HEALTH_UI");
-	player->addChildNode(ui_nodes);
-	ui_nodes->translate(glm::vec3(0.5f, 1.0f, 2.0f));
-	ui_nodes->rotate(glm::angleAxis(glm::pi<float>() / 5, glm::vec3(0.0f, 1.0f, 0.0f)));
+	SceneNode* ui_nodes = mSceneGraph->CreateInstance<UINode>("HEALTH_UI", "healthMesh", "defaultMaterial", "", player);
+	ui_nodes->translate(glm::vec3(0.0f, 1.5f, 0.0f));
 	((UINode*)ui_nodes)->addStat(health, max_stat);
 
-	ui_nodes = mSceneGraph->CreateInstance<UINode>("SHIELD_UI", "energyMesh", "defaultMaterial");
-	mSceneGraph->getRootNode()->removeChildNode("SHIELD_UI");
-	player->addChildNode(ui_nodes);
-	ui_nodes->translate(glm::vec3(0.5f, 1.0f, -2.0f));
-	ui_nodes->rotate(glm::angleAxis(glm::pi<float>() / 5, glm::vec3(0.0f, 1.0f, 0.0f)));
+	ui_nodes = mSceneGraph->CreateInstance<UINode>("SHIELD_UI", "energyMesh", "defaultMaterial", "", player);
+	ui_nodes->translate(glm::vec3(0.0f, 3.0f, 0.0f));
 	((UINode*)ui_nodes)->addStat(shield, max_stat);
 
 	// Create skybox
