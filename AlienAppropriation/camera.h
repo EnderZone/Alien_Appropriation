@@ -10,38 +10,44 @@
 
 #include <string>
 
-#include "base_node.h"
+#include "scene_node.h"
 
 
 namespace game {
 	
-	class SceneNode;
 	class PlayerNode;
 
-    // Abstraction of a camera
-    class Camera : public BaseNode{
+	enum Perspective {First, Third};
+
+    // class Camera
+	// The camera node contains a bit more functionality than one would expect
+	// This is because camera node is instrinsically linked to the player - since the player is a child of the camera
+    class Camera : public SceneNode {
+		private:
+
+			glm::vec3 mForward; // Initial forward vector
+			glm::vec3 mSide; // Initial side vector
+			glm::mat4 mViewMatrix; // View matrix
+			glm::mat4 mProjectionMatrix; // Projection matrix
+
+
+			glm::vec3 mVelocity;
+
+
+			glm::vec3 playerForward;
+
+			// Create view matrix from current camera parameters
+			void SetupViewMatrix(void);
+
+			Perspective mCameraPerspective;
 
         public:
             Camera(std::string name);
             ~Camera();
  
-            // Get global camera attributes
-            glm::vec3 GetPosition(void) const;
-            glm::quat GetOrientation(void) const;
-
-            // Set global camera attributes
-            void SetPosition(glm::vec3 position);
-            void SetOrientation(glm::quat orientation);
-            
-            // Perform global transformations of camera
-            void Translate(glm::vec3 trans);
-            void Rotate(glm::quat rot);
-
-
-
-			// Dummy Draw function, just to update parentTransF for any children
-			virtual void Draw(Camera *camera, glm::mat4 parentTransf = glm::mat4(1.0));
-			virtual void Update();
+			// Dummy draw function, just to update parentTransF for any children
+			virtual void draw(SceneNode *camera, glm::mat4 parentTransf = glm::mat4(1.0));
+			virtual void update(double deltaTime);
 
 			// Camera Perspective
 			void SwitchCameraPerspective();
@@ -52,18 +58,14 @@ namespace game {
             glm::vec3 GetUp(void) const;
 
 			// Velocity variables
-			inline void setVelocityForward(float v) { mVelocityZ = v; }
-			inline float getVelocityForward() { return mVelocityZ; }
-			
-			inline void setVelocitySide(float v) { mVelocityX = v; }
-			inline float getVelocitySide() { return mVelocityX; }
+			inline glm::vec3 getVelocityRelative() { return mVelocity; }
 
-			inline void setVelocityUp(float v) { mVelocityY = v; }
-			inline float getVelocityUp() { return mVelocityY; }
+			inline void setVelocity(glm::vec3 velocity) { mVelocity = velocity; }
+			inline void addVelocity(glm::vec3 velocity) { mVelocity += velocity;  }
 
-			inline glm::vec3 getCurrentVelocity() {
-				glm::vec3 current = mVelocityX * glm::cross(playerForward, glm::vec3(0.0f, -1.0f, 0.0f));
-				current += -mVelocityZ * playerForward;
+			inline glm::vec3 getVelocityRaw() {
+				glm::vec3 current = mVelocity.x * glm::cross(playerForward, glm::vec3(0.0f, -1.0f, 0.0f));
+				current += -mVelocity.z * playerForward;
 				return current;
 			};
 
@@ -80,30 +82,11 @@ namespace game {
             // near and far planes, and width and height of viewport
             void SetProjection(GLfloat fov, GLfloat near, GLfloat far, GLfloat w, GLfloat h);
             // Set all camera-related variables in shader program
-            void SetupShader(GLuint program);
-			SceneNode* findPlayerNode();
+            virtual void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));
 
 			inline float GetHeight() { return mPosition.y; };
 
-        private:
-            glm::vec3 mPosition; // Position of camera
-            glm::quat mOrientation; // Orientation of camera
-            glm::vec3 mForward; // Initial forward vector
-            glm::vec3 mSide; // Initial side vector
-            glm::mat4 mViewMatrix; // View matrix
-            glm::mat4 mProjectionMatrix; // Projection matrix
 
-			float mVelocityZ; //Velocity (only travels Forward)
-			float mVelocityX; //Velocity (only travels Sideways)
-			float mVelocityY; //Velocity (only travels Upwards)
-
-			glm::vec3 playerForward;
-
-
-            // Create view matrix from current camera parameters
-            void SetupViewMatrix(void);
-			
-			int mCameraPerspective;
 
     }; // class Camera
 

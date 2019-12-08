@@ -9,11 +9,14 @@ namespace game
 {
 
 
-CowEntityNode::CowEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/) 
+CowEntityNode::CowEntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture) 
 	: EntityNode(name, geometry, material, texture)
 	, mLastTimer(0.0f)
 	, mNextTimer(0.0f)
 {
+	addTag("canPickUp");
+	addTag("cow");
+	addTag("canCollect");
 
 	int defaultBehaviour = rand() % 2;
 	switch (defaultBehaviour)
@@ -25,9 +28,6 @@ CowEntityNode::CowEntityNode(const std::string name, const Resource *geometry, c
 		mBehaviour = walk;
 		break;
 	}
-
-	// Behaviour override
-	//mBehaviour = run;
 }
 
 CowEntityNode::~CowEntityNode()
@@ -35,9 +35,9 @@ CowEntityNode::~CowEntityNode()
 
 }
 
-void CowEntityNode::Update()
+void CowEntityNode::update(double deltaTime)
 {
-	EntityNode::Update();
+	EntityNode::update(deltaTime);
 
 	// Basic Cow should walk around occasionally, and stop occasionally
 	// This behaviors repeats indefinitely
@@ -99,7 +99,7 @@ void CowEntityNode::doWalk()
 
 	mVelocity += 0.02f * glm::normalize(dirVec);
 	mVelocity = 0.2f * glm::normalize(mVelocity);
-	Rotate(mVelocity);
+	rotate(mVelocity);
 }
 
 void CowEntityNode::doRun()
@@ -112,7 +112,7 @@ void CowEntityNode::doRun()
 
 	mVelocity += 0.2f * glm::normalize(dirVec);
 	mVelocity = 0.5f * glm::normalize(mVelocity);
-	Rotate(mVelocity);
+	rotate(mVelocity);
 }
 
 
@@ -124,6 +124,10 @@ BullEntityNode::BullEntityNode(const std::string name, const Resource *geometry,
 	, mLastTimer(0.0f)
 	, mNextTimer(0.0f)
 {
+
+	addTag("canPickUp");
+	addTag("bull");
+	addTag("canCollect");
 	// Random start behaviour
 	int defaultBehaviour = rand() % 2;
 	switch (defaultBehaviour)
@@ -146,9 +150,9 @@ BullEntityNode::~BullEntityNode()
 
 }
 
-void BullEntityNode::Update()
+void BullEntityNode::update(double deltaTime)
 {
-	EntityNode::Update();
+	EntityNode::update(deltaTime);
 
 	// Similar to cow
 	// Walks around (but faster) and grazes
@@ -212,7 +216,7 @@ void BullEntityNode::doWalk()
 
 	mVelocity += 0.02f * glm::normalize(dirVec);
 	mVelocity = 0.2f * glm::normalize(mVelocity);
-	Rotate(mVelocity);
+	rotate(mVelocity);
 }
 
 void BullEntityNode::doRun()
@@ -225,7 +229,7 @@ void BullEntityNode::doRun()
 
 	mVelocity += 0.3f * glm::normalize(dirVec);
 	mVelocity = 0.6f * glm::normalize(mVelocity);
-	Rotate(mVelocity);
+	rotate(mVelocity);
 }
 
 
@@ -238,7 +242,7 @@ FarmerEntityNode::FarmerEntityNode(const std::string name, const Resource *geome
 	: EntityNode(name, geometry, material, texture)
 	, mNextTimer(0.0f)
 {
-
+	addTag("canPickUp");
 }
 
 FarmerEntityNode::~FarmerEntityNode()
@@ -246,12 +250,12 @@ FarmerEntityNode::~FarmerEntityNode()
 
 }
 
-void FarmerEntityNode::Update()
+void FarmerEntityNode::update(double deltaTime)
 {
-	EntityNode::Update();
+	EntityNode::update(deltaTime);
 
 
-	glm::vec3 playerPos = getPlayerPosition();
+	glm::vec3 playerPos = SceneGraph::getPlayerNode()->getPosition();
 	playerPos.y = 0;
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
@@ -260,7 +264,7 @@ void FarmerEntityNode::Update()
 	// If player is within range x, rotate to face player and walk towards until player is within range v
 	if (glm::distance(mPosition, playerPos) < 70.0)
 	{
-		Rotate(dirPlayer);
+		rotate(dirPlayer);
 
 		if (glm::distance(mPosition, playerPos) > 10.0)
 			mVelocity = 0.2f * glm::normalize(dirPlayer);
@@ -291,13 +295,12 @@ void FarmerEntityNode::Update()
 
 void FarmerEntityNode::hitGround()
 {
-	mDeleteNextTick = true;
+	addTag("delete");
 }
 
 void FarmerEntityNode::doFire()
 {
-	PlayerNode* playerNode = getPlayerNode();
-	playerNode->takeDamage(GUN);
+	SceneGraph::getPlayerNode()->takeDamage(GUN);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -309,7 +312,7 @@ CannonMissileEntityNode::CannonMissileEntityNode(const std::string name, const R
 	, mNextTimer(15.0f) 
 	, mProjectiles(0)
 {
-
+	addTag("canPickUp");
 }
 
 CannonMissileEntityNode::~CannonMissileEntityNode()
@@ -317,19 +320,17 @@ CannonMissileEntityNode::~CannonMissileEntityNode()
 
 }
 
-void CannonMissileEntityNode::Update()
+void CannonMissileEntityNode::update(double deltaTime)
 {
-	EntityNode::Update();
+	EntityNode::update(deltaTime);
 
 
-	glm::vec3 playerPos = getPlayerPosition();
+	glm::vec3 playerPos = SceneGraph::getPlayerNode()->getPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
 	dirPlayer.y = 0.0f;
 
-	Rotate(dirPlayer);
-
-
+	rotate(dirPlayer);
 
 	float currentTime = glfwGetTime();
 
@@ -349,22 +350,20 @@ void CannonMissileEntityNode::Update()
 
 void CannonMissileEntityNode::hitGround()
 {
-	mDeleteNextTick = true;
+	addTag("delete");
 }
 
 void CannonMissileEntityNode::fireHeatMissile()
 {
-	glm::vec3 playerPos = getPlayerPosition();
+	glm::vec3 playerPos = SceneGraph::getPlayerNode()->getPosition();
 
 	glm::vec3 dirPlayer = playerPos - mPosition;
 	dirPlayer.y = 0.0f;
 
 	glm::vec3 initVelVec = 1.0f * glm::normalize(dirPlayer);
-
-	SceneGraph* sceneGraph = getRootNode()->getSceneGraph();
-	HeatMissileNode* missile = sceneGraph->CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "cubeMesh", "texturedMaterial", "placeholderTexture", 10, mPosition, initVelVec);
+	HeatMissileNode* missile = SceneGraph::CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "missileMesh", "texturedMaterial", "missileTexture", 10, mPosition, initVelVec);
 	mProjectiles += 1;
-	missile->Scale(glm::vec3(0.2, 0.2, 1.5));
+	//missile->scale(glm::vec3(0.2, 0.2, 1.5));
 }
 
 }

@@ -4,18 +4,15 @@ namespace game {
 
 
 
-	MapGenerator::MapGenerator(SceneGraph* sceneGraph, ResourceManager* resourceManager)
+	MapGenerator::MapGenerator(SceneGraph* sceneGraph, int initWidth, int initHeight) : cellSize (20)
 	{
 		scene = sceneGraph;
-		resman = resourceManager;
 
-
-		//Generate points
-		gridWidth = 20;
-		gridHeight = 20;
-		cellSize = 15;
-		width = gridWidth * cellSize;
-		height = gridHeight * cellSize;
+		// Initialise map variables
+		width = initWidth * 100;
+		height = initHeight * 100;
+		gridWidth = width / cellSize;
+		gridHeight = height / cellSize;
 		difficulty = 1;
 
 		density = 1;
@@ -38,15 +35,16 @@ namespace game {
 		//Begin by creating a ground plane
 		for (int i = 0; i < width/100; i++) {
 			for (int j = 0; j < height/100; j++) {
-				SceneNode* ground = CreateInstance("Ground" + std::to_string(i) + std::to_string(j), "GridMesh", "litTextureMaterial", "groundTexture");
-				ground->Translate(glm::vec3(i * 100, 0, j * 100));
+				SceneNode* ground = scene->CreateInstance<SceneNode>("Ground" + std::to_string(i) + std::to_string(j), "GridMesh", "litTextureMaterial", "groundTexture");
+				ground->translate(glm::vec3(i * 100, 0, j * 100));
 			}
 		}
 
 		// Generate random points
 		const auto Points = PoissonGenerator::generatePoissonPoints((gridWidth+1) * (gridHeight+1) * density, PRNG,50,false, 1/(density * glm::min(gridWidth, gridHeight)));
-		
-		// Sort the random points into grid cells based off thier position
+		//const auto Points = PoissonGenerator::generatePoissonPoints(1, PRNG, 50, false, 1 / (density * glm::min(gridWidth, gridHeight)));
+
+		// Sort the random points into grid cells based off theer position
 		for (auto p : Points) {
 			Object point;
 			point.pos = glm::vec2(p.x * width, p.y * height);
@@ -76,27 +74,29 @@ namespace game {
 			for (int y = 0; y < gridHeight; y++) {
 				for (auto o : grid.at(x).at(y)) {
 					if (!(o.type == "default" || o.type == "originPoint")) {
-						SceneNode* obj = CreateInstance(o.type + std::to_string(x) + std::to_string(y), o.type + "Mesh", "litTextureMaterial", o.type + "Texture");
-						obj->Translate(glm::vec3(o.pos.x, 0, o.pos.y));
 
 						if (o.type == "hay") {
-							obj->Rotate(glm::angleAxis(glm::half_pi<float>(), glm::vec3(0, 0, 1)));
-							//obj->Rotate(glm::angleAxis((rand()%360) * (glm::pi<float>() / 180), glm::vec3(-1, 0, 0)));
-							obj->Translate(glm::vec3(0, 0.5, 0));
+							EntityNode* obj = scene->CreateInstance<EntityNode>(o.type + std::to_string(x) + std::to_string(y), o.type + "Mesh", "litTextureMaterial", o.type + "Texture");
+							obj->translate(glm::vec3(o.pos.x, 0, o.pos.y));
+							obj->rotate(glm::angleAxis(glm::half_pi<float>(), glm::vec3(0, 0, 1)));
+							//obj->rotate(glm::angleAxis((rand()%360) * (glm::pi<float>() / 180), glm::vec3(-1, 0, 0)));
+							obj->translate(glm::vec3(0, 0.5, 0));
+							obj->addTag("canPickUp");
+							obj->addTag("canCollect");
 
 						}
-						if (o.type == "tree") {
-							obj->Scale(glm::vec3(1.25f + rand() % 5 / 10.0f));
-						}
-						if (o.type == "barn") {
-							obj->Rotate(glm::angleAxis(glm::radians(o.rotation), glm::vec3(0, 1, 0)));
-							obj->Scale(glm::vec3(1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f));
+						else {
+							SceneNode* obj = scene->CreateInstance<SceneNode>(o.type + std::to_string(x) + std::to_string(y), o.type + "Mesh", "litTextureMaterial", o.type + "Texture");
+							obj->translate(glm::vec3(o.pos.x, 0, o.pos.y));
+							if (o.type == "tree") {
+								obj->scale(glm::vec3(1.25f + rand() % 5 / 10.0f));
+							}
+							if (o.type == "barn") {
+								obj->rotate(glm::angleAxis(glm::radians(o.rotation), glm::vec3(0, 1, 0)));
+								obj->scale(glm::vec3(1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f));
+							}
 						}
 					}
-			/*		if (o.type == "originPoint") {
-						SceneNode* tree = CreateInstance("Test", "treeMesh", "texturedMaterial", "barnTexture", ground);
-						tree->Translate(glm::vec3(o.pos.x, 0, o.pos.y));
-					}*/
 
 				}
 			}
@@ -155,33 +155,4 @@ namespace game {
 		}
 		
 	}
-
-
-
-	SceneNode* MapGenerator::CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name, SceneNode* parent) {
-
-		Resource *geom = resman->GetResource(object_name);
-		if (!geom) {
-			throw(GameException2(std::string("Could not find resource \"") + object_name + std::string("\"")));
-		}
-
-		Resource *mat = resman->GetResource(material_name);
-		if (!mat) {
-			throw(GameException2(std::string("Could not find resource \"") + material_name + std::string("\"")));
-		}
-
-		Resource *tex = NULL;
-		if (texture_name != "") {
-			tex = resman->GetResource(texture_name);
-			if (!tex) {
-				throw(GameException2(std::string("Could not find resource \"") + material_name + std::string("\"")));
-			}
-		}
-
-		EntityNode *scn = scene->CreateNode<EntityNode>(entity_name, geom, mat, tex, parent);
-		return scn;
-	}
-
-
 }
-

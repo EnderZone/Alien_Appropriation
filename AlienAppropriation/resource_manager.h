@@ -31,7 +31,7 @@ namespace game {
             // Load a resource from a file, according to the specified type
             void LoadResource(ResourceType type, const std::string name, const char *filename);
             // Get the resource with the specified name
-            Resource *GetResource(const std::string name) const;
+            static Resource *getResource(const std::string name);
 
             // Methods to create specific resources
             // Create the geometry for a torus and add it to the list of resources
@@ -53,7 +53,7 @@ namespace game {
 
 	private:
             // List storing all resources
-            std::vector<Resource*> mResource; 
+            static std::vector<Resource*> mResource; 
  
             // Methods to load specific types of resources
             // Load shaders programs

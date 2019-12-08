@@ -28,7 +28,7 @@
 /* Versions history:
  *    1.1.5    Jun 16, 2019      In-class initializers, default ctors, naming, shorter code
  *		1.1.4 	Oct 19, 2016		POISSON_PROGRESS_INDICATOR can be defined outside of the header file, disabled by default
- *		1.1.3a	Jun  9, 2016		Update constructor for DefaultPRNG
+ *		1.1.3a	Jun  9, 2016		update constructor for DefaultPRNG
  *		1.1.3		Mar 10, 2016		Header-only library, no global mutable state
  *		1.1.2		Apr  9, 2015		Output a text file with XY coordinates
  *		1.1.1		May 23, 2014		Initialize PRNG seed, fixed uninitialized fields

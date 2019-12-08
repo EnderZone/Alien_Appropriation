@@ -7,68 +7,24 @@
 
 #include "camera.h"
 #include "scene_node.h"
+#include "scene_graph.h"
 
 namespace game {
 
 Camera::Camera(std::string name)
-	: BaseNode(name)
-	, mCameraPerspective(1)
-	, mVelocityZ(0.0f)
-	, mVelocityX(0.0f)
-	, mVelocityY(0.0f)
+	: SceneNode(name)
+	, mCameraPerspective(First)
 {
 }
 
-
 Camera::~Camera(){
 }
-
-
-glm::vec3 Camera::GetPosition(void) const {
-
-    return mPosition;
-}
-
-
-glm::quat Camera::GetOrientation(void) const {
-
-    return mOrientation;
-}
-
-
-void Camera::SetPosition(glm::vec3 position){
-
-    mPosition = position;
-}
-
-
-void Camera::SetOrientation(glm::quat orientation){
-
-    mOrientation = orientation;
-}
-
-
-void Camera::Translate(glm::vec3 trans){
-
-    mPosition += trans;
-}
-
-
-void Camera::Rotate(glm::quat rot){
-
-    mOrientation = rot * mOrientation;
-    mOrientation = glm::normalize(mOrientation);
-}
-
-
-
 
 glm::vec3 Camera::GetForward(void) const {
 
     glm::vec3 current_forward = mOrientation * mForward;
     return -current_forward; // Return -forward since the camera coordinate system points in the opposite direction
 }
-
 
 glm::vec3 Camera::GetSide(void) const {
 
@@ -78,7 +34,6 @@ glm::vec3 Camera::GetSide(void) const {
 
 
 glm::vec3 Camera::GetUp(void) const {
-
     glm::vec3 current_forward = mOrientation * mForward;
     glm::vec3 current_side = mOrientation * mSide;
     glm::vec3 current_up = glm::cross(current_forward, current_side);
@@ -87,34 +42,32 @@ glm::vec3 Camera::GetUp(void) const {
 }
 
 
-void Camera::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
+void Camera::draw(SceneNode *camera, glm::mat4 parentTransf)
 {
-	// Obviously were not 'drawing' the camera
-	// This is just a dummy function to make sure any child scenes have correct parentTransf
-	// Since we find it while drawing each scene normally
-
+	// The camera cannot be drawn - instead the function passes the camera's transform to its children
 	glm::mat4 rotation = glm::mat4_cast(mOrientation);
 	glm::mat4 translation = glm::translate(parentTransf, mPosition);
-	
-	parentTransf = translation;
 
+	parentTransf = translation;
+	
 	for (BaseNode* bn : getChildNodes())
 	{
-		if (mCameraPerspective == 1)
-			bn->Draw(camera, parentTransf);
+		if (mCameraPerspective == First) {
+			dynamic_cast<SceneNode*>(bn)->draw(camera, parentTransf);
+		}
 	}
 }
 
-void Camera::Update()
+void Camera::update(double deltaTime)
 {
-	mPosition += mVelocityX * glm::cross(playerForward, glm::vec3(0.0f, -1.0f, 0.0f));
-	mVelocityX *= 0.95;
+	mPosition += mVelocity.x * glm::cross(playerForward, glm::vec3(0.0f, -1.0f, 0.0f));
+	mVelocity.x *= 0.95;
 
-	mPosition += mVelocityY * glm::vec3(0.0f, 1.0f, 0.0f);
-	mVelocityY *= 0.95;
+	mPosition += mVelocity.y * glm::vec3(0.0f, 1.0f, 0.0f);
+	mVelocity.y *= 0.95;
 
-	mPosition += -mVelocityZ * playerForward;
-	mVelocityZ *= 0.95;
+	mPosition += -mVelocity.z * playerForward;
+	mVelocity.z *= 0.95;
 
 	mPosition.x = glm::clamp(mPosition.x, 0.0f, 300.0f);
 	mPosition.y = glm::clamp(mPosition.y, 5.0f, 50.0f);
@@ -122,32 +75,32 @@ void Camera::Update()
 
 	for (BaseNode* bn : getChildNodes())
 	{
-		bn->Update();
+		bn->update(deltaTime);
 	}
 }
 
 void Camera::SwitchCameraPerspective()
 {
-	glm::vec3 camShiftVec = glm::vec3(0.0f, 0.0f, (findPlayerNode()->GetPosition() - mPosition).z);
+	glm::vec3 camShiftVec = glm::vec3(0.0f, 0.0f, (SceneGraph::getPlayerNode()->getPosition() - mPosition).z);
 
-	if (mCameraPerspective == 1)
+	if (mCameraPerspective == First)
 	{
-		mCameraPerspective = 3;
-		Translate(((GetUp() * camShiftVec.y) + (GetForward() * -camShiftVec.z)));
+		mCameraPerspective = Third;
+		translate(((GetUp() * camShiftVec.y) + (GetForward() * -camShiftVec.z)));
 		for (BaseNode* bn : getChildNodes())
 		{
 			if (SceneNode* sn = dynamic_cast<SceneNode*>(bn))
-				sn->Translate(-camShiftVec);
+				sn->translate(-camShiftVec);
 		}
 	}
-	else if (mCameraPerspective == 3)
+	else if (mCameraPerspective == Third)
 	{
-		mCameraPerspective = 1;
-		Translate(((GetUp() * -camShiftVec.y) + (GetForward() * camShiftVec.z)));
+		mCameraPerspective = First;
+		translate(((GetUp() * -camShiftVec.y) + (GetForward() * camShiftVec.z)));
 		for (BaseNode* bn : getChildNodes())
 		{
 			if (SceneNode* sn = dynamic_cast<SceneNode*>(bn))
-				sn->Translate(camShiftVec);
+				sn->translate(camShiftVec);
 		}
 	}
 }
@@ -203,9 +156,9 @@ void Camera::SetProjection(GLfloat fov, GLfloat near, GLfloat far, GLfloat w, GL
 }
 
 
-void Camera::SetupShader(GLuint program){
+void Camera::SetupShader(GLuint program, glm::mat4& parentTransf){
 
-    // Update view matrix
+    // update view matrix
     SetupViewMatrix();
 
     // Set view matrix in shader
@@ -217,21 +170,6 @@ void Camera::SetupShader(GLuint program){
     glUniformMatrix4fv(projection_mat, 1, GL_FALSE, glm::value_ptr(mProjectionMatrix));
 }
 
-
-SceneNode * Camera::findPlayerNode()
-{
-	SceneNode* playerNode;
-	for (BaseNode* m : getChildNodes())
-	{
-		if (m->getName() == "PLAYER")
-		{
-			playerNode = reinterpret_cast<SceneNode*>(m);
-			break;
-		}
-	}
-
-	return playerNode;
-}
 
 void Camera::SetupViewMatrix(void){
 
@@ -249,8 +187,8 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix = glm::mat4(1.0); 
 
 	// Adding player to the view Matrix
-	if (mCameraPerspective == 1)
-		mViewMatrix = glm::translate(mViewMatrix, findPlayerNode()->GetPosition() - mPosition);
+	if (mCameraPerspective == First)
+	mViewMatrix = glm::translate(mViewMatrix, SceneGraph::getPlayerNode()->getPosition() - mPosition);
 
     // Copy vectors to matrix
     // Add vectors to rows, not columns of the matrix, so that we get
@@ -267,9 +205,8 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix[1][2] = current_forward[1];
     mViewMatrix[2][2] = current_forward[2];
 
-
-	if (mCameraPerspective == 1)
-		mViewMatrix = glm::translate(mViewMatrix, -(findPlayerNode()->GetPosition() - mPosition));
+	if (mCameraPerspective == First)
+		mViewMatrix = glm::translate(mViewMatrix, -(SceneGraph::getPlayerNode()->getPosition() - mPosition));
 
     // Create translation to camera position
     glm::mat4 trans = glm::translate(glm::mat4(1.0), -mPosition);

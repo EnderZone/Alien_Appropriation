@@ -6,7 +6,7 @@ namespace game
 {
 
 
-EntityNode::EntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture /*= NULL*/) 
+EntityNode::EntityNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture)
 	: SceneNode(name, geometry, material, texture)
 	, mVelocity(glm::vec3(0.0f,0.0f,0.0f))
 	, mAcceleration(glm::vec3(0.0f, 0.0f, 0.0f))
@@ -22,10 +22,8 @@ EntityNode::~EntityNode()
 
 
 
-void EntityNode::Update()
+void EntityNode::update(double deltaTime)
 {
-	SceneNode::Update();
-
 	//Apply Gravity
 	if (!mIsGrounded)
 	{
@@ -47,61 +45,64 @@ void EntityNode::Update()
 		mVelocity.y = std::max(mVelocity.y, 0.0f);
 
 	mPosition += mVelocity;
+
+	SceneNode::update(deltaTime);
+
 }
 
-void EntityNode::rise()
+void EntityNode::rise(glm::vec3 dir)
 {
  	if (mPosition.y == 0.0f)
 		mPosition.y = 0.1f;
-	mVelocity += glm::vec3(0.0, 0.5, 0.0) + -GRAVITY;
+	mVelocity += glm::vec3(0.0, 0.2, 0.0) + -GRAVITY;
 	setIsGrounded(false);
 }
 
-game::PlayerNode* EntityNode::getPlayerNode()
-{
-	// Get the root node
-	BaseNode* rootNode = this;
-	while (rootNode->getName() != "ROOT")
-	{
-		rootNode = rootNode->getParentNode();
-	}
-
-	if (!rootNode)
-		throw("Root Node could not be found from " + getName());
-
-	Camera* cameraNode;
-	for (BaseNode* m : rootNode->getChildNodes())
-	{
-		if (m->getName() == "CAMERA")
-		{
-			cameraNode = reinterpret_cast<Camera*>(m);
-			break;
-		}
-	}
-
-	if (!cameraNode)
-		throw("Camera Node could not be found from " + getName());
-
-	PlayerNode* playerNode;
-	for (BaseNode* m : cameraNode->getChildNodes())
-	{
-		if (m->getName() == "PLAYER")
-		{
-			playerNode = reinterpret_cast<PlayerNode*>(m);
-			break;
-		}
-	}
-
-	if (!playerNode)
-		throw("Player Node could not be found from " + getName());
-
-	return playerNode;
-}
-
-glm::vec3 EntityNode::getPlayerPosition()
-{
-	return getPlayerNode()->GetPosition();
-}
+//game::PlayerNode* EntityNode::getPlayerNode()
+//{
+//	// Get the root node
+//	BaseNode* rootNode = this;
+//	while (rootNode->getName() != "ROOT")
+//	{
+//		rootNode = rootNode->getParentNode();
+//	}
+//
+//	if (!rootNode)
+//		throw("Root Node could not be found from " + getName());
+//
+//	Camera* cameraNode;
+//	for (BaseNode* m : rootNode->getChildNodes())
+//	{
+//		if (m->getName() == "CAMERA")
+//		{
+//			cameraNode = reinterpret_cast<Camera*>(m);
+//			break;
+//		}
+//	}
+//
+//	if (!cameraNode)
+//		throw("Camera Node could not be found from " + getName());
+//
+//	PlayerNode* playerNode;
+//	for (BaseNode* m : cameraNode->getChildNodes())
+//	{
+//		if (m->getName() == "PLAYER")
+//		{
+//			playerNode = reinterpret_cast<PlayerNode*>(m);
+//			break;
+//		}
+//	}
+//
+//	if (!playerNode)
+//		throw("Player Node could not be found from " + getName());
+//
+//	return playerNode;
+//}
+//
+//glm::vec3 EntityNode::getPlayerPosition()
+//{
+//	return getPlayerNode()->getPosition();
+//}
 
 void EntityNode::hitGround()
 {

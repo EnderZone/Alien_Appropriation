@@ -1,29 +1,31 @@
 #include "player_node.h"
+#include "scene_graph.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-
 #include <iostream>
 
 namespace game {
-	PlayerNode::PlayerNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture, BaseNode* camera) : SceneNode(name, geometry, material, texture),
+	PlayerNode::PlayerNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture) : SceneNode(name, geometry, material, texture),
 		forward_factor(40.0f),
 		x_tilt_percentage(0.0f),
 		y_tilt_percentage(0.0f),
 		tractor_beam_on(false),
-		shielding_on(false)
+		shielding_on(false),
+		cowsCollected(0),
+		hayCollected(0)
 	{
 		// Set This as the parentNode of the camera while taking its own parent as his
-		camera->addChildNode(this);
+		//camera->addChildNode(this);
 		radius = 2;
 	}
 
 	PlayerNode::~PlayerNode() {}
 
-	glm::vec3 PlayerNode::GetPosition(void)
+	glm::vec3 PlayerNode::getPosition(void)
 	{
-		return mPosition + (dynamic_cast<Camera*>(getParentNode()))->GetPosition();
+		return mPosition + (dynamic_cast<Camera*>(getParentNode()))->getPosition();
 	}
 
 	void PlayerNode::rotateLeft() {
@@ -49,7 +51,7 @@ namespace game {
 	void PlayerNode::rotateByCamera() {
 		float velocity_limit = glm::pi<float>() / 2.0f;
 		
-		glm::vec3 current_velocity = ((Camera*)this->getParentNode())->getCurrentVelocity();
+		glm::vec3 current_velocity = ((Camera*)this->getParentNode())->getVelocityRaw();
 
 		x_tilt_percentage = -current_velocity.x * velocity_limit;
 		y_tilt_percentage = current_velocity.z * velocity_limit;
@@ -63,7 +65,7 @@ namespace game {
 		// std::cout << "PERCENTAGES ::: " << x_tilt_percentage << " " << y_tilt_percentage << std::endl;
 	}
 
-	void PlayerNode::Draw(Camera* camera, glm::mat4 parentTransf) {
+	void PlayerNode::draw(SceneNode* camera, glm::mat4 parentTransf) {
 		// Select proper material (shader program)
 		glUseProgram(mMaterial);
 
@@ -77,7 +79,7 @@ namespace game {
 		// Set world matrix and other shader input variables
 		SetupShader(mMaterial, parentTransf);
 
-		// Draw geometry
+		// draw geometry
 		if (mMode == GL_POINTS) {
 			glDrawArrays(mMode, 0, mSize);
 		}
@@ -87,25 +89,22 @@ namespace game {
 
 		for (BaseNode* bn : getChildNodes())
 		{
-			bn->Draw(camera, parentTransf);
+			dynamic_cast<SceneNode*>(bn)->draw(camera, parentTransf);
 		}
 
 		for (BaseNode *bn : weapons) {
 			std::string node_name = bn->getName();
-
-			if (*energy >= 10) {
-				if (tractor_beam_on && node_name.compare("TRACTORBEAM") == 0) {
-					bn->Draw(camera, parentTransf);
-				}
-				if (shielding_on && node_name.compare("SHIELD") == 0) {
-					bn->Draw(camera, parentTransf);
-				}
+			if (tractor_beam_on && node_name.compare("TRACTORBEAM") == 0) {
+				dynamic_cast<SceneNode*>(bn)->draw(camera, parentTransf);
+			}
+			if (shielding_on && node_name.compare("SHIELD") == 0) {
+				dynamic_cast<SceneNode*>(bn)->draw(camera, parentTransf);
 			}
 		}
 	}
 
-	void PlayerNode::Update() {
-		SceneNode::Update();
+	void PlayerNode::update(double deltaTime) {
+		SceneNode::update(deltaTime);
 		rotateByCamera();
 		setPlayerPosition();
 		checkWeapons();
@@ -118,128 +117,53 @@ namespace game {
 			*energy = 100.0f;
 		}
 
-		for (BaseNode* bn : getChildNodes())
-		{
-			bn->Update();
-		}
-
 		for (BaseNode* bn : weapons)
 		{
-			bn->Update();
+			bn->update(deltaTime);
 		}
 	}
 
-	void PlayerNode::checkWeapons() {
-		if (tractor_beam_on)
-			updateTractorBeam();
-		if (shielding_on)
-			updateShield();
-	}
 
-	void PlayerNode::updateTractorBeam() {
-		if (*energy <= 10) {
-			return;
-		}
+void PlayerNode::checkWeapons() {
+
+
+	if (*energy <= 10) {
+		toggleShields(false);
+		toggleTractorBeam(false);
+		return;
+	}
+	if (tractor_beam_on)
 		*energy -= 10.0f;
-		BaseNode* rootNode = getRootNode();
-		std::vector<BaseNode*>* to_remove = new std::vector<BaseNode*>;
-		for (BaseNode* bn : rootNode->getChildNodes()) {
-			EntityNode* en = dynamic_cast<EntityNode*>(bn);
-			if (en != NULL) {
-				suckEntity(en, to_remove);
-			}
-		}
-
-		for (BaseNode* removee : *to_remove) {
-			rootNode->removeChildNode(removee->getName());
-			delete removee;
-		}
-		delete to_remove;
-	}
-
-	void PlayerNode::takeDamage(DamageType damage) {
-		*hull_strength -= damage;
-	}
-
-	void PlayerNode::updateShield() {
-		if (*energy <= 10) {
-			return;
-		}
+	if (shielding_on)
 		*energy -= 6.0f;
-		BaseNode* rootNode = getRootNode();
-		std::vector<BaseNode*>* to_remove = new std::vector<BaseNode*>;
-		for (BaseNode* bn : rootNode->getChildNodes()) {
-			ProjectileNode* pn = dynamic_cast<ProjectileNode*>(bn);
-			if (pn != NULL) {
-				shieldProjectile(pn, to_remove);
 
-			}
+}
+
+
+
+void PlayerNode::takeDamage(DamageType damage) {
+	*hull_strength -= damage;
+}
+
+
+	void PlayerNode::addCollected(std::string type)
+	{
+		SceneNode* collected = nullptr;
+		std::cout << "Collected " << type << std::endl;
+		if (type.compare("hay") == 0) {
+			hayCollected++;
+			collected = SceneGraph::CreateInstance<SceneNode>("orbiting_hay" + std::to_string(hayCollected), "hayMesh", "litTextureMaterial", "hayTexture", this);
 		}
-		//for (BaseNode* removee : *to_remove) {
-		//	rootNode->removeChildNode(removee->getName());
-		//	delete removee;
-		//}
-		//delete to_remove;
+		else {
+			cowsCollected++;
+			collected = SceneGraph::CreateInstance<SceneNode>("orbiting_cow" + std::to_string(cowsCollected), "cowMesh", "litTextureMaterial", "cowTexture", this);
+		}
+		collected->setPosition(glm::vec3(0.0f));
+		collected->translate(glm::vec3(2.0f * cos(getChildNodes().size()), 1.0f, 2.0f * sin(getChildNodes().size())));
+		collected->scale(glm::vec3(0.25f));
 	}
 
-	void PlayerNode::suckEntity(EntityNode* en, std::vector<BaseNode*>* to_remove) {
-		glm::vec3 curr_pos = GetPosition();
-		glm::vec3 entity_pos = en->GetPosition();
-				
-		if (curr_pos.y < entity_pos.y)
-			return;
 
-		float dist = glm::distance(glm::vec2(curr_pos.x, curr_pos.z), glm::vec2(entity_pos.x, entity_pos.z));
-		float height = curr_pos.y - entity_pos.y;
-
-		if (dist < height / 4.0f) {
-			
-			CowEntityNode* cn = dynamic_cast<CowEntityNode*>(en);
-			BullEntityNode* bn = dynamic_cast<BullEntityNode*>(en);
-
-			en->rise();
-
-			if ((bn != NULL || cn != NULL) && glm::distance(curr_pos, entity_pos) < 3.0f) {
-				//to_remove->push_back(en);
-				en->setDeleteNextTick(true);
-				if (bn != NULL) {
-					takeDamage(BULL);
-				}
-				else {
-					SceneNode* collected = new SceneNode(*((SceneNode*)cn));
-					addChildNode(collected);
-					collected->SetPosition(glm::vec3(0.0f));
-					collected->Translate(glm::vec3(2.0f * cos(getChildNodes().size()), 1.0f,2.0f * sin(getChildNodes().size())));
-					collected->Scale(glm::vec3(0.25f));
-				}
-			}
-		}
-	}
-
-	void PlayerNode::shieldProjectile(ProjectileNode* pn, std::vector<BaseNode*>* to_remove) {
-		*energy -= 25.0f;
-		glm::vec3 curr_pos = GetPosition();
-		glm::vec3 entity_pos = pn->GetPosition();
-
-		float dist = glm::distance(curr_pos, entity_pos);
-		
-		std::cout << dist << std::endl;
-
-		if (dist < 7.5f) {
-			//to_remove->push_back(pn);
-			pn->setDeleteNextTick(true);
-		}
-	}
-
-	BaseNode* PlayerNode::getRootNode() {
-		BaseNode* rootNode = getParentNode();
-
-		while (rootNode != NULL && rootNode->getName().compare("ROOT") != 0) {
-			rootNode = rootNode->getParentNode();
-		}
-
-		return rootNode;
-	}
 
 	void PlayerNode::setPlayerPosition() {
 		mPosition = -forward_factor * glm::vec3(0.0f, 0.0f, 1.0f);
@@ -279,7 +203,7 @@ namespace game {
 		current_rotation = glm::normalize(current_rotation);
 		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_y, glm::vec3(1.0, 0.0, 0.0)));
 		current_rotation = glm::normalize(current_rotation);
-		mOrientation *= glm::angleAxis(glm::pi<float>() / 2, glm::vec3(0.0f, 1.0f, 0.0f));
+		mOrientation *= glm::angleAxis(glm::pi<float>() / 180, glm::vec3(0.0f, 1.0f, 0.0f));
 
 
 		// Aply transformations *ISROT*
@@ -288,7 +212,6 @@ namespace game {
 		glm::mat4 translation = glm::translate(glm::mat4(1.0), mPosition);
 		glm::mat4 temp_transf = parentTransf * translation * rotation;
 		parentTransf *= translation * glm::mat4_cast(glm::normalize(mOrientation));
-
 		// Scaling is done only on local object
 		glm::mat4 transf = glm::scale(temp_transf, mScale);
 

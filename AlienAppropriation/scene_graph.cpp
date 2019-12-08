@@ -12,17 +12,22 @@
 
 namespace game {
 
-SceneGraph::SceneGraph(ResourceManager* resourceManager)
-	: mResourceManager(resourceManager)
-{
+BaseNode* SceneGraph::mRootNode = nullptr;
+PlayerNode* SceneGraph::mPlayerNode = nullptr;
+std::vector<SceneNode*> SceneGraph::nodes;
+
+SceneGraph::SceneGraph(Camera* camera) {
 
     mBackgroundColor = glm::vec3(0.0, 0.0, 0.0);
 
 	mRootNode = new BaseNode("ROOT");
-	mRootNode->setSceneGraph(this);
-
+	addNode(camera);
+	mCameraNode = camera;
 }
 
+
+//BaseNode* SceneGraph::mRootNode = new BaseNode("ROOT");
+//std::vector<SceneNode*> SceneGraph::nodes;
 
 SceneGraph::~SceneGraph(){
 }
@@ -40,53 +45,45 @@ glm::vec3 SceneGraph::GetBackgroundColor(void) const {
 }
 
 
-
-SceneNode *SceneGraph::CreatePlayerNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture, BaseNode* camera)
+void SceneGraph::deleteNode(BaseNode * node)
 {
-	// Create scene node with the specified resources
-	PlayerNode* pn = new PlayerNode(node_name, geometry, material, texture, camera);
-
-	// Add node to the scene (Dont do this as it is a child of the camera already)
-	// mRootNode->addChildNode((SceneNode*)pn);
-	
-	//nodes.push_back(pn);
-	mPlayerNode = pn;
-	return (SceneNode*)pn;
-
+	node->getParentNode()->removeChildNode(node);
+	for (BaseNode* child : node->getChildNodes()) {
+		child->setParentNode(nullptr);
+		child->addTag("delete");
+	}
 }
 
-
-void SceneGraph::AddNode(SceneNode *node)
+void SceneGraph::deleteNode(std::string name)
 {
-    //node_.push_back(node);
-	nodes.push_back(node);
-	mRootNode->addChildNode(node);
-}
-
-
-game::BaseNode* SceneGraph::GetNode(std::string node_name, BaseNode* currentNode /*= nullptr*/) const 
-{
-	if (currentNode == nullptr)
-		currentNode = mRootNode;
-
-	if (currentNode->getName() == node_name)
-		return currentNode;
-	else
+	for (BaseNode* n : nodes)
 	{
-		for (BaseNode* node : currentNode->getChildNodes())
+		if (name.compare(n->getName()) == 0)
 		{
-			if (GetNode(node_name, node) != nullptr)
-				return GetNode(node_name, node);
+			deleteNode(n);
+			return;
 		}
-		return nullptr;
 	}
 
-    return nullptr;
+}
+
+
+game::BaseNode* SceneGraph::getNode(std::string node_name) 
+{
+	for (BaseNode* n : nodes)
+	{
+		if (node_name.compare(n->getName()) == 0)
+		{
+			return n;
+		}
+	}
+
+	return nullptr;
 }
 
 
 
-void SceneGraph::Draw(Camera *camera)
+void SceneGraph::draw(Camera *camera)
 {
     // Clear background
     glClearColor(mBackgroundColor[0], 
@@ -94,205 +91,99 @@ void SceneGraph::Draw(Camera *camera)
                  mBackgroundColor[2], 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-
-	mRootNode->Draw(camera);
-}
-
-void SceneGraph::SetupDrawToTexture(void) {
-
-	// Set up frame buffer
-	glGenFramebuffers(1, &mFrameBuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
-
-	// Set up target texture for rendering
-	glGenTextures(1, &mTexture);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
-
-	// Set up an image for the texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-	// Set up a depth buffer for rendering
-	glGenRenderbuffers(1, &mDepthBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, mDepthBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
-
-	// Configure frame buffer (attach rendering buffers)
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mDepthBuffer);
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, DrawBuffers);
-
-	// Check if frame buffer was setup successfully 
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		throw(std::ios_base::failure(std::string("Error setting up frame buffer")));
+	for (BaseNode* bn : mRootNode->getChildNodes())
+	{
+		dynamic_cast<SceneNode*>(bn)->draw(camera);
 	}
-
-	// Reset frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// Set up quad for drawing to the screen
-	static const GLfloat quad_vertex_data[] = {
-		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-		1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-		1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-	};
-
-	// Create buffer for quad
-	glGenBuffers(1, &mQuadArrayBuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, mQuadArrayBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quad_vertex_data), quad_vertex_data, GL_STATIC_DRAW);
-}
-
-
-void SceneGraph::DrawToTexture(Camera *camera) {
-
-	// Save current viewport
-	GLint viewport[4];
-	glGetIntegerv(GL_VIEWPORT, viewport);
-
-	// Enable frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
-	glViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
-
-	// Clear background
-	glClearColor(mBackgroundColor[0],
-		mBackgroundColor[1],
-		mBackgroundColor[2], 0.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Draw all scene nodes
-	mRootNode->Draw(camera);
-
-	// Reset frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// Restore viewport
-	glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
-}
-
-
-void SceneGraph::DisplayTexture(GLuint program) {
-
-	// Configure output to the screen
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDisable(GL_DEPTH_TEST);
-
-	// Set up quad geometry
-	glBindBuffer(GL_ARRAY_BUFFER, mQuadArrayBuffer);
-
-	// Select proper material (shader program)
-	glUseProgram(program);
-
-	// Setup attributes of screen-space shader
-	GLint pos_att = glGetAttribLocation(program, "position");
-	glEnableVertexAttribArray(pos_att);
-	glVertexAttribPointer(pos_att, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
-
-	GLint tex_att = glGetAttribLocation(program, "uv");
-	glEnableVertexAttribArray(tex_att);
-	glVertexAttribPointer(tex_att, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void *)(3 * sizeof(GLfloat)));
-
-	// Timer
-	GLint timer_var = glGetUniformLocation(program, "timer");
-	float current_time = glfwGetTime();
-	glUniform1f(timer_var, current_time);
-
-	// Bind texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, mTexture);
-
-	// Draw geometry
-	glDrawArrays(GL_TRIANGLES, 0, 6); // Quad: 6 coordinates
-
-									  // Reset current geometry
-	glEnable(GL_DEPTH_TEST);
-}
-
-
-void SceneGraph::SaveTexture(char *filename) {
-
-	unsigned char data[FRAME_BUFFER_WIDTH*FRAME_BUFFER_HEIGHT * 4];
-
-	// Retrieve image data from texture
-	glBindFramebuffer(GL_FRAMEBUFFER, mFrameBuffer);
-	glReadPixels(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	// Create file in ppm format
-	// Open the file
-	std::ofstream f;
-	f.open(filename);
-	if (f.fail()) {
-		throw(std::ios_base::failure(std::string("Error opening file ") + std::string(filename)));
-	}
-
-	// Write header
-	f << "P3" << std::endl;
-	f << FRAME_BUFFER_WIDTH << " " << FRAME_BUFFER_HEIGHT << std::endl;
-	f << "255" << std::endl;
-
-	// Write data
-	for (int i = 0; i < FRAME_BUFFER_HEIGHT; i++) {
-		for (int j = 0; j < FRAME_BUFFER_WIDTH; j++) {
-			for (int k = 0; k < 3; k++) {
-				int dt = data[i*FRAME_BUFFER_WIDTH * 4 + j * 4 + k];
-				f << dt << " ";
-			}
-		}
-		f << std::endl;
-	}
-
-	// Close the file
-	f.close();
-
-	// Reset frame buffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 }
 
 // Check for collision
 // If return true, then the object will be deleted (used for projectiles, cows)
 bool SceneGraph::checkCollision(SceneNode * object)
 {
-	if (object->GetCollisionType() == Point) {
-		if ((glm::distance(object->GetPosition(), mPlayerNode->GetPosition() + mCameraNode->GetPosition())) < object->GetRadius() + mPlayerNode->GetRadius()) {
-			ProjectileNode* proj = dynamic_cast<ProjectileNode*> (object);
-			if (proj) {
-				proj->getParentNode()->removeChildNode(proj->getName());
-				//damage the player here
-				return true;
-			}
-			else {
-				mCameraNode->setVelocityUp(0.0f);
-				mCameraNode->setVelocityForward(0.0f);
-				mCameraNode->setVelocitySide(0.0f);
 
+	// Check if any objects below the player can be sucked up
+	if (object->hasTag("canPickUp")) {
+		if (mPlayerNode->isTractorBeamActive()) {
+			float dist = glm::distance(glm::vec2(mPlayerNode->getPosition().x, mPlayerNode->getPosition().z), glm::vec2(object->getPosition().x, object->getPosition().z));
+			float height = mPlayerNode->getPosition().y - object->getPosition().y;
+
+			if (height > 0) {
+				if (dist < height / 4 + 0.25) {
+					dynamic_cast<EntityNode*>(object)->rise(glm::normalize(mPlayerNode->getPosition() - object->getPosition()));
+				}
 			}
 
 		}
 	}
 
+	
+
+	// Check for any other collision
+	if (object->getCollisionType() == Point) {
+		if ((glm::distance(object->getPosition(), mPlayerNode->getPosition())) < object->getRadius() + mPlayerNode->getRadius()) {
+			
+			
+			// Check if any objects can be collected
+			if (object->hasTag("canCollect")) {
+				if (mPlayerNode->isTractorBeamActive() && (glm::distance(object->getPosition(), mPlayerNode->getPosition())) < object->getRadius() + mPlayerNode->getRadius()) {
+					object->addTag("delete");
+					if (object->hasTag("bull")) {
+						mPlayerNode->takeDamage(BULL);
+					}
+					mPlayerNode->addCollected( object->hasTag("cow") ? "cow" : "hay" );
+					return true;
+				}
+			}
+			
+			
+			
+			ProjectileNode* proj = dynamic_cast<ProjectileNode*> (object);
+			if (proj) {
+				proj->addTag("delete");
+				if (!mPlayerNode->isShieldActive()) {
+					mPlayerNode->takeDamage(MISSILE);
+				}
+				else {
+					mPlayerNode->addEnergy(-25.0f);
+				}
+				return true;
+			}
+			else {
+				mCameraNode->setVelocity(glm::vec3(0));
+			}
+
+		}
+	}
 
 	return false;
 }
 
 
-void SceneGraph::Update(void)
+void SceneGraph::update(double deltaTime)
 {
-	mRootNode->Update();
-	mPlayerNode->SetGridPosition(mPlayerNode->GetPosition() + mCameraNode->GetPosition());
+
+	//consider moving update from the nodes to here
+	mRootNode->update(deltaTime);
+
+	mPlayerNode->setGridPosition(mPlayerNode->getPosition());
 	for (int i = 0; i < nodes.size(); i++) {
-		glm::vec2 temp = (mPlayerNode->GetGridPosition() - nodes.at(i)->GetGridPosition());
-		if (glm::length(temp) < 2.0f) {
-			if (checkCollision(nodes.at(i))) {
-				nodes.erase(nodes.begin() + i);
-				i--;
-			}
+		SceneNode* currentNode = nodes.at(i);
+		if (currentNode->hasTag("delete")) {
+			deleteNode(currentNode);
+			nodes.erase(nodes.begin() + i);
+			i--;
+			continue;
+			//delete currentNode;
+		}
+		if (currentNode->getName() == "camera" || currentNode->getName() == "player" || currentNode->hasTag("ignore")) continue;
+
+		// Only check collision with objects in the adjacent grids
+		// With this implementation, we're not actually making any savings, since we need to compare the grid positions
+		//glm::vec2 gridDifference = (mPlayerNode->getGridPosition() - currentNode->getGridPosition());
+		//if (glm::length(gridDifference) < 2.0f) {
+		if (mPlayerNode->getGridPosition() == currentNode->getGridPosition()){
+			checkCollision(currentNode);
 		}
 	}
 }

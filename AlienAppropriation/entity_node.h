@@ -10,9 +10,8 @@
 
 namespace game {
 
-	
-
-	// Class that manages one object in a scene 
+	// class EntityNode
+	// A node with some movement behaviour
 	class EntityNode : public SceneNode {
 
 	public:
@@ -22,17 +21,17 @@ namespace game {
 		// Destructor
 		~EntityNode();
 
-		virtual void Update();
+		virtual void update(double deltaTime);
 
-		void rise();
+		void rise(glm::vec3 dir);
 
 		inline bool getIsGrounded() { return mIsGrounded; }
 		inline void setIsGrounded(bool b) { mIsGrounded = b; }
 
 	protected:
 
-		PlayerNode* getPlayerNode();
-		glm::vec3 getPlayerPosition();
+		//PlayerNode* getPlayerNode();
+		//glm::vec3 getPlayerPosition();
 
 		// mPosition is stored in SceneNode
 		glm::vec3 mVelocity;
@@ -41,7 +40,6 @@ namespace game {
 		bool mIsGrounded;
 
 	private:
-
 		virtual void hitGround();
 
 
