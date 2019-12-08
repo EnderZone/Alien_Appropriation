@@ -23,7 +23,7 @@ namespace game {
 
 		virtual void update(double deltaTime);
 
-		void rise();
+		void rise(glm::vec3 dir);
 
 		inline bool getIsGrounded() { return mIsGrounded; }
 		inline void setIsGrounded(bool b) { mIsGrounded = b; }

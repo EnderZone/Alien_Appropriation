@@ -43,7 +43,7 @@ namespace game
 		inline bool isShieldActive() { return shielding_on;  }
 		void takeDamage(DamageType);
 
-		void addCollected();
+		void addCollected(std::string type);
 
 	private:
 		float x_tilt_percentage;
@@ -52,6 +52,9 @@ namespace game
 
 		int energy;
 		int hull_strength;
+
+		int cowsCollected;
+		int hayCollected;
 
 		bool tractor_beam_on = false;
 		bool shielding_on = false;

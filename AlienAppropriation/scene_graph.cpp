@@ -44,22 +44,14 @@ glm::vec3 SceneGraph::GetBackgroundColor(void) const {
     return mBackgroundColor;
 }
 
-void SceneGraph::addNode(SceneNode *node, BaseNode* parent)
-{
-	if (parent) {
-		node->setParentNode(parent);
-		parent->addChildNode(node);
-	}
-	else if (node->getParentNode() == node || parent == nullptr) {
-		node->setParentNode(mRootNode);
-		mRootNode->addChildNode(node);
-	}
-	nodes.push_back(node);
-}
 
 void SceneGraph::deleteNode(BaseNode * node)
 {
-	
+	node->getParentNode()->removeChildNode(node);
+	for (BaseNode* child : node->getChildNodes()) {
+		child->setParentNode(nullptr);
+		child->addTag("delete");
+	}
 }
 
 void SceneGraph::deleteNode(std::string name)
@@ -117,28 +109,35 @@ bool SceneGraph::checkCollision(SceneNode * object)
 			float height = mPlayerNode->getPosition().y - object->getPosition().y;
 
 			if (height > 0) {
-				if (dist < height / 4) {
-					dynamic_cast<EntityNode*>(object)->rise();
+				if (dist < height / 4 + 0.25) {
+					dynamic_cast<EntityNode*>(object)->rise(glm::normalize(mPlayerNode->getPosition() - object->getPosition()));
 				}
 			}
 
 		}
 	}
 
-	// Check if any objects can be collected
-	if (object->hasTag("canCollect")) {
-		if (mPlayerNode->isTractorBeamActive() && (glm::distance(object->getPosition(), mPlayerNode->getPosition() + mCameraNode->getPosition())) < object->getRadius() + mPlayerNode->getRadius()) {
-			object->addTag("delete");
-			if (object->hasTag("bull")) {
-				mPlayerNode->takeDamage(BULL);
-			}
-			mPlayerNode->addCollected();
-		}
-	}
+	
 
 	// Check for any other collision
 	if (object->getCollisionType() == Point) {
-		if ((glm::distance(object->getPosition(), mPlayerNode->getPosition() + mCameraNode->getPosition())) < object->getRadius() + mPlayerNode->getRadius()) {
+		if ((glm::distance(object->getPosition(), mPlayerNode->getPosition())) < object->getRadius() + mPlayerNode->getRadius()) {
+			
+			
+			// Check if any objects can be collected
+			if (object->hasTag("canCollect")) {
+				if (mPlayerNode->isTractorBeamActive() && (glm::distance(object->getPosition(), mPlayerNode->getPosition())) < object->getRadius() + mPlayerNode->getRadius()) {
+					object->addTag("delete");
+					if (object->hasTag("bull")) {
+						mPlayerNode->takeDamage(BULL);
+					}
+					mPlayerNode->addCollected( object->hasTag("cow") ? "cow" : "hay" );
+					return true;
+				}
+			}
+			
+			
+			
 			ProjectileNode* proj = dynamic_cast<ProjectileNode*> (object);
 			if (proj) {
 				proj->addTag("delete");
@@ -164,19 +163,24 @@ void SceneGraph::update(double deltaTime)
 	//consider moving update from the nodes to here
 	mRootNode->update(deltaTime);
 
-	mPlayerNode->setGridPosition(mPlayerNode->getPosition() + mCameraNode->getPosition());
+	mPlayerNode->setGridPosition(mPlayerNode->getPosition());
 	for (int i = 0; i < nodes.size(); i++) {
 		SceneNode* currentNode = nodes.at(i);
+		if (currentNode->hasTag("delete")) {
+			deleteNode(currentNode);
+			nodes.erase(nodes.begin() + i);
+			i--;
+			continue;
+			//delete currentNode;
+		}
 		if (currentNode->getName() == "camera" || currentNode->getName() == "player" || currentNode->hasTag("ignore")) continue;
 
 		// Only check collision with objects in the adjacent grids
 		// With this implementation, we're not actually making any savings, since we need to compare the grid positions
-		glm::vec2 gridDifference = (mPlayerNode->getGridPosition() - nodes.at(i)->getGridPosition());
-		if (glm::length(gridDifference) < 2.0f) {
-			if (checkCollision(nodes.at(i))) {
-				nodes.erase(nodes.begin() + i);
-				i--;
-			}
+		//glm::vec2 gridDifference = (mPlayerNode->getGridPosition() - currentNode->getGridPosition());
+		//if (glm::length(gridDifference) < 2.0f) {
+		if (mPlayerNode->getGridPosition() == currentNode->getGridPosition()){
+			checkCollision(currentNode);
 		}
 	}
 }

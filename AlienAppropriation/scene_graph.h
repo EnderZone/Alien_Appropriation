@@ -75,7 +75,19 @@ namespace game {
 			inline void setPlayerNode(PlayerNode* player) { mPlayerNode = player; }
 
 			// Hierarchy Management
-			void addNode(SceneNode *node, BaseNode *parent = nullptr);
+			static void addNode(SceneNode *node, BaseNode *parent = nullptr) 
+			{
+				if (parent) {
+					node->setParentNode(parent);
+					parent->addChildNode(node);
+				}
+				else if (node->getParentNode() == node || parent == nullptr) {
+					node->setParentNode(mRootNode);
+					mRootNode->addChildNode(node);
+				}
+				nodes.push_back(node);
+			}
+
 			void deleteNode(BaseNode *node);
 			void deleteNode(std::string name);
 			BaseNode* getNode(std::string node_name);
@@ -83,7 +95,7 @@ namespace game {
 
 			// Node Creation
 			template<class T>
-			T* CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL, BaseNode* parent = nullptr)
+			static T* CreateNode(std::string node_name, Resource *geometry, Resource *material, Resource *texture = NULL, BaseNode* parent = nullptr)
 			{
 				// Create scene node with the specified resources
 				T* scn = new T(node_name, geometry, material, texture);
@@ -108,7 +120,7 @@ namespace game {
 			}
 
 			// Node Creation + Resource Fetching
-			template<class T> T *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""), BaseNode *parent=nullptr)
+			template<class T> static T *CreateInstance(std::string entity_name, std::string object_name, std::string material_name, std::string texture_name = std::string(""), BaseNode *parent=nullptr)
 			{
 				
 				Resource *geom =  ResourceManager::getResource(object_name);

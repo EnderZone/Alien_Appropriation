@@ -14,7 +14,9 @@ namespace game {
 		hull_strength(100),
 		energy(100),
 		tractor_beam_on(false),
-		shielding_on(false)
+		shielding_on(false),
+		cowsCollected(0),
+		hayCollected(0)
 	{
 		// Set This as the parentNode of the camera while taking its own parent as his
 		//camera->addChildNode(this);
@@ -118,18 +120,25 @@ namespace game {
 
 
 	void PlayerNode::takeDamage(DamageType damage) {
-		if (damage == BULL)	hull_strength -= 25;
-		if (damage == MISSILE)	hull_strength -=10;
+		hull_strength -= damage;
 	}
 
-	void PlayerNode::addCollected()
+	void PlayerNode::addCollected(std::string type)
 	{
-		printf("Collected something\n");
-		/*SceneNode* collected = SceneGraph::
-		addChildNode(collected);
+		SceneNode* collected = nullptr;
+		std::cout << "Collected " << type << std::endl;
+		if (type.compare("hay") == 0) {
+			hayCollected++;
+			collected = SceneGraph::CreateInstance<SceneNode>("orbiting_hay" + std::to_string(hayCollected), "hayMesh", "litTextureMaterial", "hayTexture", this);
+
+		}
+		else {
+			cowsCollected++;
+			collected = SceneGraph::CreateInstance<SceneNode>("orbiting_cow" + std::to_string(cowsCollected), "cowMesh", "litTextureMaterial", "cowTexture", this);
+		}
 		collected->setPosition(glm::vec3(0.0f));
 		collected->translate(glm::vec3(2.0f * cos(getChildNodes().size()), 1.0f, 2.0f * sin(getChildNodes().size())));
-		collected->scale(glm::vec3(0.25f));*/
+		collected->scale(glm::vec3(0.25f));
 	}
 
 
@@ -172,7 +181,7 @@ namespace game {
 		current_rotation = glm::normalize(current_rotation);
 		current_rotation *= glm::quat_cast(glm::rotate(glm::mat4(), angle_y, glm::vec3(1.0, 0.0, 0.0)));
 		current_rotation = glm::normalize(current_rotation);
-		mOrientation *= glm::angleAxis(glm::pi<float>() / 2, glm::vec3(0.0f, 1.0f, 0.0f));
+		mOrientation *= glm::angleAxis(glm::pi<float>() / 180, glm::vec3(0.0f, 1.0f, 0.0f));
 
 
 		// Aply transformations *ISROT*
@@ -181,7 +190,6 @@ namespace game {
 		glm::mat4 translation = glm::translate(glm::mat4(1.0), mPosition);
 		glm::mat4 temp_transf = parentTransf * translation * rotation;
 		parentTransf *= translation * glm::mat4_cast(glm::normalize(mOrientation));
-
 		// Scaling is done only on local object
 		glm::mat4 transf = glm::scale(temp_transf, mScale);
 

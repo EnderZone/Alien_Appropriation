@@ -42,7 +42,8 @@ namespace game {
 
 		// Generate random points
 		const auto Points = PoissonGenerator::generatePoissonPoints((gridWidth+1) * (gridHeight+1) * density, PRNG,50,false, 1/(density * glm::min(gridWidth, gridHeight)));
-		
+		//const auto Points = PoissonGenerator::generatePoissonPoints(1, PRNG, 50, false, 1 / (density * glm::min(gridWidth, gridHeight)));
+
 		// Sort the random points into grid cells based off theer position
 		for (auto p : Points) {
 			Object point;
@@ -73,22 +74,27 @@ namespace game {
 			for (int y = 0; y < gridHeight; y++) {
 				for (auto o : grid.at(x).at(y)) {
 					if (!(o.type == "default" || o.type == "originPoint")) {
-						SceneNode* obj = scene->CreateInstance<SceneNode>(o.type + std::to_string(x) + std::to_string(y), o.type + "Mesh", "litTextureMaterial", o.type + "Texture");
-						obj->translate(glm::vec3(o.pos.x, 0, o.pos.y));
 
 						if (o.type == "hay") {
+							EntityNode* obj = scene->CreateInstance<EntityNode>(o.type + std::to_string(x) + std::to_string(y), o.type + "Mesh", "litTextureMaterial", o.type + "Texture");
+							obj->translate(glm::vec3(o.pos.x, 0, o.pos.y));
 							obj->rotate(glm::angleAxis(glm::half_pi<float>(), glm::vec3(0, 0, 1)));
 							//obj->rotate(glm::angleAxis((rand()%360) * (glm::pi<float>() / 180), glm::vec3(-1, 0, 0)));
 							obj->translate(glm::vec3(0, 0.5, 0));
 							obj->addTag("canPickUp");
+							obj->addTag("canCollect");
 
 						}
-						if (o.type == "tree") {
-							obj->scale(glm::vec3(1.25f + rand() % 5 / 10.0f));
-						}
-						if (o.type == "barn") {
-							obj->rotate(glm::angleAxis(glm::radians(o.rotation), glm::vec3(0, 1, 0)));
-							obj->scale(glm::vec3(1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f));
+						else {
+							SceneNode* obj = scene->CreateInstance<SceneNode>(o.type + std::to_string(x) + std::to_string(y), o.type + "Mesh", "litTextureMaterial", o.type + "Texture");
+							obj->translate(glm::vec3(o.pos.x, 0, o.pos.y));
+							if (o.type == "tree") {
+								obj->scale(glm::vec3(1.25f + rand() % 5 / 10.0f));
+							}
+							if (o.type == "barn") {
+								obj->rotate(glm::angleAxis(glm::radians(o.rotation), glm::vec3(0, 1, 0)));
+								obj->scale(glm::vec3(1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f, 1.3f + rand() % 80 / 100.0f));
+							}
 						}
 					}
 

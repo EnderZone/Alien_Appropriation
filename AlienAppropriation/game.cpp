@@ -162,8 +162,8 @@ void Game::SetupResources(void){
 	//	mResourceManager->LoadResource(CubeMap, name + "CubeMap", filename.c_str());
 	//}
 	
-//	filename = std::string(asset_directory) + std::string("/skyboxes/day1/day1.tga");
-//	mResourceManager->LoadResource(CubeMap, "Day1CubeMap", filename.c_str());
+	filename = std::string(asset_directory) + std::string("/skyboxes/day1/day1.tga");
+	mResourceManager->LoadResource(CubeMap, "Day1CubeMap", filename.c_str());
 
 }
 
@@ -172,7 +172,7 @@ void Game::SetupScene(void){
 
     // Set background color for the scene
     mSceneGraph->SetBackgroundColor(viewport_background_color_g);
-/*
+
 	for (int i = 0; i < 40; i++)
 	{
 		CowEntityNode* cow = mSceneGraph->CreateInstance<CowEntityNode>("Cow" + std::to_string(i), "cowMesh", "texturedMaterial", "cowTexture");
@@ -197,7 +197,7 @@ void Game::SetupScene(void){
 		CannonMissileEntityNode* cannon = mSceneGraph->CreateInstance<CannonMissileEntityNode>("Cannon" + std::to_string(i), "cannonMesh", "litTextureMaterial", "cannonTexture");
 		cannon->scale(glm::vec3(2.0, 2.0, 2.0));
 		cannon->translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
-	}*/
+	}
 
 	PlayerNode* player = mSceneGraph->CreateInstance<PlayerNode>("player", "ufoMesh", "litTextureMaterial", "ufoTexture", mCamera);
 	mSceneGraph->setPlayerNode(player);
@@ -221,8 +221,8 @@ void Game::SetupScene(void){
 
 
 	// Create skybox
-//	skybox_ = CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
-//	skybox_->scale(glm::vec3(1000.0, 1000.0, 1000.0));
+	skybox_ = mSceneGraph->CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
+	skybox_->scale(glm::vec3(1000.0, 1000.0, 1000.0));
 
 }
 
@@ -238,7 +238,7 @@ void Game::MainLoop(void){
         if ((current_time - last_time) > 0.05){
             mSceneGraph->update(deltaTime);
             last_time = current_time;
-		//	skybox_->setPosition(mCamera->getPosition());
+			skybox_->setPosition(mCamera->getPosition());
         }
 
         // draw the scene

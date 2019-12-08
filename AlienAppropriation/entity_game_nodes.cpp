@@ -363,7 +363,7 @@ void CannonMissileEntityNode::fireHeatMissile()
 	glm::vec3 initVelVec = 1.0f * glm::normalize(dirPlayer);
 	HeatMissileNode* missile = SceneGraph::CreateProjectileInstance<HeatMissileNode>(getName() + "missile" + std::to_string(mProjectiles), "missileMesh", "texturedMaterial", "missileTexture", 10, mPosition, initVelVec);
 	mProjectiles += 1;
-	missile->scale(glm::vec3(0.2, 0.2, 1.5));
+	//missile->scale(glm::vec3(0.2, 0.2, 1.5));
 }
 
 }

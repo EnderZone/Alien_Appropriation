@@ -50,11 +50,11 @@ void EntityNode::update(double deltaTime)
 
 }
 
-void EntityNode::rise()
+void EntityNode::rise(glm::vec3 dir)
 {
  	if (mPosition.y == 0.0f)
 		mPosition.y = 0.1f;
-	mVelocity += glm::vec3(0.0, 0.5, 0.0) + -GRAVITY;
+	mVelocity += glm::vec3(0.0, 0.2, 0.0) + -GRAVITY;
 	setIsGrounded(false);
 }
 
