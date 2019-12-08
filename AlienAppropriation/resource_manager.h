@@ -43,7 +43,7 @@ namespace game {
 			// Create the geometry for a cone
 			void CreateCone(std::string object_name, float radius = 0.6, int resolution = 30);
 			// Create the geometry of a plane using two triangles
-			void CreateSquare(std::string object_name, float width = 1.0);
+			void CreateSquare(std::string object_name, float width = 1.0, glm::vec3 color = glm::vec3(1.0f));
 			// Create the geometry of a plane using a grid
 			void CreateGrid(std::string object_name, float heightVariance= 0, int width = 11, int height = 11, float tileSize = 10.0);
 			// Create particles distributed over a sphere

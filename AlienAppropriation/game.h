@@ -13,6 +13,7 @@
 #include "projectile_node.h"
 #include "entity_node.h"
 #include "player_node.h"
+#include "ui_node.h"
 #include "map_generator.h"
 
 namespace game {

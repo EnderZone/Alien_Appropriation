@@ -95,13 +95,13 @@ void Camera::Draw(Camera *camera, glm::mat4 parentTransf /*= glm::mat4(1.0)*/)
 
 	glm::mat4 rotation = glm::mat4_cast(mOrientation);
 	glm::mat4 translation = glm::translate(parentTransf, mPosition);
-
-	parentTransf = translation;
 	
+	parentTransf = translation;
 
 	for (BaseNode* bn : getChildNodes())
 	{
-		bn->Draw(camera, parentTransf);
+		if (mCameraPerspective == 1)
+			bn->Draw(camera, parentTransf);
 	}
 }
 
@@ -128,7 +128,7 @@ void Camera::Update()
 
 void Camera::SwitchCameraPerspective()
 {
-	glm::vec3 camShiftVec = glm::vec3(0.0f, 2.0f, 20.0f);
+	glm::vec3 camShiftVec = glm::vec3(0.0f, 0.0f, (findPlayerNode()->GetPosition() - mPosition).z);
 
 	if (mCameraPerspective == 1)
 	{
@@ -249,7 +249,8 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix = glm::mat4(1.0); 
 
 	// Adding player to the view Matrix
-	mViewMatrix = glm::translate(mViewMatrix, findPlayerNode()->GetPosition() - mPosition);
+	if (mCameraPerspective == 1)
+		mViewMatrix = glm::translate(mViewMatrix, findPlayerNode()->GetPosition() - mPosition);
 
     // Copy vectors to matrix
     // Add vectors to rows, not columns of the matrix, so that we get
@@ -267,7 +268,8 @@ void Camera::SetupViewMatrix(void){
     mViewMatrix[2][2] = current_forward[2];
 
 
-	mViewMatrix = glm::translate(mViewMatrix, -(findPlayerNode()->GetPosition() - mPosition));
+	if (mCameraPerspective == 1)
+		mViewMatrix = glm::translate(mViewMatrix, -(findPlayerNode()->GetPosition() - mPosition));
 
     // Create translation to camera position
     glm::mat4 trans = glm::translate(glm::mat4(1.0), -mPosition);

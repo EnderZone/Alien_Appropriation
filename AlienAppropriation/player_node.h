@@ -37,6 +37,8 @@ namespace game
 		inline void addWeapon(SceneNode* w) { weapons.push_back(w); };
 		inline void toggleTractorBeam() { tractor_beam_on = !tractor_beam_on; }
 		inline void toggleShields() { shielding_on = !shielding_on; }
+		inline void addHealthTracker(float* t) { hull_strength = t; }
+		inline void addEnergyTracker(float* t) { energy = t; }
 
 		void takeDamage(DamageType);
 
@@ -45,8 +47,8 @@ namespace game
 		float y_tilt_percentage;
 		float forward_factor;
 
-		int energy;
-		int hull_strength;
+		float* energy;
+		float* hull_strength;
 
 		bool tractor_beam_on = false;
 		bool shielding_on = false;
