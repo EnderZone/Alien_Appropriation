@@ -949,7 +949,7 @@ void ResourceManager::CreateCone(std::string object_name, float radius, int reso
 	AddResource(Mesh, object_name, vbo, ebo, face_num * face_att);
 }
 
-void ResourceManager::CreateSquare(std::string object_name, float width /*= 1.0*/)
+void ResourceManager::CreateSquare(std::string object_name, float width, glm::vec3 color /*= 1.0*/)
 {
 	// Create a sphere using a well-known parameterization
 
@@ -966,10 +966,10 @@ void ResourceManager::CreateSquare(std::string object_name, float width /*= 1.0*
 	// The construction does *not* use shared vertices
 	// 9 attributes per vertex: 3D position (3), 3D normal (3), RGB color (3), Tex Co-ord(2)
 	GLfloat vertex[] = {
-		-halfWidth, -halfWidth,  0.0,	  0.0,  0.0,  1.0,    1.0, 0.0, 0.0,		0.0, 0.0,
-		 halfWidth, -halfWidth,  0.0,	  0.0,  0.0,  1.0,    0.0, 1.0, 0.0,		0.0, 0.0,
-		 -halfWidth,  halfWidth, 0.0,	  0.0,  0.0,  1.0,    0.0, 1.0, 1.0,		0.0, 0.0,
-		 halfWidth,  halfWidth,  0.0,	  0.0,  0.0,  1.0,    0.0, 0.0, 1.0,		0.0, 0.0,
+		-halfWidth, -halfWidth,  0.0,	  0.0,  0.0,  1.0,    color.x, color.y, color.z,		0.0, 0.0,
+		 halfWidth, -halfWidth,  0.0,	  0.0,  0.0,  1.0,    color.x, color.y, color.z,		0.0, 0.0,
+		 -halfWidth,  halfWidth, 0.0,	  0.0,  0.0,  1.0,    color.x, color.y, color.z,		0.0, 0.0,
+		 halfWidth,  halfWidth,  0.0,	  0.0,  0.0,  1.0,    color.x, color.y, color.z,		0.0, 0.0,
 	};
 
 	// Faces that form the square

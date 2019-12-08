@@ -132,6 +132,8 @@ void Game::SetupResources(void){
 	mResourceManager->CreateCylinder("PlayerMesh");
 	mResourceManager->CreateCone("coneMesh");
 	mResourceManager->CreateSphereParticles("shieldMesh");
+	mResourceManager->CreateSquare("healthMesh", 1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	mResourceManager->CreateSquare("energyMesh", 1.0f, glm::vec3(0.0f, 0.7f, 0.7f));
 
 	std::string filename;
 	std::string materials[] = { "default", "textured", "litTexture", "skybox", "particle" };
@@ -219,6 +221,11 @@ void Game::SetupScene(void){
 		cannon->Translate(glm::vec3((rand() % 300), 0.0, (rand() % 300)));
 	}
 
+	// stats for the player and ui nodes to hold
+	float* max_stat = new float(100);
+	float* health = new float(100);
+	float* shield = new float(100);
+
 	SceneNode* player = CreatePlayerInstance("PLAYER", "ufoMesh", "litTextureMaterial", "ufoTexture");
 	((PlayerNode*)player)->setPlayerPosition();
 	mMapGenerator->GenerateMap();
@@ -229,6 +236,8 @@ void Game::SetupScene(void){
 	((PlayerNode*)player)->addWeapon(weapon);
 	weapon->Translate(glm::vec3(0.0,0.0,0.0));
 	weapon->Scale(glm::vec3(10.0,50.0,10.0));
+	((PlayerNode*)player)->addHealthTracker(health);
+	((PlayerNode*)player)->addEnergyTracker(shield);
 
 	//Create shields
 	weapon = CreateInstance<SceneNode>("SHIELD", "shieldMesh", "particleMaterial");
@@ -236,6 +245,21 @@ void Game::SetupScene(void){
 	((PlayerNode*)player)->addWeapon(weapon);
 	weapon->Translate(glm::vec3(0.0, 0.0, 0.0));
 	weapon->Scale(glm::vec3(10.0, 10.0, 10.0));
+
+	//Create UI elements
+	SceneNode* ui_nodes = CreateInstance<UINode>("HEALTH_UI", "healthMesh", "defaultMaterial");
+	mSceneGraph->getRootNode()->removeChildNode("HEALTH_UI");
+	player->addChildNode(ui_nodes);
+	ui_nodes->Translate(glm::vec3(0.5f, 1.0f, 2.0f));
+	ui_nodes->Rotate(glm::angleAxis(glm::pi<float>() / 5, glm::vec3(0.0f, 1.0f, 0.0f)));
+	((UINode*)ui_nodes)->addStat(health, max_stat);
+
+	ui_nodes = CreateInstance<UINode>("SHIELD_UI", "energyMesh", "defaultMaterial");
+	mSceneGraph->getRootNode()->removeChildNode("SHIELD_UI");
+	player->addChildNode(ui_nodes);
+	ui_nodes->Translate(glm::vec3(0.5f, 1.0f, -2.0f));
+	ui_nodes->Rotate(glm::angleAxis(glm::pi<float>() / 5, glm::vec3(0.0f, 1.0f, 0.0f)));
+	((UINode*)ui_nodes)->addStat(shield, max_stat);
 
 	// Create skybox
 //	skybox_ = CreateInstance<SceneNode>("CubeInstance1", "cubeMesh", "skyboxMaterial", "Day1CubeMap");
@@ -329,6 +353,9 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	}
 	if (key == GLFW_KEY_C && (action == GLFW_PRESS || action == GLFW_RELEASE)) {
 		playerNode->toggleShields();
+	}
+	if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+		game->mCamera->SwitchCameraPerspective();
 	}
 	if (key == GLFW_KEY_Y) {
 		playerNode->rotateForward();

@@ -11,8 +11,6 @@ namespace game {
 		forward_factor(40.0f),
 		x_tilt_percentage(0.0f),
 		y_tilt_percentage(0.0f),
-		hull_strength(100),
-		energy(100),
 		tractor_beam_on(false),
 		shielding_on(false)
 	{
@@ -95,11 +93,13 @@ namespace game {
 		for (BaseNode *bn : weapons) {
 			std::string node_name = bn->getName();
 
-			if (tractor_beam_on && node_name.compare("TRACTORBEAM") == 0) {
-				bn->Draw(camera, parentTransf);
-			}
-			if (shielding_on && node_name.compare("SHIELD") == 0) {
-				bn->Draw(camera, parentTransf);
+			if (*energy >= 10) {
+				if (tractor_beam_on && node_name.compare("TRACTORBEAM") == 0) {
+					bn->Draw(camera, parentTransf);
+				}
+				if (shielding_on && node_name.compare("SHIELD") == 0) {
+					bn->Draw(camera, parentTransf);
+				}
 			}
 		}
 	}
@@ -109,6 +109,14 @@ namespace game {
 		rotateByCamera();
 		setPlayerPosition();
 		checkWeapons();
+
+		*energy += 5.0f;
+		if (*energy < 0.0f) {
+			*energy = 0.0f;
+		}
+		if (*energy > 100.0f) {
+			*energy = 100.0f;
+		}
 
 		for (BaseNode* bn : getChildNodes())
 		{
@@ -129,6 +137,10 @@ namespace game {
 	}
 
 	void PlayerNode::updateTractorBeam() {
+		if (*energy <= 10) {
+			return;
+		}
+		*energy -= 10.0f;
 		BaseNode* rootNode = getRootNode();
 		std::vector<BaseNode*>* to_remove = new std::vector<BaseNode*>;
 		for (BaseNode* bn : rootNode->getChildNodes()) {
@@ -146,10 +158,14 @@ namespace game {
 	}
 
 	void PlayerNode::takeDamage(DamageType damage) {
-		hull_strength -= damage;
+		*hull_strength -= damage;
 	}
 
 	void PlayerNode::updateShield() {
+		if (*energy <= 10) {
+			return;
+		}
+		*energy -= 6.0f;
 		BaseNode* rootNode = getRootNode();
 		std::vector<BaseNode*>* to_remove = new std::vector<BaseNode*>;
 		for (BaseNode* bn : rootNode->getChildNodes()) {
@@ -201,6 +217,7 @@ namespace game {
 	}
 
 	void PlayerNode::shieldProjectile(ProjectileNode* pn, std::vector<BaseNode*>* to_remove) {
+		*energy -= 25.0f;
 		glm::vec3 curr_pos = GetPosition();
 		glm::vec3 entity_pos = pn->GetPosition();
 
