@@ -459,7 +459,7 @@ void ResourceManager::LoadMesh(const std::string name, const char *filename) {
 		else if (!part[0].compare(std::string("vn"))) {
 			if (part.size() >= 4) {
 				if (name == "ufoMesh") { // dumb hack because the Y/Z coords are inverted in our UFO mesh
-					glm::vec3 normal(str_to_num<float>(part[2].c_str()), str_to_num<float>(part[3].c_str()), str_to_num<float>(part[1].c_str()));
+					glm::vec3 normal(str_to_num<float>(part[1].c_str()), -str_to_num<float>(part[3].c_str()), str_to_num<float>(part[2].c_str()));
 					mesh.normal.push_back(normal);
 
 				}

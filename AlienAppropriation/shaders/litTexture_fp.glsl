@@ -7,7 +7,6 @@ in vec3 position_interp;
 in vec3 normal_interp;
 in vec4 color_interp;
 in vec2 uv_interp;
-in vec3 light_pos;
 
 // Uniform (global) buffer
 uniform sampler2D texture_map;
@@ -21,6 +20,9 @@ float phong_exponent = 7.0;
 uniform float Ia = 0.4; // Ambient light amount
 
 
+// Uniform (global) buffer with the environment map
+uniform samplerCube env_map;
+uniform bool useEnvMap;
 void main() 
 {
     vec3 N, // Interpolated normal for fragment
@@ -47,8 +49,31 @@ void main()
 
     // Assign illumination to the fragment
 	// Lighting is multiplied with the ambient color
-    gl_FragColor = pixel * Ia + Id * diffuse_color;
+	vec4 illum = pixel * Ia + Id * diffuse_color;
+	
+	if(useEnvMap) {
+		// Compute indirect lighting with environment map
+		// Reflection vector
+		V = - position_interp;
+		V = normalize(V);
+		vec3 Lr = 2.0 * dot(N, V) * N - V;
 
+		// When using GLSL's reflect, we input the vector from eye to point
+		//vec3 Valt = position_interp - camera_pos;
+		//vec3 Lr = reflect(Valt, N);
+
+		// Query environment map
+		vec4 il = texture(env_map, Lr);
+
+		// Add pixel value to the illumination
+		// Modulate influence of environment light by some constant
+		illum += 0.2 * il.xyz;
+		illum = il;
+		illum = vec4(pixel.r*il.r, pixel.g*il.g, pixel.b*il.b, sqrt(sqrt(pixel.r)));
+
+	}
+    // Assign illumination to the fragment
+    gl_FragColor = illum;
 	//gl_FragColor = vec4(1.0) * sign(N.z);
 
 }

@@ -19,7 +19,7 @@ namespace game {
 	{
 	}
 
-	SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture)
+	SceneNode::SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture, const Resource *envmap)
 	: BaseNode(name)
 {
     // Set geometry
@@ -48,6 +48,14 @@ namespace game {
 	}
 	else {
 		mTexture = 0;
+	}
+
+	// Set environment map texture
+	if (envmap) {
+		mEnvmap = envmap->getResource();
+	}
+	else {
+		mEnvmap = 0;
 	}
 
     // Other attributes
@@ -102,6 +110,11 @@ void SceneNode::setGridPosition(glm::vec3 pos)
 {
 	gridPosition.x = floor(pos.x / 15);
 	gridPosition.y = floor(pos.z / 15);
+}
+
+void SceneNode::setEnvMap(Resource* envmap)
+{
+	mEnvmap = envmap->getResource();
 }
 
 
@@ -266,6 +279,7 @@ void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat
     GLint normal_mat = glGetUniformLocation(program, "normal_mat");
     glUniformMatrix4fv(normal_mat, 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
+
 	// Texture
 	if (mTexture) {
 		GLint tex = glGetUniformLocation(program, "texture_map");
@@ -279,6 +293,12 @@ void SceneNode::SetupShader(GLuint program, glm::mat4& parentTransf /*= glm::mat
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
+
+	if (!mEnvmap) {
+		GLint useEnv = glGetUniformLocation(program, "useEnvMap");
+		glUniform1i(useEnv, false);
+	}
+
 
     // Timer
     GLint timer_var = glGetUniformLocation(program, "timer");

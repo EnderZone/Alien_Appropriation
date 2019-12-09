@@ -41,6 +41,7 @@ namespace game {
 			GLsizei mSize; // Number of primitives in geometry
 			GLuint mMaterial; // Reference to shader program
 			GLuint mTexture; // Reference to texture resource
+			GLuint mEnvmap; // Reference to environment map
 
 
 			// Quaternion helper function
@@ -50,7 +51,7 @@ namespace game {
 
 		public:
 			SceneNode(const std::string name);
-			SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL);
+			SceneNode(const std::string name, const Resource *geometry, const Resource *material, const Resource *texture = NULL, const Resource *envmap = NULL);
 			~SceneNode();
 
 			// Draw the node relative to its parent according to scene parameters in 'camera'
@@ -84,7 +85,7 @@ namespace game {
 			void setOrientation(glm::quat orientation);
 			void setScale(glm::vec3 scale);
 			void setGridPosition(glm::vec3 pos);
-
+			void setEnvMap(Resource *envmap);
 			virtual void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));	// Set matrices that transform the node in a shader program
 
 

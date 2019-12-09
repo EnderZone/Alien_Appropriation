@@ -237,6 +237,20 @@ void PlayerNode::takeDamage(DamageType damage) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 
+		// Texture
+		if (mEnvmap) {
+			GLint useEnv = glGetUniformLocation(program, "useEnvMap");
+			glUniform1i(useEnv, true);
+			GLint tex = glGetUniformLocation(program, "env_map");
+			glUniform1i(tex, 1); // Assign the first texture to the map
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, mEnvmap); // First texture we bind
+			// Define texture interpolation
+			glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+
 		// Timer
 		GLint timer_var = glGetUniformLocation(program, "timer");
 		double current_time = glfwGetTime();

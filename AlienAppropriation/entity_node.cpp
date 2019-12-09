@@ -58,52 +58,6 @@ void EntityNode::rise(glm::vec3 dir)
 	setIsGrounded(false);
 }
 
-//game::PlayerNode* EntityNode::getPlayerNode()
-//{
-//	// Get the root node
-//	BaseNode* rootNode = this;
-//	while (rootNode->getName() != "ROOT")
-//	{
-//		rootNode = rootNode->getParentNode();
-//	}
-//
-//	if (!rootNode)
-//		throw("Root Node could not be found from " + getName());
-//
-//	Camera* cameraNode;
-//	for (BaseNode* m : rootNode->getChildNodes())
-//	{
-//		if (m->getName() == "CAMERA")
-//		{
-//			cameraNode = reinterpret_cast<Camera*>(m);
-//			break;
-//		}
-//	}
-//
-//	if (!cameraNode)
-//		throw("Camera Node could not be found from " + getName());
-//
-//	PlayerNode* playerNode;
-//	for (BaseNode* m : cameraNode->getChildNodes())
-//	{
-//		if (m->getName() == "PLAYER")
-//		{
-//			playerNode = reinterpret_cast<PlayerNode*>(m);
-//			break;
-//		}
-//	}
-//
-//	if (!playerNode)
-//		throw("Player Node could not be found from " + getName());
-//
-//	return playerNode;
-//}
-//
-//glm::vec3 EntityNode::getPlayerPosition()
-//{
-//	return getPlayerNode()->getPosition();
-//}
-
 void EntityNode::hitGround()
 {
 

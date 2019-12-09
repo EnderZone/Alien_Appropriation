@@ -205,6 +205,7 @@ void Game::SetupScene(void){
 	PlayerNode* player = mSceneGraph->CreateInstance<PlayerNode>("player", "ufoMesh", "litTextureMaterial", "ufoTexture", mCamera);
 	mSceneGraph->setPlayerNode(player);
 	player->setPlayerPosition();
+	player->setEnvMap(mResourceManager->getResource("Day1CubeMap"));
 
 	//Create tractor beam
 	SceneNode* weapon = mSceneGraph->CreateInstance<SceneNode>("TRACTORBEAM", "coneParticles", "particleBeamMaterial");
