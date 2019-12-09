@@ -139,6 +139,9 @@ bool SceneGraph::checkCollisionWithPlayer(SceneNode * object)
 					if (object->hasTag("bull")) {
 						mPlayerNode->takeDamage(BULL);
 					}
+					else if (object->hasTag("cow")) {
+						mPlayerNode->addHealth(5);
+					}
 					mPlayerNode->addCollected( object->hasTag("cow") ? "cow" : "hay" );
 					return true;
 				}
@@ -176,12 +179,14 @@ bool SceneGraph::checkCollisionBetweenObjs(SceneNode * bomb, SceneNode * target)
 }
 
 
-void SceneGraph::update(double deltaTime)
+bool SceneGraph::update(double deltaTime)
 {
 	//We iterate through all the nodes twice
 	// Once to update them
 	mRootNode->update(deltaTime);
-
+	if (*(mPlayerNode->getHullStrength()) <= 0) { 
+		return true; 
+	}
 	mPlayerNode->setGridPosition(mPlayerNode->getPosition());
 
 	// Twice to delete any nodes, plus check collision
@@ -235,6 +240,7 @@ void SceneGraph::update(double deltaTime)
 			}
 		}
 	}
+	return false;
 }
 
 } // namespace game

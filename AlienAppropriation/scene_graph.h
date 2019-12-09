@@ -66,7 +66,7 @@ namespace game {
             
 			// Basic functionality
 			void draw(Camera *camera);
-			void update(double deltaTime);
+			bool update(double deltaTime);
 			bool checkCollisionWithPlayer(SceneNode *object);
 			bool checkCollisionBetweenObjs(SceneNode *bomb, SceneNode *target);
 

@@ -34,7 +34,7 @@ namespace game
 
 		void setPlayerPosition();
 		float getDistanceFromCamera();
-
+		inline float* getHullStrength() { return hull_strength; }
 		inline void addWeapon(SceneNode* w) { weapons.push_back(w); };
 		inline void toggleTractorBeam(bool active) { tractor_beam_on = active; }
 		inline void toggleShields(bool active) { shielding_on = active; }
@@ -49,6 +49,7 @@ namespace game
 		void addCollected(std::string type);
 
 		inline void addEnergy(float f) { *energy += f; }
+		inline void addHealth(float f) { *hull_strength += f; }
 
 	private:
 		float x_tilt_percentage;

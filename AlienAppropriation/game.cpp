@@ -251,9 +251,10 @@ void Game::MainLoop(void){
         double current_time = glfwGetTime();
 		double deltaTime = current_time - last_time;
         if ((current_time - last_time) > 0.05){
-            mSceneGraph->update(deltaTime);
+            bool dead = mSceneGraph->update(deltaTime);
             last_time = current_time;
 			skybox_->setPosition(mCamera->getPosition());
+			if (dead) break;
         }
 
         // draw the scene
@@ -264,6 +265,7 @@ void Game::MainLoop(void){
 
         // update other events like input handling
         glfwPollEvents();
+
     }
 }
 
