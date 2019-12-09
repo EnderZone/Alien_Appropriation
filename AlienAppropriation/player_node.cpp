@@ -150,6 +150,25 @@ void PlayerNode::takeDamage(DamageType damage) {
 	*hull_strength -= damage;
 }
 
+void PlayerNode::dropBomb()
+{
+	if (hayCollected > 0) {
+		hayCollected--;
+		bombCounter++;
+		for (BaseNode* bn : getChildNodes())
+		{
+			if (bn->hasTag("orbitingHay")) {
+				bn->addTag("delete");
+				break;
+			}
+		}
+		 EntityNode* bomb = SceneGraph::CreateInstance<EntityNode>("hayBomb" + std::to_string(bombCounter), "hayMesh", "litTextureMaterial", "hayTexture");
+		 bomb->addTag("bomb");
+		 bomb->setPosition(getPosition());
+		 bomb->setIsGrounded(false);
+	}
+}
+
 
 	void PlayerNode::addCollected(std::string type)
 	{
@@ -158,6 +177,7 @@ void PlayerNode::takeDamage(DamageType damage) {
 		if (type.compare("hay") == 0) {
 			hayCollected++;
 			collected = SceneGraph::CreateInstance<SceneNode>("orbiting_hay" + std::to_string(hayCollected), "hayMesh", "litTextureMaterial", "hayTexture", this);
+			collected->addTag("orbitingHay");
 		}
 		else {
 			cowsCollected++;

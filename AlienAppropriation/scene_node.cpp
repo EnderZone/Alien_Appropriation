@@ -108,8 +108,13 @@ void SceneNode::setScale(glm::vec3 scale){
 
 void SceneNode::setGridPosition(glm::vec3 pos)
 {
-	gridPosition.x = floor(pos.x / 15);
-	gridPosition.y = floor(pos.z / 15);
+	gridPosition.x = floor(pos.x / 20);
+	gridPosition.y = floor(pos.z / 20);
+}
+
+void SceneNode::setGridPosition(int x, int y)
+{
+	gridPosition = glm::vec2(x, y);
 }
 
 void SceneNode::setEnvMap(Resource* envmap)
@@ -121,6 +126,7 @@ void SceneNode::setEnvMap(Resource* envmap)
 void SceneNode::translate(glm::vec3 trans){
 
     mPosition += trans;
+	
 }
 
 

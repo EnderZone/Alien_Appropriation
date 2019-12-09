@@ -14,7 +14,7 @@ namespace game {
 
 BaseNode* SceneGraph::mRootNode = nullptr;
 PlayerNode* SceneGraph::mPlayerNode = nullptr;
-std::vector<SceneNode*> SceneGraph::nodes;
+std::vector<std::vector<std::vector<SceneNode*>>> SceneGraph::nodes(15, std::vector<std::vector<SceneNode*>>(15, std::vector<SceneNode*>()));
 
 SceneGraph::SceneGraph(Camera* camera) {
 
@@ -23,6 +23,8 @@ SceneGraph::SceneGraph(Camera* camera) {
 	mRootNode = new BaseNode("ROOT");
 	addNode(camera);
 	mCameraNode = camera;
+
+
 }
 
 
@@ -56,12 +58,16 @@ void SceneGraph::deleteNode(BaseNode * node)
 
 void SceneGraph::deleteNode(std::string name)
 {
-	for (BaseNode* n : nodes)
-	{
-		if (name.compare(n->getName()) == 0)
-		{
-			deleteNode(n);
-			return;
+	for (std::vector<std::vector<SceneNode*>> column : nodes) {
+		for (std::vector<SceneNode*> cell : column) {
+			for (BaseNode* n : cell)
+			{
+				if (name.compare(n->getName()) == 0)
+				{
+					deleteNode(n);
+					return;
+				}
+			}
 		}
 	}
 
@@ -70,11 +76,15 @@ void SceneGraph::deleteNode(std::string name)
 
 game::BaseNode* SceneGraph::getNode(std::string node_name) 
 {
-	for (BaseNode* n : nodes)
-	{
-		if (node_name.compare(n->getName()) == 0)
-		{
-			return n;
+	for (std::vector<std::vector<SceneNode*>> column : nodes) {
+		for (std::vector<SceneNode*> cell : column) {
+			for (BaseNode* n : cell)
+			{
+				if (node_name.compare(n->getName()) == 0)
+				{
+					return n;
+				}
+			}
 		}
 	}
 
@@ -99,7 +109,7 @@ void SceneGraph::draw(Camera *camera)
 
 // Check for collision
 // If return true, then the object will be deleted (used for projectiles, cows)
-bool SceneGraph::checkCollision(SceneNode * object)
+bool SceneGraph::checkCollisionWithPlayer(SceneNode * object)
 {
 
 	// Check if any objects below the player can be sucked up
@@ -116,8 +126,6 @@ bool SceneGraph::checkCollision(SceneNode * object)
 
 		}
 	}
-
-	
 
 	// Check for any other collision
 	if (object->getCollisionType() == Point) {
@@ -159,31 +167,72 @@ bool SceneGraph::checkCollision(SceneNode * object)
 	return false;
 }
 
+bool SceneGraph::checkCollisionBetweenObjs(SceneNode * bomb, SceneNode * target)
+{
+	if ((glm::distance(bomb->getPosition(), target->getPosition())) < bomb->getRadius() + target->getRadius()) {
+		target->addTag("delete");
+	}
+	return false;
+}
+
 
 void SceneGraph::update(double deltaTime)
 {
-
-	//consider moving update from the nodes to here
+	//We iterate through all the nodes twice
+	// Once to update them
 	mRootNode->update(deltaTime);
 
 	mPlayerNode->setGridPosition(mPlayerNode->getPosition());
-	for (int i = 0; i < nodes.size(); i++) {
-		SceneNode* currentNode = nodes.at(i);
-		if (currentNode->hasTag("delete")) {
-			deleteNode(currentNode);
-			nodes.erase(nodes.begin() + i);
-			i--;
-			continue;
-			//delete currentNode;
-		}
-		if (currentNode->getName() == "camera" || currentNode->getName() == "player" || currentNode->hasTag("ignore")) continue;
 
-		// Only check collision with objects in the adjacent grids
-		// With this implementation, we're not actually making any savings, since we need to compare the grid positions
-		//glm::vec2 gridDifference = (mPlayerNode->getGridPosition() - currentNode->getGridPosition());
-		//if (glm::length(gridDifference) < 2.0f) {
-		if (mPlayerNode->getGridPosition() == currentNode->getGridPosition()){
-			checkCollision(currentNode);
+	// Twice to delete any nodes, plus check collision
+	for (int x = 0; x < nodes.size(); x++) {
+		for (int y = 0; y < nodes.at(x).size(); y++) {
+			std::vector<SceneNode*>& cell = nodes.at(x).at(y);
+			for (int i = 0; i < cell.size(); i++) {
+				SceneNode* currentNode = cell.at(i);
+
+				// delete nodes
+				if (currentNode->hasTag("delete")) {
+					deleteNode(currentNode);
+					cell.erase(cell.begin() + i);
+					i--;
+					continue;
+				}
+
+				// ignore player/camera nodes
+				if (currentNode->getName() == "camera" || currentNode->getName() == "player" || currentNode->hasTag("ignore")) continue;
+
+				// update grid location
+				int newX = floor(currentNode->getPosition().x / 20);
+				int newY = floor(currentNode->getPosition().z / 20);
+				newX = glm::clamp(newX, 0, 14);
+				newY = glm::clamp(newY, 0, 14);
+
+				if (newX != x || newY != y) {
+					cell.erase(cell.begin() + i);
+					i--;
+					nodes.at(newX).at(newY).push_back(currentNode);
+					currentNode->setGridPosition(newX, newY);
+					continue;
+				}
+
+
+				// check for collision with the player if the player is in the same grid OR the node is a projectile
+				if (mPlayerNode->getGridPosition() == glm::vec2(x,y) || currentNode->hasTag("projectile")) {
+					checkCollisionWithPlayer(currentNode);
+				}
+
+				// check collision between hay bombs and cannons
+				// this is where the grid cells structure saves us time
+
+				if (currentNode->hasTag("bomb")) {
+					for (SceneNode* object : cell) {
+						if (object->hasTag("bombable")) {
+							checkCollisionBetweenObjs(currentNode, object);
+						}
+					}
+				}
+			}
 		}
 	}
 }

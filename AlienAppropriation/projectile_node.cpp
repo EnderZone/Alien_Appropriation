@@ -17,6 +17,7 @@ ProjectileNode::ProjectileNode(std::string name, const Resource *geometry, const
 	, mRemainingLife(lifespan)
 	, mLastTime(glfwGetTime())
 {
+	addTag("projectile");
 }
 
 

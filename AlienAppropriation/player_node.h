@@ -12,7 +12,7 @@
 
 namespace game
 {	
-	enum DamageType { BULL = 10, MISSILE = 20, GUN = 5};
+	enum DamageType { BULL = 10, MISSILE = 15, GUN = 3};
 
 	class PlayerNode : public SceneNode
 	{
@@ -45,7 +45,7 @@ namespace game
 		inline bool isTractorBeamActive() { return tractor_beam_on; }
 		inline bool isShieldActive() { return shielding_on;  }
 		void takeDamage(DamageType);
-
+		void dropBomb();
 		void addCollected(std::string type);
 
 		inline void addEnergy(float f) { *energy += f; }
@@ -63,6 +63,8 @@ namespace game
 
 		bool tractor_beam_on = false;
 		bool shielding_on = false;
+
+		int bombCounter = 0;
 
 		void SetupShader(GLuint program, glm::mat4& parentTransf = glm::mat4(1.0));
 

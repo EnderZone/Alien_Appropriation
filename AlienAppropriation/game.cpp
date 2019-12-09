@@ -342,6 +342,9 @@ void Game::KeyCallback(GLFWwindow* window, int key, int scancode, int action, in
 	if (key == GLFW_KEY_F) {
 		game->mCamera->setVelocity(glm::vec3(0));
 	}
+	if (key == GLFW_KEY_R) {
+		playerNode->dropBomb();
+	}
 
 }
 

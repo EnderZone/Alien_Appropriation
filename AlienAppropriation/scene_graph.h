@@ -50,7 +50,7 @@ namespace game {
 			static PlayerNode* mPlayerNode;
 			Camera* mCameraNode;
 
-			static std::vector<SceneNode*> nodes;
+			static std::vector<std::vector<std::vector<SceneNode*>>> nodes;
 
 
 
@@ -67,7 +67,8 @@ namespace game {
 			// Basic functionality
 			void draw(Camera *camera);
 			void update(double deltaTime);
-			bool checkCollision(SceneNode *object);
+			bool checkCollisionWithPlayer(SceneNode *object);
+			bool checkCollisionBetweenObjs(SceneNode *bomb, SceneNode *target);
 
 			// Getters
 			inline static BaseNode* getRootNode() { return mRootNode; }
@@ -88,7 +89,13 @@ namespace game {
 					node->setParentNode(mRootNode);
 					mRootNode->addChildNode(node);
 				}
-				nodes.push_back(node);
+				int x = (int)floor(node->getPosition().x / 20.0f);
+				int y = (int)floor(node->getPosition().y / 20.0f);
+				x = glm::clamp(x, 0, 14);
+				y = glm::clamp(y, 0, 14);
+				node->setGridPosition(x, y);
+
+				nodes.at(x).at(y).push_back(node);
 			}
 
 			void deleteNode(BaseNode *node);
@@ -117,7 +124,11 @@ namespace game {
 				// Add node to the scene
 				mRootNode->addChildNode(scn);
 				scn->setParentNode(mRootNode);
-				nodes.push_back(scn);
+				int x = glm::clamp((int)floor(initialPos.x / 20.0f), 0, 14);
+				int y = glm::clamp((int)floor(initialPos.y / 20.0f), 0, 14);
+
+				nodes.at(x).at(y).push_back(scn);
+				scn->setGridPosition(x, y);
 
 				return scn;
 			}

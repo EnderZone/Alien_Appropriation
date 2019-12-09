@@ -312,7 +312,7 @@ CannonMissileEntityNode::CannonMissileEntityNode(const std::string name, const R
 	, mNextTimer(15.0f) 
 	, mProjectiles(0)
 {
-	addTag("canPickUp");
+	addTag("bombable");
 }
 
 CannonMissileEntityNode::~CannonMissileEntityNode()
